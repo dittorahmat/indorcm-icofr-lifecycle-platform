@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { buildProcessTree } from '../pages/bpm/hooks/useBPMPage';
+import { buildProcessTree } from '../pages/bpm/utils/bpm-process-tree';
 import { BpmService } from '../../worker/services/bpm-service';
 import { bpmProcesses } from '../../worker/db/schema';
 import type { BPMProcess } from '@shared/types';

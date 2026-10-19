@@ -1,6 +1,20 @@
 {
   "title": "Alur Kerja BPM",
   "description": "Petakan proses bisnis dan kontrol di tingkat transaksi.",
+  "searchLabel": "Cari Proses BPM",
+  "selectedProcess": "Proses Terpilih",
+  "selectedProcessClose": "Tutup proses terpilih",
+  "createModalHint": "Tentukan judul proses utama untuk {{noGL}}.",
+  "processNamePlaceholder": "mis. Penerimaan setoran tunai",
+  "processCodeLabel": "Kode BPM",
+  "processCodePlaceholder": "mis. FIN-01",
+  "emptyTitle": "Siap Memetakan Proses",
+  "emptyHint": "Pilih FSLI dan Akun GL pada panel di atas untuk mulai memetakan proses bisnis, risiko, dan pengendalian.",
+  "ownerFallback": "Keuangan & Akuntansi",
+  "unassignedDepartment": "Belum Ditugaskan",
+  "createDiagramFailed": "Gagal membuat diagram. Silakan coba lagi.",
+  "createProcessFailed": "Gagal membuat proses. Silakan coba lagi.",
+  "deleteProcessFailed": "Gagal menghapus proses. Silakan coba lagi.",
   "baseline": {
     "status": "Baseline Resmi",
     "description": "Menggunakan hasil scoping yang telah disetujui untuk tahun fiskal {{year}}.",
@@ -232,6 +246,9 @@
     }
   },
   "editor": {
+    "dialogTitle": "Editor Alur Kerja BPM: {{name}}",
+    "dialogDescription": "Editor visual untuk proses alur kerja BPM",
+    "dialogSubtitle": "Memetakan proses bisnis, risiko, dan pengendalian secara visual.",
     "lockPosition": "Kunci Posisi",
     "unlockPosition": "Buka Kunci Posisi",
     "positionLocked": "Posisi Terkunci",

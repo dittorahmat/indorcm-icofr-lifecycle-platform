@@ -1,6 +1,20 @@
 {
   "title": "BPM Workflow",
   "description": "Map business processes and controls at the transaction level.",
+  "searchLabel": "Search BPM Processes",
+  "selectedProcess": "Selected Process",
+  "selectedProcessClose": "Close selected process",
+  "createModalHint": "Define a major process heading for {{noGL}}.",
+  "processNamePlaceholder": "e.g. Penerimaan setoran tunai",
+  "processCodeLabel": "BPM Code",
+  "processCodePlaceholder": "e.g. FIN-01",
+  "emptyTitle": "Ready to Map Process",
+  "emptyHint": "Select an FSLI and GL Account from the selection panel above to begin mapping business processes, risks, and controls.",
+  "ownerFallback": "Finance & Accounting",
+  "unassignedDepartment": "Unassigned",
+  "createDiagramFailed": "Could not create the diagram. Please try again.",
+  "createProcessFailed": "Could not create the process. Please try again.",
+  "deleteProcessFailed": "Could not delete the process. Please try again.",
   "baseline": {
     "status": "Official Baseline",
     "description": "Using approved scoping results for {{year}} fiscal year.",
@@ -232,6 +246,9 @@
     }
   },
   "editor": {
+    "dialogTitle": "BPM Workflow Editor: {{name}}",
+    "dialogDescription": "Visual editor for BPM workflow processes",
+    "dialogSubtitle": "Mapping business processes, risks, and controls visually.",
     "lockPosition": "Lock Position",
     "unlockPosition": "Unlock Position",
     "positionLocked": "Position Locked",
