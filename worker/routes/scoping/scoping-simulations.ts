@@ -9,7 +9,7 @@ import { eq, and, type SQL } from 'drizzle-orm';
 import type {
   MaterialitySimulation,
 } from "@shared/types";
-import { computeSimulationMateriality } from '@shared/scoping-materiality';
+import { computeSimulationMateriality, basisProblemForSnapshot } from '@shared/scoping-materiality';
 import { ScopingService } from '../../services/scoping-service';
 import { AuditService } from "../../services/audit-service";
 import { getQualitativeDefaults } from '../../services/scoping-defaults';
@@ -98,9 +98,11 @@ simulationRoutes.post('/simulations', rbac(['Line 2', 'Admin']), async (c) => {
   });
 
   if (glSnapshotId) {
-    const knownBasis = snapshotBenchmarks.includes(basis) || rows.some((r) => r.fsliName === basis);
-    if (!basis || !knownBasis) {
-      return bad(c, 'MATERIALITY_BASIS_NOT_IN_SNAPSHOT', 400, `Basis "${basis}" is not a benchmark of the selected GL snapshot`);
+    const problem = basisProblemForSnapshot({ benchmarks: snapshotBenchmarks, rows, basis });
+    if (problem) {
+      return bad(c, problem, 400, problem === 'MATERIALITY_BASIS_NOT_IN_SNAPSHOT'
+        ? `Basis "${basis}" is not a benchmark of the selected GL snapshot`
+        : `Basis "${basis}" derives no value from the selected GL snapshot`);
     }
   }
 

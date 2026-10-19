@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { eq } from 'drizzle-orm';
 import { getDb } from '../worker/db';
 import * as schema from '../worker/db/schema';
-import { computeSimulationMateriality } from '@shared/scoping-materiality';
+import { computeSimulationMateriality, basisProblemForSnapshot } from '@shared/scoping-materiality';
 
 /**
  * One-off repair (SK-5/DKU.MBU/11/2024):
@@ -15,6 +15,8 @@ import { computeSimulationMateriality } from '@shared/scoping-materiality';
  * Idempotent: rows already correct are skipped. Run with DATABASE_URL set.
  */
 
+// boundary: `assessmentData` is a jsonb column this feature writes as
+// Record<string, Record<number, string>>; a backfill only reads it back.
 const assessmentDataOf = (value: unknown): Record<string, Record<number, string>> | undefined =>
   value && typeof value === 'object' ? (value as Record<string, Record<number, string>>) : undefined;
 
@@ -36,6 +38,8 @@ async function run() {
 
   // Pass 1 — snapshots whose status lies about having a benchmark.
   for (const snap of snapshots) {
+    // boundary: `benchmarkFsliNames` is a jsonb column; only this feature writes
+    // it, always as a string[].
     const existing = (snap.benchmarkFsliNames as string[] | null) ?? [];
     if (existing.length > 0) {
       benchmarksBySnapshot.set(snap.id, existing);
@@ -54,6 +58,7 @@ async function run() {
     const ordered = [...totals.entries()].sort((a, b) => b[1] - a[1]).map(([name]) => name);
 
     const bases = simulations
+      // boundary: `basis` is a text column; only the scoping routes write it.
       .filter((s) => s.glSnapshotId === snap.id && s.basis)
       .map((s) => s.basis as string);
     const benchmarkFsliNames = [...new Set([...bases, ...ordered])];
@@ -84,9 +89,12 @@ async function run() {
 
     const rows = await db.select().from(schema.glRows).where(eq(schema.glRows.snapshotId, sim.glSnapshotId));
     const benchmarks = benchmarksBySnapshot.get(sim.glSnapshotId) ?? [];
-    const knownBasis = benchmarks.includes(sim.basis) || rows.some((r) => r.fsliName === sim.basis);
-    if (!knownBasis) {
-      console.log(`⏩ Simulation '${sim.name}': basis '${sim.basis}' not found in its snapshot — skipped.`);
+    const problem = basisProblemForSnapshot({ benchmarks, rows, basis: sim.basis });
+    if (problem) {
+      const reason = problem === 'MATERIALITY_BASIS_HAS_NO_VALUE'
+        ? 'derives no value'
+        : 'is not a benchmark of its snapshot';
+      console.log(`⏩ Simulation '${sim.name}': basis '${sim.basis}' ${reason} — skipped.`);
       continue;
     }
 

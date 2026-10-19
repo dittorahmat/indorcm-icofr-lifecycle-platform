@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   aggregateFsliBalances,
+  basisProblemForSnapshot,
   computeSimulationMateriality,
+  deriveMateriality,
   resolveSnapshotStatus,
   type MaterialityFsliRow,
 } from './scoping-materiality';
@@ -222,6 +224,68 @@ describe('computeSimulationMateriality', () => {
     });
 
     expect(result.multiplier).toBe(1);
+  });
+});
+
+/** The chain the server paths and the client editor's live view both run. */
+describe('deriveMateriality', () => {
+  const rows: GLRow[] = [
+    glRow({ id: '1', balance: 1000 }),
+    glRow({ id: '2', balance: -500 }),
+  ];
+
+  it('returns the benchmark -> OM -> PM chain without classifying significance', () => {
+    const derived = deriveMateriality({
+      rows,
+      basis: 'Revenue',
+      omPercentage: 5,
+      haircutPercentage: 25,
+      locationCount: 2,
+    });
+
+    expect(derived).toEqual({ benchmarkValue: 1500, multiplier: 1.5, omValue: 112.5, pmValue: 84.375 });
+  });
+
+  it('is the exact chain computeSimulationMateriality persists', () => {
+    const input = { rows, basis: 'Revenue', omPercentage: 5, haircutPercentage: 25, locationCount: 1 };
+    const { significantAccounts, ...persisted } = computeSimulationMateriality(input);
+
+    expect(persisted).toEqual(deriveMateriality(input));
+    expect(significantAccounts.length).toBeGreaterThan(0);
+  });
+});
+
+/** Single producer of the codes the create route and the backfill branch on. */
+describe('basisProblemForSnapshot', () => {
+  const rows: GLRow[] = [glRow({ id: '1', fsliName: 'Revenue', balance: 1000 })];
+
+  it('accepts a benchmark whose rows can derive a value', () => {
+    expect(basisProblemForSnapshot({ benchmarks: ['Revenue'], rows, basis: 'Revenue' })).toBeNull();
+  });
+
+  it('rejects a basis neither the benchmark list nor any row carries', () => {
+    const problem = basisProblemForSnapshot({ benchmarks: ['Revenue'], rows, basis: 'Sales' });
+
+    expect(problem).toBe('MATERIALITY_BASIS_NOT_IN_SNAPSHOT');
+  });
+
+  it('rejects an empty basis', () => {
+    const problem = basisProblemForSnapshot({ benchmarks: ['Revenue'], rows, basis: '' });
+
+    expect(problem).toBe('MATERIALITY_BASIS_NOT_IN_SNAPSHOT');
+  });
+
+  it('rejects a declared benchmark with no rows to derive from', () => {
+    const problem = basisProblemForSnapshot({ benchmarks: ['Revenue'], rows: [], basis: 'Revenue' });
+
+    expect(problem).toBe('MATERIALITY_BASIS_HAS_NO_VALUE');
+  });
+
+  it('rejects a declared benchmark whose rows all carry a zero balance', () => {
+    const zeroRows = [glRow({ id: '1', fsliName: 'Revenue', balance: 0 })];
+    const problem = basisProblemForSnapshot({ benchmarks: ['Revenue'], rows: zeroRows, basis: 'Revenue' });
+
+    expect(problem).toBe('MATERIALITY_BASIS_HAS_NO_VALUE');
   });
 });
 

@@ -7,6 +7,7 @@ export {
   calculateBenchmarkValue,
   calculateOM,
   calculatePM,
+  deriveMateriality,
   identifySignificantAccounts,
 } from "@shared/scoping-materiality";
 

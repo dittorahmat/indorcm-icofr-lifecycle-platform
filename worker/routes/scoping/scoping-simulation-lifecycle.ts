@@ -218,10 +218,11 @@ simulationLifecycle.post('/simulations/:id/workflow', async (c) => {
     .where(and(eq(simulations.id, id), eq(simulations.organizationId, orgId))).limit(1);
   if (!sim) throw new AppError('SIMULATION_NOT_FOUND', 'Simulation not found', 404);
 
-  // A submit must carry a derived PM: a never-saved simulation would otherwise
-  // reach CFO review (and the Asesmen Manajemen) with a silent 0.
-  if (action === 'Submit' && sim.glSnapshotId && !sim.pmValue) {
-    return bad(c, 'MATERIALITY_NOT_CALCULATED', 400, 'Save the materiality draft before submitting the simulation');
+  // A submit must carry a derived PM — including a simulation with no snapshot
+  // at all, which used to slip past the `glSnapshotId` test and reach CFO review
+  // (and the Asesmen Manajemen) with a silent 0.
+  if (action === 'Submit' && !sim.pmValue) {
+    return bad(c, 'MATERIALITY_NOT_CALCULATED', 400, 'Derive the materiality (snapshot + basis) before submitting the simulation');
   }
 
   const result = await runWorkflowTransition(db, c.env, {

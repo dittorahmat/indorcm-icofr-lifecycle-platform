@@ -63,6 +63,10 @@ export function ScopingEditor({ simulation, onBack }: ScopingEditorProps) {
     }
   };
 
+  /**
+   * The worksheet (intake) is where an application is created; this view keeps
+   * the affordance but only tells the user where the flow lives.
+   */
   const handleQuickAddApp = async () => {
     toast.info(t('editor.quickAddAppUnavailable'));
   };
@@ -123,15 +127,15 @@ export function ScopingEditor({ simulation, onBack }: ScopingEditorProps) {
               type="button"
               className="w-full md:w-8 shrink-0 flex flex-row md:flex-col items-center justify-center md:justify-start py-3 md:py-6 px-4 md:px-0 border border-slate-200 bg-white hover:bg-slate-50 hover:border-indigo-200 rounded-xl cursor-pointer transition-all shadow-sm hover:shadow-md group min-h-[44px] gap-2 md:gap-4 select-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
               onClick={handleToggleParams}
-              title={t('params.show', { defaultValue: 'Show Parameters' })}
-              aria-label={t('params.show', { defaultValue: 'Show Parameters' })}
+              title={t('params.show')}
+              aria-label={t('params.show')}
               aria-expanded={false}
             >
               <Settings2 className="h-4 w-4 text-slate-500 group-hover:text-indigo-600 transition-colors duration-200 shrink-0" />
               <span
                 className="text-xs font-bold uppercase tracking-wider text-slate-700 group-hover:text-indigo-600 transition-colors duration-200 md:[writing-mode:vertical-rl]"
               >
-                {t('params.title', { defaultValue: 'Parameters' })}
+                {t('params.title')}
               </span>
             </button>
           )}

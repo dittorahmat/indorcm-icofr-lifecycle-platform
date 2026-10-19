@@ -219,19 +219,64 @@ export interface SimulationMateriality {
   significantAccounts: SignificantAccount[];
 }
 
+/** The benchmark → OM → PM chain, before significance is classified. */
+export interface DerivedMateriality {
+  benchmarkValue: number;
+  multiplier: number;
+  omValue: number;
+  pmValue: number;
+}
+
 /**
- * Derives the persisted materiality of one simulation from its snapshot rows.
- * Single owner shared by the create route, the submit/backfill paths and the
- * client editor's live view, so the stored PM can never drift from the shown PM.
+ * Derives benchmark → OM → PM from one row set. Single owner of the chain: the
+ * create/submit/backfill paths reach it through `computeSimulationMateriality`,
+ * and the client editor's live view calls it directly over its filtered rows —
+ * so the shown PM and the stored PM run the same arithmetic.
  */
-export function computeSimulationMateriality(input: SimulationMaterialityInput): SimulationMateriality {
-  const { rows, basis, omPercentage, haircutPercentage, locationCount, assessmentData } = input;
+export function deriveMateriality(input: SimulationMaterialityInput): DerivedMateriality {
+  const { rows, basis, omPercentage, haircutPercentage, locationCount } = input;
   const benchmarkValue = calculateBenchmarkValue(rows, basis);
   const multiplier = getGroupMultiplier(Math.max(1, locationCount));
   const omValue = calculateOM(benchmarkValue, omPercentage, multiplier);
-  const pmValue = calculatePM(omValue, haircutPercentage);
-  const significantAccounts = identifySignificantAccounts({ glData: rows, pmValue, assessmentData });
-  return { benchmarkValue, multiplier, omValue, pmValue, significantAccounts };
+  return { benchmarkValue, multiplier, omValue, pmValue: calculatePM(omValue, haircutPercentage) };
+}
+
+/**
+ * Derives the persisted materiality of one simulation from its snapshot rows.
+ * Significance is classified over the raw snapshot rows here; the client's live
+ * view classifies over its department/scope-enriched rows on purpose, so the two
+ * sides share the derivation but not the enrichment.
+ */
+export function computeSimulationMateriality(input: SimulationMaterialityInput): SimulationMateriality {
+  const derived = deriveMateriality(input);
+  const significantAccounts = identifySignificantAccounts({
+    glData: input.rows,
+    pmValue: derived.pmValue,
+    assessmentData: input.assessmentData,
+  });
+  return { ...derived, significantAccounts };
+}
+
+/** Why a chosen basis cannot produce a materiality from a snapshot. */
+export type SnapshotBasisProblem = 'MATERIALITY_BASIS_NOT_IN_SNAPSHOT' | 'MATERIALITY_BASIS_HAS_NO_VALUE';
+
+/**
+ * Why `basis` cannot derive a materiality from this snapshot, or null when it
+ * can. Membership alone is not enough: a benchmark the snapshot still lists but
+ * whose rows are gone derives OM/PM 0 — the stored zero these paths exist to
+ * prevent. Single producer of both codes; the create route and the backfill
+ * script branch on the value returned here.
+ */
+export function basisProblemForSnapshot(params: {
+  benchmarks: readonly string[];
+  rows: readonly GLRow[];
+  basis: string;
+}): SnapshotBasisProblem | null {
+  const { benchmarks, rows, basis } = params;
+  if (!basis || (!benchmarks.includes(basis) && !rows.some((r) => r.fsliName === basis))) {
+    return 'MATERIALITY_BASIS_NOT_IN_SNAPSHOT';
+  }
+  return calculateBenchmarkValue(rows, basis) > 0 ? null : 'MATERIALITY_BASIS_HAS_NO_VALUE';
 }
 
 /**

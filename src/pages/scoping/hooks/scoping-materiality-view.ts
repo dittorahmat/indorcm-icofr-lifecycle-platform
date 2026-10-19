@@ -1,9 +1,6 @@
 import {
-  calculateBenchmarkValue,
-  calculateOM,
-  calculatePM,
   calculateScopingCompliance,
-  getGroupMultiplier,
+  deriveMateriality,
   getRowScopeClassification,
   identifySignificantAccounts,
 } from '../services/materiality-calc';
@@ -61,11 +58,14 @@ export function computeMaterialityView(inputs: MaterialityViewInputs) {
   if (filteredRows.length === 0 || !snapshotPresent) {
     return { omValue: 0, pmValue: 0, multiplier: 1, benchmarkValue: 0, mergedGlData: [], significantAccounts: [], scopingCompliance: null };
   }
-  const benchmarkValue = calculateBenchmarkValue(filteredRows, basis);
   const entityCount = inputs.entityCount ?? selectedEntityCodes.length ?? 1;
-  const multiplier = getGroupMultiplier(Math.max(1, entityCount));
-  const omValue = calculateOM(benchmarkValue, omPercentage, multiplier);
-  const pmValue = calculatePM(omValue, haircutPercentage);
+  const { benchmarkValue, multiplier, omValue, pmValue } = deriveMateriality({
+    rows: filteredRows,
+    basis,
+    omPercentage,
+    haircutPercentage,
+    locationCount: entityCount,
+  });
   const mergedGlData = filteredRows.map((row) => ({
     ...row,
     assignedDepartmentIds: deptMappings[row.noGL] || [],
