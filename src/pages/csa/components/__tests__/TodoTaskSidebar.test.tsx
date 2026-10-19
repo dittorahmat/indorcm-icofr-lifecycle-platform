@@ -42,7 +42,7 @@ describe('TodoTaskSidebar', () => {
         type: 'CSA',
         status: 'Pending',
         plannedDate: '2026-06-20',
-        eventType: 'SCHEDULE',
+        eventType: 'SCHEDULE' as const,
         bpmProcessId: 'proc-1',
       },
     ];
