@@ -6,6 +6,12 @@
 # Runs only the deterministic delta gates (seconds). Full type-check / lint /
 # test stay in CI (verify.yml) - they take minutes on this repo.
 #
+# check:loc is deliberately NOT here even though it is delta-shaped: its
+# grandfather rule can demand a split for a file you only bug-fixed, and a hook
+# that blocks a legitimate one-line fix teaches `git commit --no-verify`, which
+# would cost the three gates below their teeth. It runs in CI instead, where a
+# failing gate is a review conversation rather than an obstacle to committing.
+#
 # Known property of every gate here: it reads the WORKING TREE file, not the
 # staged blob. Content staged and then edited again is therefore judged as it
 # is on disk; re-stage before committing or the gate is judging something else.
@@ -13,7 +19,6 @@ STAGED=$(git diff --cached --name-only --diff-filter=ACMR -- src shared worker s
 if [ -z "$STAGED" ]; then
   exit 0
 fi
-node scripts/check-loc.mjs $STAGED || exit 1
 node scripts/check-any-delta.mjs $STAGED || exit 1
 node scripts/check-i18n.mjs $STAGED || exit 1
 node scripts/check-worker-strings.mjs $STAGED || exit 1
