@@ -4,23 +4,13 @@ import { toast } from 'sonner';
 import type { Edge, Node } from 'reactflow';
 import { api } from '@/lib/api-client';
 import { exportBpmToPdf } from '../utils/export-bpm-pdf';
-import { sanitizeEdgesForSave, sanitizeNodesForSave } from '../utils/sanitize-bpm-nodes';
+import {
+  projectDiagramSavePayload,
+  type BpmSavePayload,
+} from './bpm-diagram-projection';
 import type { TranslateFn } from './bpm-editor-hook-types';
 
-export interface BpmSavePayload {
-  nodes: ReturnType<typeof sanitizeNodesForSave>;
-  edges: ReturnType<typeof sanitizeEdgesForSave>;
-  name: string;
-  subProcess: string;
-  year: number;
-  noGLs: string[];
-  metadata: {
-    signatures: Record<string, string>;
-    globalScale: number;
-    sheets?: any[];
-    activeSheetId?: string;
-  };
-}
+export type { BpmSavePayload };
 
 interface UseBPMEditorPersistenceParams {
   diagramId: string;
@@ -93,21 +83,19 @@ export function useBPMEditorPersistence({
   });
 
   const buildPayload = React.useCallback((): BpmSavePayload => {
-    return {
-      nodes: sanitizeNodesForSave(nodes),
-      edges: sanitizeEdgesForSave(edges),
-      name: subProcess,
+    return projectDiagramSavePayload({
+      nodes,
+      edges,
       subProcess,
-      year: diagramYear || parseInt(workingYear),
-      noGLs: selectedGLs,
-      metadata: {
-        ...diagramMetadata,
-        signatures,
-        globalScale,
-        sheets,
-        activeSheetId,
-      },
-    };
+      diagramYear,
+      workingYear,
+      selectedGLs,
+      diagramMetadata,
+      signatures,
+      globalScale,
+      sheets,
+      activeSheetId,
+    });
   }, [nodes, edges, subProcess, diagramYear, workingYear, selectedGLs, diagramMetadata, signatures, globalScale, sheets, activeSheetId]);
 
   const handleSave = React.useCallback(() => {

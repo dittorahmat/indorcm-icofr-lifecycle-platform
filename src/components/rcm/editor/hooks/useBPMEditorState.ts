@@ -8,6 +8,21 @@ import type { Settings, BPMProcess } from '@shared/types';
 import { useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
 import { useConfirm } from '@/hooks/use-confirm';
 import { unmappedControlsFrom } from '@shared/control-linkage';
+import {
+  SIGNATURE_FIELDS,
+  comparableDiagramEdges,
+  comparableDiagramNodes,
+  projectSignatures,
+} from './bpm-diagram-projection';
+
+/** Locale-stable sign-off date; an unparseable/absent stamp renders empty. */
+function formatSignatureDate(timestamp: number | undefined): string {
+  try {
+    return format(new Date(Number(timestamp)), 'dd/MM/yyyy');
+  } catch {
+    return '';
+  }
+}
 
 interface UseBPMEditorStateProps {
   diagramId: string;
@@ -94,60 +109,17 @@ export function useBPMEditorState({
 
   useEffect(() => {
     if (diagram) {
-      const savedSigs = diagram.metadata?.signatures || {};
-      const history = bpmProcess?.workflowHistory || [];
-      const submitAction = history.find((h: any) => h.action === 'Submit');
-      const reviewAction = history.find((h: any) => h.action === 'Review');
-      const approveAction = history.find((h: any) => h.action === 'Approve');
-
-      const formatTimestamp = (ts: number) => {
-        try {
-          return format(new Date(ts), 'dd/MM/yyyy');
-        } catch {
-          return '';
-        }
-      };
-
-      setSignatures({
-        lini1Name:
-          savedSigs.lini1Name !== undefined
-            ? savedSigs.lini1Name
-            : submitAction?.userId
-            ? getUserName(submitAction.userId)
-            : getUserName(diagram.createdBy || ''),
-        lini1Date:
-          savedSigs.lini1Date !== undefined
-            ? savedSigs.lini1Date
-            : submitAction
-            ? formatTimestamp(submitAction.timestamp)
-            : '',
-        lini2Name:
-          savedSigs.lini2Name !== undefined
-            ? savedSigs.lini2Name
-            : reviewAction?.userId
-            ? getUserName(reviewAction.userId)
-            : '',
-        lini2Date:
-          savedSigs.lini2Date !== undefined
-            ? savedSigs.lini2Date
-            : reviewAction
-            ? formatTimestamp(reviewAction.timestamp)
-            : '',
-        cfoName:
-          savedSigs.cfoName !== undefined
-            ? savedSigs.cfoName
-            : approveAction?.userId
-            ? getUserName(approveAction.userId)
-            : '',
-        cfoDate:
-          savedSigs.cfoDate !== undefined
-            ? savedSigs.cfoDate
-            : approveAction
-            ? formatTimestamp(approveAction.timestamp)
-            : '',
-      });
+      setSignatures(
+        projectSignatures({
+          saved: diagram.metadata?.signatures,
+          workflowHistory: bpmProcess?.workflowHistory,
+          createdBy: diagram.createdBy,
+          resolveUserName: getUserName,
+          formatDate: formatSignatureDate,
+        }),
+      );
     }
-  }, [diagram, bpmProcess, users, getUserName]);
+  }, [diagram, bpmProcess, getUserName]);
 
   const { data: activeSim } = useActiveSimulation(workingYear);
   const { data: activeSnap } = useSimulationSnapshot(activeSim?.glSnapshotId);
@@ -226,82 +198,26 @@ export function useBPMEditorState({
 
   const isDirty = useMemo(() => {
     if (!diagram || isLocked) return false;
-    const currentNodes = JSON.stringify(nodes.map((n) => ({ id: n.id, position: n.position, data: n.data })));
-    const originalNodes = JSON.stringify(
-      (diagram.nodes || localizedInitialNodes).map((n: any) => ({
-        id: n.id,
-        position: n.position,
-        data: n.data,
-      }))
+
+    const initialSignatures = projectSignatures({
+      saved: diagram.metadata?.signatures,
+      workflowHistory: bpmProcess?.workflowHistory,
+      createdBy: diagram.createdBy,
+      resolveUserName: getUserName,
+      formatDate: formatSignatureDate,
+    });
+    const signaturesChanged = SIGNATURE_FIELDS.some(
+      (field) => signatures[field] !== initialSignatures[field],
     );
-    const currentEdges = JSON.stringify(edges.map((e) => ({ id: e.id, source: e.source, target: e.target })));
-    const originalEdges = JSON.stringify(
-      (diagram.edges || []).map((e: any) => ({ id: e.id, source: e.source, target: e.target }))
-    );
-
-    const savedSigs = diagram.metadata?.signatures || {};
-    const history = bpmProcess?.workflowHistory || [];
-    const submitAction = history.find((h: any) => h.action === 'Submit');
-    const reviewAction = history.find((h: any) => h.action === 'Review');
-    const approveAction = history.find((h: any) => h.action === 'Approve');
-
-    const formatTimestamp = (ts: number) => {
-      try {
-        return format(new Date(ts), 'dd/MM/yyyy');
-      } catch {
-        return '';
-      }
-    };
-
-    const initialLini1Name =
-      savedSigs.lini1Name !== undefined
-        ? savedSigs.lini1Name
-        : submitAction?.userId
-        ? getUserName(submitAction.userId)
-        : getUserName(diagram.createdBy || '');
-    const initialLini1Date =
-      savedSigs.lini1Date !== undefined
-        ? savedSigs.lini1Date
-        : submitAction
-        ? formatTimestamp(submitAction.timestamp)
-        : '';
-    const initialLini2Name =
-      savedSigs.lini2Name !== undefined
-        ? savedSigs.lini2Name
-        : reviewAction?.userId
-        ? getUserName(reviewAction.userId)
-        : '';
-    const initialLini2Date =
-      savedSigs.lini2Date !== undefined
-        ? savedSigs.lini2Date
-        : reviewAction
-        ? formatTimestamp(reviewAction.timestamp)
-        : '';
-    const initialCfoName =
-      savedSigs.cfoName !== undefined
-        ? savedSigs.cfoName
-        : approveAction?.userId
-        ? getUserName(approveAction.userId)
-        : '';
-    const initialCfoDate =
-      savedSigs.cfoDate !== undefined
-        ? savedSigs.cfoDate
-        : approveAction
-        ? formatTimestamp(approveAction.timestamp)
-        : '';
-
-    const sigsChanged =
-      signatures.lini1Name !== initialLini1Name ||
-      signatures.lini1Date !== initialLini1Date ||
-      signatures.lini2Name !== initialLini2Name ||
-      signatures.lini2Date !== initialLini2Date ||
-      signatures.cfoName !== initialCfoName ||
-      signatures.cfoDate !== initialCfoDate;
 
     const savedScale = diagram.metadata?.globalScale || 100;
-    const scaleChanged = globalScale !== savedScale;
 
-    return currentNodes !== originalNodes || currentEdges !== originalEdges || sigsChanged || scaleChanged;
+    return (
+      comparableDiagramNodes(nodes) !== comparableDiagramNodes(diagram.nodes || localizedInitialNodes) ||
+      comparableDiagramEdges(edges) !== comparableDiagramEdges(diagram.edges || []) ||
+      signaturesChanged ||
+      globalScale !== savedScale
+    );
   }, [nodes, edges, diagram, isLocked, localizedInitialNodes, signatures, bpmProcess, getUserName, globalScale]);
 
   const handleSwitchGLContext = useCallback(
