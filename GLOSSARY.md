@@ -72,3 +72,31 @@ _Avoid_: vector cache (generik)
 ### Provider Prompt Cache Adapter
 Optimasi opsional di belakang seam `AiCache`: memakai cache prefix bawaan provider (mis. Gemini `cachedContent`) bila tersedia, no-op bila tidak.
 _Avoid_: Gemini cache (spesifik-vendor sebagai istilah umum)
+
+### Node Type Registry (Satu Pemilik Tipe Simpul)
+Modul data `shared/bpm-node-registry.ts` yang menjadi satu-satunya pemilik identitas tipe simpul BPM: dimensi kanvas + kunci label editor (`bpm:editor.nodes.*`) untuk seluruh 40 anggota `BPMNodeType`. Kolom kanvas (renderer), palette bentuk, pembuatan simpul, dan badge OCR mengonsumsi registry ini alih-alih menyimpan salinan masing-masing. Otorisasi pengecualian YAGNI: `docs/adr/0008-bpm-node-type-registry.md`.
+_Avoid_: bpm-node-types sebagai "registry" (itu daftar literal), DEFAULT_NODE_DIMENSIONS (tabel dimensi kedua, sudah dihapus)
+
+### Renderer Parity (Kesejajaran Renderer)
+Jaminan kompilasi bahwa setiap anggota `BPMNodeType` punya renderer di peta `bpm-canvas-types.ts` (`satisfies Record<BpmNodeType, unknown>`) dan tidak ada kunci di luarnya. Kunci non-`BpmNodeType` dari diagram lama masuk sebagai `LEGACY_NODE_RENDERERS`, bukan sebagai tipe simpul baru. Cacat yang pernah terjadi: `risk` dan `control` bisa dipersistensikan tanpa renderer sehingga React Flow menggambar simpul default diam-diam.
+_Avoid_: "nodeTypes fallback" sebagai perilaku yang dapat diterima
+
+### Canonical Handle Id (Id Handle Kanonik)
+Id handle yang benar-benar dirender kanvas (`top-src`, `bottom`, `left-src`, `right`, `bottom-tgt`, `right-tgt`, …) dan satu-satunya yang boleh ditulis oleh kode baru (auto-layout). Tabel sisi `CANONICAL_SOURCE_HANDLES`/`CANONICAL_TARGET_HANDLES` tinggal di `utils/bpm-constants.ts`.
+_Avoid_: menulis id lama dari kode baru
+
+### Legacy Handle Alias (Alias Handle Lama)
+Id handle yang tersimpan pada diagram hasil build lama dan tidak pernah dirender (`t-c-src`, `b-c-tgt`, `m-r-src`, `m-l-src`) atau id sisi lama (`left` source, `right` target). Boleh dibaca permanen via `canonicalizeHandleId`/`sideFromHandleAlias`; tidak boleh ditulis. Keputusan: tanpa migrasi data.
+_Avoid_: melepas tabel alias (diagram lama akan kehilangan sisi koneksi)
+
+### Canvas Hydration (Seam Hidrasi Kanvas)
+`src/components/rcm/editor/canvas-hydration.ts`: satu tempat yang mengubah simpul/edge tersimpan atau ter-stage menjadi simpul/edge kanvas hidup — `canvasNodeChrome` (draggable/zIndex/dragHandle), `canvasNodeHandlers` (callback hidup), `hydrateCanvasEdge(s)` + `bridgeEdgeOptions` (gaya edge bridge + perbaikan handle). Tiga pemanggil lama (loader diagram, jalur OCR, document view) menyimpang satu sama lain.
+_Avoid_: bridgeEdgeStyle per-modul, `.swimlane-drag-handle` sebagai literal tersebar
+
+### Worksheet Row (Baris Worksheet)
+Bentuk baris tunggal `WorksheetRow` (`src/components/bpm/worksheet-row.ts`) yang dibaca kedua renderer worksheet: tabel desktop (lewat accessor react-table atas kolom `Control` yang sama) dan kartu ringkas mobile (lewat `toWorksheetRow`). Pendampingnya adalah `WorksheetRowCommit` — satu seam tulis per-baris (`saveField` debounce, `patch`, `remove`, `openDiagramFor`) yang menggantikan lima objek mutasi yang dulu dioper ke pabrik kolom.
+_Avoid_: memilih field baris per-renderer di dalam cell/kartu
+
+### Diagram Projection (Projeksi Diagram Editor)
+`src/components/rcm/editor/hooks/bpm-diagram-projection.ts`: proyeksi murni sesi editor — `projectSignatures` (rantai fallback tanda tangan: tersimpan → riwayat workflow → penulis), `comparableDiagramNodes/Edges` (himpunan pembanding `isDirty`), dan `projectDiagramSavePayload` (body `PUT /bpm-diagrams/:id`). Himpunan pembanding `isDirty` adalah keputusan produk dan dikunci test, bukan efek samping refactor.
+_Avoid_: merakit ulang blok tanda tangan di dalam hook state

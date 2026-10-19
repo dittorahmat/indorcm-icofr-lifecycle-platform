@@ -82,6 +82,33 @@ reports stay as the evidence snapshot of the round that produced them.
 | 8 | `arch/deepen-8-review` (stacked on #92) | worker C6 `bpm-service.ts` 559 → 306 + `bpm-match` / `bpm-process-hierarchy` / `bpm-diagrams` seams · worker C4 simulation lifecycle on the canonical table, `as never` 9 → 0 · client C3 one testing-row + column owner · client C6 `SettingsPage` 478 → 59, cache-as-draft · client C4 one IDR owner. Gate added: `check:worker-strings` |
 | 9 | `arch/deepen-9-review` / #94 | worker C2 `users.ts` 471 → 351 (dev-route split + ONE owner for the three webhook payload shapes) · worker C7 `rcm-matrix-service.ts` 327 → 132 (one builder; per-kind difference as data). Round deliberately cut short — the provider rate limit killed 5 of 5 spawned agents |
 | 10 | `arch/round10-queue` / #108 | backlog published to the tracker (13 issues, `ready-for-agent` + `ready-for-human`), then the queue worked: **#98** `SOCMonitoringPage` 513 → 146 + one badge seam (zero tests → 21) · **#101** the mutating flow-prefix GET → POST + `rbac(['Admin'])` + tenant-explicit. Issue **#107** filed for the `rcm:soc.*` bundle entries |
+| 11 | `arch/round11-bpm-node-registry` | scope: BPM editor + worksheet, 8 candidates landed as 4 batches. **C4** one handle-alias table (`normalizeSide` delegates) · **C7** one severity/rating tone owner `src/lib/badge-tone.ts` (Medium no longer renders as Low in `ControlTestCard`) · **C8** node inspector asks `groupPairsByRisk` instead of re-grouping (5 `any` → 0) · **C6** `useBPMPage` 394 → deleted, split into scoping-selection/hierarchy/mutation hooks + `BPMPage` 452 → 283 · **C1** `shared/bpm-node-registry.ts` one node-type owner (`output` removed, `risk`/`control` renderers added, palette 32 buttons → config array, `useBPMNodeOperations` 4 → 3 `any`) · **C2** `canvas-hydration.ts` one node/edge seam, auto-layout writes canonical handles · **C3** `bpm-diagram-projection.ts` owns signatures + dirty set + save payload (`useBPMEditorState` 324 → 244) · **C5** `worksheet-row.ts` one row shape + one row commit seam (columns `any` 7 → 0, `BPMWorksheet` 390 → 342). Docs: ADR 0008, 8 glossary terms |
+
+## Round 11 follow-ups (disclosed, deliberately not landed)
+
+- **The desktop worksheet's `bpmCode` column binds a property `Control` does not
+  have.** `controls` stores `code` (`worker/db/schema/rcm-bpm.ts`), but the column
+  reads/commits `bpmCode`, so it always shows its placeholder and PUTs a stray
+  field. C5 preserved that behaviour exactly (the mobile card reads `code` via
+  `WorksheetRow.code`) rather than silently changing what the save sends — fixing
+  it needs a decision on the `PUT /controls/:id` contract.
+- **OCR badge copy stayed on `ocr.shapes.*`** (descriptive: "Decision (Diamond)")
+  instead of converging on the editor's short node labels. ADR 0008 records why.
+- **`BPMWorksheetColumns.tsx` still holds ~14 hardcoded column headers** in
+  Indonesian/English (plus placeholders). The round localized only the strings it
+  moved or added (`viewFlow`, `createFlow`, `subProcessRequired`,
+  `deleteRowConfirm`, `hideProcedure`, `setProcedure`, `deleteFailed`,
+  `createFlowFailed`) and swapped the worksheet title/description onto the
+  existing `worksheet.title`/`worksheet.description` keys.
+- **`canvasNodeChrome` unified two `zIndex` dialects.** The OCR path used
+  `node.zIndex ?? 10`, the loader added the `badge_` → 20 rule; the seam keeps the
+  badge rule for both. Identical on every path that exists today, but it is a
+  behaviour merge rather than a pure move.
+- **`bpm-node-registry.ts` covers 40 types but not the OCR option roster.** The
+  `OCR_NODE_TYPE_OPTIONS` member set was left untouched; only a parity test ties
+  its keys to known node types.
+- **Non-Lampiran-3 palette shapes were not trimmed** (C1 was consistency-only).
+  The palette still offers flowchart shapes beyond the six Lampiran 3 symbols.
 
 ## Round 9 follow-ups (disclosed, deliberately not landed)
 
