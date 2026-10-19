@@ -1,35 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ResponsiveGridLayout, useContainerWidth } from 'react-grid-layout';
-import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { LayoutGrid, Loader2, Plus, RotateCcw, Settings2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { api } from '@/lib/api-client';
 import { useOrganizationBranding } from '@/hooks/use-organization-branding';
-import { useUserPreferences, useSaveUserPreferences } from '@/hooks/useUserPreferences';
 import { DashboardWidgetCard } from './DashboardWidgetCard';
 import { DashboardWidgetBody, type DashboardSummary } from './dashboard-widget-body';
-import {
-  BREAKPOINT_COLS,
-  WIDGET_CATALOG,
-  activeWidgetIds,
-  addCustomWidget,
-  defaultLayouts,
-  patchWidget,
-  readStoredLayouts,
-  reconcileLayout,
-  toggleWidget,
-  widgetTitleKey,
-  type Layouts,
-  type WidgetLayout,
-} from './dashboard-layout';
-
-interface CurrentUser {
-  role?: string;
-}
+import { useDashboardDraft } from './useDashboardDraft';
+import { BREAKPOINT_COLS, WIDGET_CATALOG, activeWidgetIds, widgetTitleKey, type WidgetLayout } from './dashboard-layout';
 
 interface CustomizableDashboardProps {
   summaryData?: DashboardSummary;
@@ -39,47 +20,23 @@ interface CustomizableDashboardProps {
 const GRID_BREAKPOINTS = { lg: 1200, md: 996, sm: 768 };
 
 /**
- * The dashboard orchestrator: it owns the draft, the writes and the grid, and
- * composes the card + body. Everything it used to compute inline — placement,
- * add/remove/patch rules, the widget roster, the default titles — lives in
- * `dashboard-layout.ts`; the widgets' content lives in `dashboard-widget-body`.
+ * The dashboard orchestrator: it composes the control bar, the grid and the
+ * catalog, and hands every layout edit to the draft. The algebra lives in
+ * `dashboard-layout.ts`, the draft (and its cache-as-truth write) in
+ * `useDashboardDraft`, the widget content in `dashboard-widget-body`.
  */
 export function CustomizableDashboard({ summaryData, isEffective }: CustomizableDashboardProps) {
   const { t } = useTranslation(['reports', 'common']);
   const { companyName } = useOrganizationBranding();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [layouts, setLayouts] = useState<Layouts>(defaultLayouts);
   const { width, containerRef, mounted } = useContainerWidth();
-
-  // The role decides which grid a first-time visitor gets.
-  const { data: currentUser } = useQuery<CurrentUser>({
-    queryKey: ['currentUser'],
-    queryFn: () => api<CurrentUser>('/api/user/me'),
-  });
-
-  const { data: savedPrefs, isLoading: isPrefsLoading } = useUserPreferences();
-  const savePrefMutation = useSaveUserPreferences();
-
-  useEffect(() => {
-    const stored = readStoredLayouts(savedPrefs?.layout);
-    if (stored) {
-      setLayouts(stored);
-    } else if (currentUser?.role) {
-      setLayouts(defaultLayouts());
-    }
-  }, [savedPrefs, currentUser]);
-
-  const apply = (next: Layouts, flush: 'now' | 'debounced') => {
-    setLayouts(next);
-    if (flush === 'now') savePrefMutation.mutate(next);
-    else savePrefMutation.mutateDebounced(next);
-  };
+  const draft = useDashboardDraft();
 
   const titleOf = (item: WidgetLayout) => item.title ?? t(widgetTitleKey(item.i));
   const clusterName = companyName.toLowerCase().includes('bank') ? 'Financial (BUMN Cluster)' : 'Mining & Energy';
-  const activeWidgets = activeWidgetIds(layouts);
+  const activeWidgets = activeWidgetIds(draft.layouts);
 
-  if (isPrefsLoading) {
+  if (draft.isLoading) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -93,7 +50,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
         <div className="flex items-center gap-2">
           <LayoutGrid className="h-5 w-5 text-slate-500" />
           <span className="text-sm font-bold text-slate-700">{t('customizableDashboard.title')}</span>
-          {savePrefMutation.isPending && (
+          {draft.isSaving && (
             <Badge variant="secondary" className="bg-slate-200 text-slate-700 text-xs font-medium flex items-center gap-1">
               <Loader2 className="h-3 w-3 animate-spin" />
               {t('customizableDashboard.saving')}
@@ -106,7 +63,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
             variant="outline"
             size="sm"
             className="gap-1.5 text-xs font-bold bg-white text-slate-700 w-full min-[420px]:w-auto justify-center min-h-[44px]"
-            onClick={() => apply(addCustomWidget(layouts, `custom-${Date.now()}`), 'now')}
+            onClick={() => draft.addCustomWidget()}
           >
             <Plus className="h-3.5 w-3.5 text-slate-500" />
             {t('customizableDashboard.addCustomChart')}
@@ -126,7 +83,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
             variant="ghost"
             size="sm"
             className="gap-1.5 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 font-bold w-full min-[420px]:w-auto justify-center min-h-[44px]"
-            onClick={() => apply(defaultLayouts(), 'now')}
+            onClick={() => draft.reset()}
           >
             <RotateCcw className="h-3.5 w-3.5" />
             {t('customizableDashboard.resetLayout')}
@@ -139,22 +96,22 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
           {mounted && (
             <ResponsiveGridLayout
               className="layout"
-              layouts={layouts}
+              layouts={draft.layouts}
               width={width}
               breakpoints={GRID_BREAKPOINTS}
               cols={BREAKPOINT_COLS}
               rowHeight={100}
-              onLayoutChange={(_current, all) => apply(reconcileLayout(layouts, all), 'debounced')}
+              onLayoutChange={(_current, all) => draft.reconcile(all)}
               dragConfig={{ handle: '.widget-header' }}
               margin={[16, 16]}
             >
-              {layouts.lg.map((item) => (
+              {draft.layouts.lg.map((item) => (
                 <div key={item.i}>
                   <DashboardWidgetCard
                     item={item}
                     title={titleOf(item)}
-                    onPatch={(patch) => apply(patchWidget(layouts, item.i, patch), 'debounced')}
-                    onRemove={() => apply(toggleWidget(layouts, item.i), 'debounced')}
+                    onPatch={(patch) => draft.patchWidget(item.i, patch)}
+                    onRemove={() => draft.toggleWidget(item.i)}
                   >
                     <DashboardWidgetBody
                       item={item}
@@ -190,7 +147,7 @@ export function CustomizableDashboard({ summaryData, isEffective }: Customizable
                   <Switch
                     id={`widget-switch-${widget.id}`}
                     checked={activeWidgets.includes(widget.id)}
-                    onCheckedChange={() => apply(toggleWidget(layouts, widget.id), 'debounced')}
+                    onCheckedChange={() => draft.toggleWidget(widget.id)}
                   />
                 </div>
               ))}

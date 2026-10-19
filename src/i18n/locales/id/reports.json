@@ -134,6 +134,7 @@
     "noData": "Belum ada data",
     "noSummaryMetrics": "Belum ada metrik ringkasan",
     "unsupported": "Format tidak didukung",
+    "saveFailed": "Gagal menyimpan tata letak dasbor. Silakan coba lagi.",
     "kpi": {
       "entityCluster": "Klaster Entitas",
       "lastReview": "Review Terakhir",
