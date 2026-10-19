@@ -14,6 +14,7 @@ import {
   SAFE_HEADER_CEILING,
 } from '../bpm-geometry';
 import { getOrthogonalPath } from '../orthogonal-router';
+import { sideFromHandleAlias } from '../../../../../utils/bpm-constants';
 import {
   normalizeHandlePosition,
   getDistributedPoint,
@@ -92,6 +93,37 @@ describe('normalizeSide (plain anchors, no canvas internals)', () => {
   it('uses the source/target default when no geometry is available', () => {
     expect(normalizeSide({ isSource: true })).toBe('bottom');
     expect(normalizeSide({ isSource: false })).toBe('top');
+  });
+
+  it('resolves legacy handle ids through the single alias owner in bpm-constants', () => {
+    const legacy = [
+      ['t-l', 'top-left'],
+      ['t-l-src', 'top-left'],
+      ['t-r', 'top-right'],
+      ['b-l-src', 'bottom-left'],
+      ['b-r', 'bottom-right'],
+      ['m-l', 'left'],
+      ['left-src', 'left'],
+      ['no', 'left'],
+      ['m-r-src', 'right'],
+      ['right-tgt', 'right'],
+      ['yes', 'right'],
+      ['t-c-src', 'top'],
+      ['qc-top', 'top'],
+      ['b-c-tgt', 'bottom'],
+      ['qc-bottom', 'bottom'],
+    ] as const;
+
+    for (const [handleId, side] of legacy) {
+      expect(sideFromHandleAlias(handleId)).toBe(side);
+      expect(normalizeSide({ handleId, isSource: true })).toBe(side);
+      expect(normalizeSide({ handleId, isSource: false })).toBe(side);
+    }
+  });
+
+  it('leaves unmatched handle ids to the geometric fallback', () => {
+    expect(sideFromHandleAlias('mystery-handle')).toBeNull();
+    expect(normalizeSide({ handleId: 'mystery-handle', position: 'right', isSource: true })).toBe('right');
   });
 });
 

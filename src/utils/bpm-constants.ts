@@ -118,7 +118,12 @@ export const CANONICAL_TARGET_HANDLES: Record<BpmEdgeSide, string> = {
 // Decision sources render under their own DOM ids, not the 8-handle set.
 const DECISION_SOURCE_ALIASES = new Set(['no', 'yes']);
 
-function sideFromHandleAlias(handleId: string): BpmEdgeSide | null {
+/**
+ * The ONE handle-id → side table. Legacy ids that stored diagrams still carry
+ * (`t-c-src`, `b-c-tgt`, `m-r-src`, …) resolve here, so the geometry module
+ * never keeps a second copy of this sequence.
+ */
+export function sideFromHandleAlias(handleId: string): BpmEdgeSide | null {
   if (handleId === 't-l' || handleId === 't-l-src') return 'top-left';
   if (handleId === 't-r' || handleId === 't-r-src') return 'top-right';
   if (handleId === 'b-l' || handleId === 'b-l-src') return 'bottom-left';
