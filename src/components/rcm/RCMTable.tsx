@@ -1,13 +1,11 @@
 import React from 'react';
-import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
-} from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, ShieldAlert, Edit2, ChevronRight, Layers, FileText } from 'lucide-react';
+import { Edit2, Layers } from 'lucide-react';
+import { RISK_RATING_TONE_CLASS, riskRatingTone } from '@/lib/badge-tone';
 
 export interface RCMColumn {
   id: string;
@@ -197,9 +195,7 @@ export function RCMTable({
                           variant="outline"
                           className={cn(
                             "text-xs font-medium h-5 px-1.5 rounded uppercase tracking-wider",
-                            riskRating === 'High' ? "bg-rose-50 text-rose-700 border-rose-200" :
-                            riskRating === 'Low' ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
-                            "bg-amber-50 text-amber-700 border-amber-200"
+                            RISK_RATING_TONE_CLASS[riskRatingTone(riskRating)]
                           )}
                         >
                           {riskRating}

@@ -1,5 +1,6 @@
 import {
   getStandardNodeDimensions,
+  sideFromHandleAlias,
   SAFE_HEADER_CEILING,
   type BpmEdgeSide,
 } from '../../../../utils/bpm-constants';
@@ -44,14 +45,12 @@ export interface NormalizeSideInput {
 export function normalizeSide(input: NormalizeSideInput): EdgeSide {
   const { handleId, position, source, target, isSource } = input;
 
-  if (handleId === 't-l' || handleId === 't-l-src') return 'top-left';
-  if (handleId === 't-r' || handleId === 't-r-src') return 'top-right';
-  if (handleId === 'b-l' || handleId === 'b-l-src') return 'bottom-left';
-  if (handleId === 'b-r' || handleId === 'b-r-src') return 'bottom-right';
-  if (handleId === 'm-l' || handleId === 'm-l-src' || handleId === 'left' || handleId === 'no' || handleId?.includes('left')) return 'left';
-  if (handleId === 'm-r' || handleId === 'm-r-src' || handleId === 'right' || handleId === 'yes' || handleId?.includes('right')) return 'right';
-  if (handleId === 'top' || handleId === 't-c-src' || handleId?.includes('top') || handleId?.startsWith('t-') || handleId === 'qc-top') return 'top';
-  if (handleId === 'bottom' || handleId === 'b-c-tgt' || handleId?.includes('bottom') || handleId?.startsWith('b-') || handleId === 'qc-bottom') return 'bottom';
+  // Alias resolution has one owner (bpm-constants); this module owns only the
+  // geometric fallback below.
+  if (handleId) {
+    const aliased = sideFromHandleAlias(handleId);
+    if (aliased) return aliased;
+  }
 
   if (position === 'left') return 'left';
   if (position === 'right') return 'right';

@@ -15,6 +15,8 @@
  * - `null` / `undefined` / non-finite (`NaN`, `±Infinity`) → `'-'`, never `Rp NaN`.
  * - Negatives keep the ICU shape: `-1234` → `-Rp 1.234`.
  */
+import { SEVERITY_TONE_CLASS, severityTone, type SeverityTone } from '@/lib/badge-tone';
+
 const IDR_CURRENCY_FORMAT = new Intl.NumberFormat('id-ID', {
   style: 'currency',
   currency: 'IDR',
@@ -31,32 +33,19 @@ export function formatIDRPlain(value: number | null | undefined): string {
   return typeof value === 'number' && Number.isFinite(value) ? IDR_GROUPED_FORMAT.format(value) : '-';
 }
 
-export type SeverityTone = 'mw' | 'sd' | 'cd';
+const SEVERITY_LABEL: Record<SeverityTone, string> = {
+  mw: 'MW (Kelemahan Material)',
+  sd: 'SD (Defisiensi Signifikan)',
+  cd: 'CD (Defisiensi Kontrol)',
+};
 
-export function getSeverityTone(sev: string): SeverityTone {
-  if (sev === 'Material Weakness') return 'mw';
-  if (sev === 'Significant Deficiency') return 'sd';
-  return 'cd';
-}
-
+/**
+ * Tone and badge class come from the single owner in `@/lib/badge-tone`; this
+ * module contributes only the long-form Indonesian label the DoD report prints.
+ */
 export function getSeverityMeta(sev: string): { label: string; className: string } {
-  switch (getSeverityTone(sev)) {
-    case 'mw':
-      return {
-        label: 'MW (Kelemahan Material)',
-        className: 'bg-red-50 text-red-700 border-red-300 font-semibold text-xs rounded-md',
-      };
-    case 'sd':
-      return {
-        label: 'SD (Defisiensi Signifikan)',
-        className: 'bg-amber-50 text-amber-700 border-amber-300 font-semibold text-xs rounded-md',
-      };
-    default:
-      return {
-        label: 'CD (Defisiensi Kontrol)',
-        className: 'bg-slate-100 text-slate-700 border-slate-300 font-semibold text-xs rounded-md',
-      };
-  }
+  const tone = severityTone(sev);
+  return { label: SEVERITY_LABEL[tone], className: SEVERITY_TONE_CLASS[tone] };
 }
 
 export function checkMark(v: boolean): string {

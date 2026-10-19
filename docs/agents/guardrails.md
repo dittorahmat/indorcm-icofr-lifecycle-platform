@@ -6,11 +6,28 @@ scripts (no deps) plus route-lock tests. Run them before pushing; CI
 
 ## Delta gates (touched files vs a base)
 
+Every gate below answers "did this change introduce MORE of a smell than its
+base version had". The base is the **branch point**, not `HEAD`:
+
+`--base <ref>` when given (CI passes `origin/<base-ref>`) → else the merge-base
+of `HEAD` with `origin/main` (falling back to `main`, `origin/master`,
+`master`) → else `HEAD` in a repo with no base branch. Resolution lives in
+`scripts/lib/delta-base.mjs`, and every gate prints the resolved base in its
+summary line — read it before believing a pass.
+
+Why it is not `HEAD`: "vs `HEAD`" makes the verdict depend on whether you have
+committed. Before `git commit` the base is your pre-change file and the gate
+sees the real delta; after committing, the change *is* `HEAD` and every delta
+collapses to zero. The gate went green exactly when it could no longer see the
+work, and `check:loc`'s grandfather rule was unenforceable as written —
+committing a paydown made the file its own baseline, so the same tree failed
+after the commit that passed before it.
+
 | Gate | Command | Rule |
 | --- | --- | --- |
-| LOC | `npm run check:loc -- <files...>` | Touched `src`/`worker`/`shared` `.ts`/`.tsx` file `>400` non-empty lines fails — except grandfathered files that strictly shrink vs HEAD (bug-fix paydown). Files outside that scope (locale/data JSON, docs, lockfiles) print `SKIP (out of LOC scope)` and never fail: touched mode applies the same scope as `--all`. `--all` scans the repo (fails on `>600`). Local-only: deeper grandfather judgement stays human. |
-| any | `npm run check:any-delta -- [--base <ref>] <files...>` | More `any`/`as any`/`as never`/`as unknown as X` than base fails. Base defaults to `HEAD`; CI passes `--base origin/<base-ref>`. |
-| i18n | `npm run check:i18n -- [--base <ref>] <files...>` | (a) More hardcoded first-arg `toast.*("…")` literals than base fails. Dynamic args (`err.message`, `t('key')`) never match. (b) Any NEW static `t('key')` missing from the `en` locale bundle fails (delta vs base; pre-existing misses grandfathered). Dynamic keys skipped; missing-in-`id`-but-present-in-`en` allowed (English fallback). Test files excluded. Dev logs missing keys via `missingKey` in `src/i18n/config.ts`. |
+| LOC | `npm run check:loc -- [--base <ref>] <files...>` | Touched `src`/`worker`/`shared` `.ts`/`.tsx` file `>400` non-empty lines fails — except grandfathered files that strictly shrink vs the base (bug-fix paydown). Files outside that scope (locale/data JSON, docs, lockfiles) print `SKIP (out of LOC scope)` and never fail: touched mode applies the same scope as `--all`. `--all` scans the repo (fails on `>600`). Enforced in CI (not in the pre-commit hook — see "Local pre-commit" below); the shrink-only rule is mechanical, so no human judgement is needed. Count method: non-empty lines (`scripts/check-loc.mjs`), never raw `Measure-Object -Line`. |
+| any | `npm run check:any-delta -- [--base <ref>] <files...>` | More `any`/`as any`/`as never`/`as unknown as X` than base fails. Base defaults to the branch point; CI passes `--base origin/<base-ref>`. |
+| i18n | `npm run check:i18n -- [--base <ref>] <files...>` | (a) More hardcoded first-arg `toast.*("…")` literals than base fails. Dynamic args (`err.message`, `t('key')`) never match. (b) Any NEW static `t('key')` missing from the `en` locale bundle fails (delta vs base; pre-existing misses grandfathered). Dynamic keys skipped; missing-in-`id`-but-present-in-`en` allowed (English fallback). Test files excluded. Dev logs missing keys via `missingKey` in `src/i18n/config.ts`. Scope note: this gate does NOT see hardcoded copy in JSX text or `header:`/`placeholder:`/`title:` literals — a detector over those fires ~800 times across ~140 existing files (enum values, dates, tokens), so it would fail the next honest change. That half of the mandate is a reviewer rule in `CODING_STANDARDS.md`. |
 | worker prose | `npm run check:worker-strings -- [--base <ref>] <files...>` | More user-facing prose in a worker **code** slot than base fails — `bad(c, 'Kontrol tidak ditemukan')`, `notFound(c, '…')`, or `throw new Error('…')`. The code belongs on a literal union; prose belongs in the message arg (`AppError(code, message, status)`). Scope `worker/**/*.ts`, test files excluded. Baseline 81 findings (grandfathered by the delta; burn down on touch). Whole-tree inventory: `npm run check:worker-strings` (report mode, exits 0). |
 
 ## Contract gates (whole tree)
@@ -41,12 +58,49 @@ requires `onError` user feedback on every touched call site
 (`CODING_STANDARDS.md`); legacy sites burn down boy-scout on touch. Escalate
 the rule to `error` once `npx eslint src` reports zero hits.
 
+## Gates measured and rejected (do not rebuild these)
+
+Both were proposed as mechanical gates and both were killed by measurement, not
+taste. The numbers live here so the next retro does not re-derive them.
+
+- **Hardcoded UI copy detector.** `check:i18n` covers `toast.*` literals and
+  unresolved keys only. A detector over JSX text plus `header` / `placeholder` /
+  `title` / `aria-label` literals fired **804 times across 138 of 308 `.tsx`
+  files**, dominated by enum values rendered raw, dates and format tokens, so a
+  delta gate would fail the next honest change and train people to ignore it.
+  Replacement: the reviewer rule in `CODING_STANDARDS.md`, plus the header-key
+  assertion in `BPMWorksheetColumns.test.ts`.
+- **Doc path existence check** (every repo path named in the agent docs must
+  exist). The 13 agent-facing docs name 334 path tokens; 76 do not resolve, and
+  most are missing *by design*: `docs/agents/arch-hotspots-*.md` are proposal
+  reports naming the modules they propose (`src/lib/format-money.ts`,
+  `shared/assertion-fields.ts`) and the branches to cut (`arch/deepen-7-review`).
+  Restricting the check to the steering docs leaves only directory references
+  (`utils/bpm-auto-layout`) that no extractor resolves without a search path, so
+  the gate would be either noisy or near-empty. Fix a stale pointer by hand.
+
 ## Local pre-commit (fast gates, no new deps)
 
-`.githooks/pre-commit` runs `check:any-delta` + `check:i18n` on staged files
-only (seconds; full type-check/lint/test stay in CI). Enable once per clone:
+`.githooks/pre-commit` runs `check:any-delta` + `check:i18n` +
+`check:worker-strings` on staged files only (seconds; full type-check/lint/test
+stay in CI). It is installed automatically: `package.json` `"prepare"` runs
+`scripts/install-hooks.mjs`, so `npm install` / `npm ci` point
+`core.hooksPath` at `.githooks`. Manual fallback if the hook is ever missing:
 
 `git config core.hooksPath .githooks`
+
+An absent hook is invisible — a fresh clone without it looks exactly like a
+clean one — which is why the install is wired to the package lifecycle instead
+of a README step. The gates read the **working tree** file, not the staged
+blob: re-stage after editing or the gate judges different content than the
+commit will contain.
+
+`check:loc` is NOT in the hook, though it is delta-shaped: its grandfather rule
+can demand a split for a file you only bug-fixed, and a hook that blocks a
+legitimate one-line fix teaches `git commit --no-verify` — which would cost the
+three gates above their teeth. It runs in CI (`verify.yml`, "Repo gates") where
+a failure is a review conversation. Run it yourself before the LOC-sensitive
+part of a change is done (`npm run check:loc -- <files...>`).
 
 ## Tests use the strict i18n mock
 

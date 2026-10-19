@@ -155,3 +155,28 @@ segments must come from an `as const` union (e.g. `tip: 'c' | 'a' | 'v' |
 'ra'`) so `tsc` rejects unknown segments, and the reviewer spot-checks one
 rendered key per union against the `en` bundle. Precedent:
 `RCMComplianceTab.tsx` (`IPO_ITEMS` / `ASSERTION_ITEMS`).
+
+## Hardcoded copy outside the toast gate is a reviewer call
+
+`check:i18n` sees hardcoded `toast.*("…")` literals and unresolved `t()` keys —
+nothing else. Copy typed straight into JSX text, or into `header:` /
+`placeholder:` / `title:` / `aria-label:` literals, passes every gate. A
+detector over those positions was measured and rejected: 804 hits across 138 of
+308 `.tsx` files, most of them legitimate (enum values rendered raw, dates,
+format tokens), so it would fail the next honest change and train people to
+ignore the gate. This rule is what replaces it.
+
+Why: the round-11 worksheet kept `header: 'Dokumen Pendukung'`,
+`placeholder="Isi Proses..."` and nine more while `check:i18n` reported a clean
+pass (it counts toasts: 6 → 6), so the mandate's "no hardcoded text" half looked
+enforced and was not.
+
+Check: scan the diff for user-visible strings in JSX text position and in
+`header` / `placeholder` / `title` / `aria-label` attributes or config keys
+across `src/**/*.tsx`; each must be a `t()` key present in `en` and `id`. Add
+new keys to both bundles in the same change. Exempt: format exemplars
+(`BPM-001`), single-letter data codes (`Y`/`T`), and values that belong to the
+data (an application's own name). Precedent: `BPMWorksheetColumns.tsx`
+(`worksheet.columns.*`, `worksheet.placeholders.*`, `worksheet.options.*`,
+`worksheet.elc.*`), locked by `BPMWorksheetColumns.test.ts`, where every string
+header must match `/^worksheet\./`.

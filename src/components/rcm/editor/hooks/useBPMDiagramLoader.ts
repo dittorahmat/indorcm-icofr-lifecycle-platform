@@ -1,7 +1,6 @@
 import * as React from 'react';
-import { MarkerType } from 'reactflow';
 import type { Edge, Node } from 'reactflow';
-import { canonicalizeHandleId } from '@/utils/bpm-constants';
+import { canvasNodeChrome, canvasNodeHandlers, hydrateCanvasEdges } from '../canvas-hydration';
 
 interface DiagramLike {
   nodes?: Node[];
@@ -45,56 +44,16 @@ export function useBPMDiagramLoader({
       }
       hasLoadedDiagramRef.current = diagramKey;
 
-      const initialNodesWithHandlers = (diagram.nodes?.length ? diagram.nodes : localizedInitialNodes).map((node) => {
-        const isSwimlane = node.type === 'swimlane';
-        const isNodeLocked = !!node.data?.isLocked;
+      const hydrationDeps = { isLocked, toggleNodeLock, updateNodeData, handleSwimlaneResizeEnd };
 
-        const baseNode: Node = {
-          ...node,
-          draggable: !isLocked && !isNodeLocked,
-          zIndex: isSwimlane ? -1 : (node.zIndex ?? (node.id.startsWith('badge_') ? 20 : 10)),
-          dragHandle: isSwimlane ? '.swimlane-drag-handle' : undefined,
-        };
-
-        if (isSwimlane) {
-          baseNode.data = {
-            ...node.data,
-            onToggleLock: () => toggleNodeLock(node.id),
-            onChangeDepartment: (v: string) => updateNodeData(node.id, { department: v }),
-            onChangeFunction: (v: string) => updateNodeData(node.id, { function: v }),
-            onResizeEnd: (params: { width: number; height: number }) => handleSwimlaneResizeEnd(node.id, params),
-          };
-        } else {
-          baseNode.data = {
-            ...node.data,
-            onToggleLock: () => toggleNodeLock(node.id),
-          };
-        }
-        return baseNode;
-      });
+      const initialNodesWithHandlers = (diagram.nodes?.length ? diagram.nodes : localizedInitialNodes).map((node) => ({
+        ...node,
+        ...canvasNodeChrome(node, isLocked),
+        data: { ...node.data, ...canvasNodeHandlers(node, hydrationDeps) },
+      }));
 
       setNodes(initialNodesWithHandlers);
-      setEdges(
-        (diagram.edges || []).map((edge) => ({
-          ...edge,
-          // Repair-on-load (once per diagram): legacy OCR edges may persist
-          // non-existent handle ids (source `left`, target `right`, ...).
-          // Map them to the canonical canvas ids; unknown handles drop to
-          // undefined so geometry fallback derives the side from positions.
-          sourceHandle:
-            (edge.sourceHandle ? canonicalizeHandleId(edge.sourceHandle, true) : null) ?? undefined,
-          targetHandle:
-            (edge.targetHandle ? canonicalizeHandleId(edge.targetHandle, false) : null) ?? undefined,
-          type: 'bridge',
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            width: 20,
-            height: 20,
-            color: '#0f172a',
-          },
-          style: { strokeWidth: 2, stroke: '#0f172a' },
-        })),
-      );
+      setEdges(hydrateCanvasEdges(diagram.edges || []));
     }
   }, [
     diagram,

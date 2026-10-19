@@ -1,6 +1,12 @@
-import { MarkerType } from 'reactflow';
 import type { Edge, Node } from 'reactflow';
 import { canonicalizeHandleId } from '@/utils/bpm-constants';
+import {
+  SWIMLANE_DRAG_HANDLE,
+  bridgeEdgeOptions,
+  canvasNodeChrome,
+  canvasNodeHandlers,
+  isSwimlaneNode,
+} from '../canvas-hydration';
 import {
   deriveLabelFromId,
   layoutOcrDiagram,
@@ -28,14 +34,6 @@ export interface CanvasEnrichmentDeps {
   handleSwimlaneResizeEnd: (laneId: string, params: unknown) => void;
 }
 
-function bridgeEdgeStyle() {
-  return {
-    type: 'bridge',
-    markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#0f172a' },
-    style: { strokeWidth: 2, stroke: '#0f172a' },
-  };
-}
-
 export function normalizeLaidOutNodes(laidOut: OcrLayoutResult): Node[] {
   return laidOut.nodes.map((n) => {
     const isSwimlane = n.type === 'swimlane';
@@ -50,7 +48,7 @@ export function normalizeLaidOutNodes(laidOut: OcrLayoutResult): Node[] {
       height: n.height,
       style: isSwimlane ? { width: n.width || 400, height: n.height || 1200 } : undefined,
       zIndex: isSwimlane ? -1 : 10,
-      dragHandle: isSwimlane ? '.swimlane-drag-handle' : undefined,
+      dragHandle: isSwimlane ? SWIMLANE_DRAG_HANDLE : undefined,
       draggable: true,
       data: isSwimlane
         ? {
@@ -72,7 +70,7 @@ export function normalizeRawEdges(edges: OcrRawEdge[]): Edge[] {
     sourceHandle: canonicalizeHandleId(e.sourceHandle, true) ?? undefined,
     targetHandle: canonicalizeHandleId(e.targetHandle, false) ?? undefined,
     label: e.label || '',
-    ...bridgeEdgeStyle(),
+    ...bridgeEdgeOptions,
   }));
 }
 
@@ -114,32 +112,21 @@ export function stageRawDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] 
 // so staging preview and canvas landing cannot drift apart.
 export function enrichCanvasNodes(nodes: Node[], deps: CanvasEnrichmentDeps): Node[] {
   return nodes.map((node) => {
-    const isSwimlane = node.type === 'swimlane';
     const previous = node.data ?? {};
-    const isNodeLocked = !!previous.isLocked;
-    if (isSwimlane) {
+    const chrome = canvasNodeChrome(node, deps.isLocked);
+    const handlers = canvasNodeHandlers(node, deps);
+    if (isSwimlaneNode(node)) {
       return {
         ...node,
-        draggable: !deps.isLocked && !isNodeLocked,
-        zIndex: -1,
-        dragHandle: '.swimlane-drag-handle',
+        ...chrome,
         style: { width: node.width || 400, height: node.height || 1200, ...(node.style || {}) },
-        data: {
-          ...previous,
-          isLocked: false,
-          onToggleLock: () => deps.toggleNodeLock(node.id),
-          onChangeDepartment: (v: string) => deps.updateNodeData(node.id, { department: v }),
-          onChangeFunction: (v: string) => deps.updateNodeData(node.id, { function: v }),
-          onResizeEnd: (params: unknown) => deps.handleSwimlaneResizeEnd(node.id, params),
-        },
+        data: { ...previous, isLocked: false, ...handlers },
       };
     }
     const regulatoryPairs = Array.isArray(previous.regulatoryPairs) ? previous.regulatoryPairs : [];
     return {
       ...node,
-      draggable: !deps.isLocked && !isNodeLocked,
-      zIndex: node.zIndex ?? 10,
-      dragHandle: undefined,
+      ...chrome,
       style: node.style ? { ...node.style } : undefined,
       data: {
         ...previous,
@@ -148,7 +135,7 @@ export function enrichCanvasNodes(nodes: Node[], deps: CanvasEnrichmentDeps): No
         regulatoryPairs,
         role: previous.role ?? deps.defaultRole,
         isLocked: false,
-        onToggleLock: () => deps.toggleNodeLock(node.id),
+        ...handlers,
       },
     };
   });

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { autoArrangeBpmDiagram } from '../utils/bpm-auto-layout';
-import { DEFAULT_SWIMLANE_DIMENSIONS } from '../utils/bpm-constants';
+import { DEFAULT_SWIMLANE_DIMENSIONS, canonicalHandleForSide } from '../utils/bpm-constants';
 import type { Node, Edge } from 'reactflow';
 
 describe('autoArrangeBpmDiagram', () => {
@@ -76,16 +76,25 @@ describe('autoArrangeBpmDiagram', () => {
     const childN2 = result.nodes.find((n) => n.id === 'n2')!;
     expect(childN1.position.y).toBeLessThan(childN2.position.y);
 
-    // Edges enriched with clean orthogonal handles
+    // Edges enriched with canonical orthogonal handles — the ids the canvas
+    // actually renders. Legacy aliases are read-only, for diagrams saved by
+    // older builds (see `canonicalizeHandleId`).
     const edge1 = result.edges.find((e) => e.id === 'e1')!;
-    // n1 (start) -> n2 (activity)
+    // n1 (start) -> n2 (activity): start nodes carry no source anchor.
     expect(edge1.sourceHandle).toBeUndefined();
     expect(edge1.targetHandle).toBe('top');
 
     // n2 (activity in lane-2) -> n3 (activity in lane-1, horizontal flow to right)
     const edge2 = result.edges.find((e) => e.id === 'e2')!;
-    expect(edge2.sourceHandle).toBe('m-r-src');
-    expect(edge2.targetHandle).toBe('left');
+    expect(edge2.sourceHandle).toBe(canonicalHandleForSide('right', true));
+    expect(edge2.targetHandle).toBe(canonicalHandleForSide('left', false));
+
+    // Auto-layout must never write an alias the canvas cannot render.
+    const legacyAliases = ['m-r-src', 'm-l-src', 't-c-src', 'b-c-tgt'];
+    for (const edge of result.edges) {
+      expect(legacyAliases).not.toContain(edge.sourceHandle);
+      expect(legacyAliases).not.toContain(edge.targetHandle);
+    }
   });
 
   it('should arrange standalone nodes vertically when no swimlanes exist', () => {

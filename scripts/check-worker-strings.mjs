@@ -4,7 +4,9 @@
 //   node scripts/check-worker-strings.mjs [--base <ref>] <files...>   delta gate
 //   node scripts/check-worker-strings.mjs                             whole-tree report
 // Fails when a scanned file produces MORE prose-as-code findings than its
-// <base> version (default HEAD). New files compare against a zero baseline.
+// <base> version. <base> defaults to the branch point (merge-base with
+// origin/main) so the verdict does not change when you commit — see
+// scripts/lib/delta-base.mjs. New files compare against a zero baseline.
 // With no files it prints the whole-worker inventory and always exits 0
 // (burn-down view).
 //
@@ -15,6 +17,7 @@
 // Precedent: the Indonesian sentences thrown from `bpm-service.ts`.
 import { readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
+import { resolveBase } from './lib/delta-base.mjs';
 
 const CODE_ONLY = /^[A-Za-z0-9_.:-]+$/;
 
@@ -79,12 +82,13 @@ function listWorkerFiles() {
 }
 
 const argv = process.argv.slice(2);
-let base = 'HEAD';
+let explicitBase = null;
 const files = [];
 for (let i = 0; i < argv.length; i++) {
-  if (argv[i] === '--base' && argv[i + 1]) base = argv[++i];
+  if (argv[i] === '--base' && argv[i + 1]) explicitBase = argv[++i];
   else if (!argv[i].startsWith('--')) files.push(argv[i]);
 }
+const { ref: base, label: baseLabel } = resolveBase(explicitBase);
 
 // Whole-tree report mode: inventory for the burn-down, never fails.
 if (files.length === 0) {
@@ -138,5 +142,5 @@ for (const raw of files) {
   }
 }
 
-console.log(`\ncheck-worker-strings: ${errors} error(s) across ${files.length} file(s).`);
+console.log(`\ncheck-worker-strings: ${errors} error(s) across ${files.length} file(s) [base: ${baseLabel}].`);
 process.exit(errors > 0 ? 1 : 0);

@@ -23,6 +23,15 @@ killed the host, while the same `tsc` redirected to a file exited 0).
   reserves `<` for future use and kills the command before Python starts
   (observed 2026-10-17). Prefer `default.read`/`default.grep` tools for file
   inspection; reserve `shell` for `git`/`npm`/`npx` only.
+- `Select-String -Path src/**/*.ts` does NOT recurse: PowerShell treats `**`
+  as a single `*`, so it matches exactly one directory level and silently
+  returns a PARTIAL result that reads like "no other consumer exists"
+  (observed 2026-10-19: a `bpmCode` sweep over `src/**/*.ts,src/**/*.tsx` missed
+  `src/components/bpm/worksheet-row.ts`, one directory deeper). Never use a
+  glob with `Select-String` to answer "who uses this": use the `grep` tool
+  (ripgrep, recursive by default), or `Select-String -Path (Get-ChildItem
+  -Recurse -Include *.ts,*.tsx).FullName`. A negative answer from a `**` glob
+  means nothing.
 - No custom vitest reporters (`--reporter=basic` does not exist; observed
   2026-10-17 startup error). Bare `npx vitest run <files>` only; redirect to
   a file first, then `Get-Content -Tail`.

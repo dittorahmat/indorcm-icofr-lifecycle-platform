@@ -3,76 +3,8 @@ import {
   getStandardNodeDimensions,
   DEFAULT_SWIMLANE_DIMENSIONS,
   DEFAULT_NODE_SPACING,
+  canonicalHandleForSide,
 } from './bpm-constants';
-
-/**
- * Topologically sort nodes within a lane using depth calculated from edges.
- */
-function buildDepthMap(
-  children: Node[],
-  intraEdges: Edge[]
-): Map<string, number> {
-  const depth = new Map<string, number>();
-  const incoming = new Map<string, number>();
-  const idSet = new Set(children.map((c) => c.id));
-
-  for (const c of children) {
-    incoming.set(c.id, 0);
-  }
-
-  for (const e of intraEdges) {
-    if (idSet.has(e.target)) {
-      incoming.set(e.target, (incoming.get(e.target) ?? 0) + 1);
-    }
-  }
-
-  const outgoing = new Map<string, string[]>();
-  for (const c of children) {
-    outgoing.set(c.id, []);
-  }
-
-  for (const e of intraEdges) {
-    if (idSet.has(e.source) && idSet.has(e.target)) {
-      const arr = outgoing.get(e.source);
-      if (arr) arr.push(e.target);
-    }
-  }
-
-  const queue: string[] = [];
-  for (const c of children) {
-    if ((incoming.get(c.id) ?? 0) === 0) {
-      depth.set(c.id, 0);
-      queue.push(c.id);
-    }
-  }
-
-  let head = 0;
-  while (head < queue.length) {
-    const cur = queue[head++];
-    const curD = depth.get(cur) ?? 0;
-    const succs = outgoing.get(cur) ?? [];
-    for (const nxt of succs) {
-      if (!depth.has(nxt)) {
-        depth.set(nxt, curD + 1);
-        queue.push(nxt);
-      }
-    }
-  }
-
-  let maxD = -1;
-  for (const v of depth.values()) {
-    if (v > maxD) maxD = v;
-  }
-
-  const unvisited = children.filter((c) => !depth.has(c.id));
-  unvisited.sort((a, b) => (a.position?.y ?? 0) - (b.position?.y ?? 0) || (a.position?.x ?? 0) - (b.position?.x ?? 0));
-  for (const u of unvisited) {
-    maxD += 1;
-    depth.set(u.id, maxD);
-  }
-
-  return depth;
-}
 
 export interface AutoLayoutResult {
   nodes: Node[];
@@ -92,7 +24,6 @@ export function autoArrangeBpmDiagram(
     return { nodes: [], edges: [] };
   }
 
-  const nodeMap = new Map<string, Node>(currentNodes.map((n) => [n.id, { ...n }]));
   const swimlanes = currentNodes.filter((n) => n.type === 'swimlane');
   const nonSwimlaneNodes = currentNodes.filter((n) => n.type !== 'swimlane');
 
@@ -440,80 +371,27 @@ function enrichEdgeHandles(
     let sourceHandle: string | undefined = undefined;
     let targetHandle: string | undefined = undefined;
 
-    // Mostly vertical flow
+    // `start` / `end` / `decision` render their own anchors: a decision's
+    // yes/no handles come from the edge label below, the others stay id-less.
     if (Math.abs(dy) >= Math.abs(dx)) {
-      if (dy >= 0) {
-        // Source flows downward
-        if (sType === 'start') {
-          sourceHandle = undefined;
-        } else if (sType === 'decision') {
-          sourceHandle = undefined; // bottom handle on decision has no id
-        } else {
-          sourceHandle = 'bottom'; // source handle on bottom
-        }
-
-        // Target receives from top
-        if (tType === 'end') {
-          targetHandle = undefined;
-        } else if (tType === 'decision') {
-          targetHandle = undefined; // top handle on decision has no id
-        } else {
-          targetHandle = 'top'; // target handle on top
-        }
-      } else {
-        // Flowing upwards (backward loop / revisit)
-        if (sType === 'start') {
-          sourceHandle = undefined;
-        } else if (sType === 'decision') {
-          sourceHandle = undefined;
-        } else {
-          sourceHandle = 't-c-src'; // source handle on top
-        }
-
-        if (tType === 'end') {
-          targetHandle = undefined;
-        } else if (tType === 'decision') {
-          targetHandle = undefined;
-        } else {
-          targetHandle = 'b-c-tgt'; // target handle on bottom
-        }
+      // Mostly vertical flow.
+      const downward = dy >= 0;
+      if (sType !== 'start' && sType !== 'decision') {
+        sourceHandle = canonicalHandleForSide(downward ? 'bottom' : 'top', true);
+      }
+      if (tType !== 'end' && tType !== 'decision') {
+        targetHandle = canonicalHandleForSide(downward ? 'top' : 'bottom', false);
       }
     } else {
-      // Mostly horizontal flow (e.g. across swimlanes or lateral branching)
-      if (dx >= 0) {
-        // Flowing right
-        if (sType === 'start') {
-          sourceHandle = undefined;
-        } else if (sType === 'decision') {
-          sourceHandle = 'yes'; // right handle on decision is 'yes'
-        } else {
-          sourceHandle = 'm-r-src'; // EightConnectionHandles right SOURCE handle
-        }
-
-        if (tType === 'end') {
-          targetHandle = undefined;
-        } else if (tType === 'decision') {
-          targetHandle = undefined; // top handle on decision
-        } else {
-          targetHandle = 'left'; // EightConnectionHandles left TARGET handle
-        }
-      } else {
-        // Flowing left
-        if (sType === 'start') {
-          sourceHandle = undefined;
-        } else if (sType === 'decision') {
-          sourceHandle = 'no'; // left handle on decision is 'no'
-        } else {
-          sourceHandle = 'm-l-src'; // EightConnectionHandles left SOURCE handle
-        }
-
-        if (tType === 'end') {
-          targetHandle = undefined;
-        } else if (tType === 'decision') {
-          targetHandle = undefined;
-        } else {
-          targetHandle = 'right'; // EightConnectionHandles right TARGET handle
-        }
+      // Mostly horizontal flow (across swimlanes or lateral branching).
+      const rightward = dx >= 0;
+      if (sType === 'decision') {
+        sourceHandle = rightward ? 'yes' : 'no';
+      } else if (sType !== 'start') {
+        sourceHandle = canonicalHandleForSide(rightward ? 'right' : 'left', true);
+      }
+      if (tType !== 'end' && tType !== 'decision') {
+        targetHandle = canonicalHandleForSide(rightward ? 'left' : 'right', false);
       }
     }
 

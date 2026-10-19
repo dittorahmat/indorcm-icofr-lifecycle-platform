@@ -1,7 +1,8 @@
 import React from 'react';
-import ReactFlow, { Background, MarkerType } from 'reactflow';
+import ReactFlow, { Background } from 'reactflow';
 import { Button } from '@/components/ui/button';
 import { Workflow, FileText } from 'lucide-react';
+import { bridgeEdgeOptions } from './canvas-hydration';
 import { BPMCanvasHeader, BPMCanvasFooter } from '../nodes/BPMCanvasLayout';
 
 interface BPMDocumentViewProps {
@@ -77,16 +78,7 @@ export const BPMDocumentView: React.FC<BPMDocumentViewProps> = ({
             }}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
-            defaultEdgeOptions={{
-              type: 'bridge',
-              markerEnd: {
-                type: MarkerType.ArrowClosed,
-                width: 20,
-                height: 20,
-                color: '#0f172a',
-              },
-              style: { strokeWidth: 2, stroke: '#0f172a' },
-            }}
+            defaultEdgeOptions={bridgeEdgeOptions}
             fitView
             fitViewOptions={{ padding: 0.15 }}
             nodesDraggable={false}

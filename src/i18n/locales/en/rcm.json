@@ -277,7 +277,8 @@
     },
     "backlog": {
       "title": "Migration Backlog",
-      "drag_hint": "Drag items to place onto canvas"
+      "drag_hint": "Drag items to place onto canvas",
+      "empty": "No pending items"
     },
     "importForCycle": "Import for Cycle",
     "toasts": {

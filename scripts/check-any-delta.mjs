@@ -2,10 +2,13 @@
 // Usage:
 //   node scripts/check-any-delta.mjs [--base <ref>] <touched-files...>
 // Fails when a touched file contains MORE `any`/escape-cast occurrences than
-// its <base> version (default HEAD). New files are compared against a zero baseline.
+// its <base> version. <base> defaults to the branch point (merge-base with
+// origin/main) so the verdict does not change when you commit — see
+// scripts/lib/delta-base.mjs. New files are compared against a zero baseline.
 // Deleted/unreadable files are skipped.
 import { readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
+import { resolveBase } from './lib/delta-base.mjs';
 
 const ANY_PATTERN = /:\s*any\b/g;
 const AS_ANY_PATTERN = /\bas any\b/g;
@@ -29,13 +32,13 @@ function headContent(path, base) {
   }
 }
 
-let base = 'HEAD';
+let explicitBase = null;
 const files = [];
 {
   const args = process.argv.slice(2);
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--base' && args[i + 1]) {
-      base = args[++i];
+      explicitBase = args[++i];
     } else if (args[i] !== '--all' && !args[i].startsWith('--')) {
       files.push(args[i]);
     }
@@ -45,6 +48,7 @@ if (files.length === 0) {
   console.log('check-any-delta: no files given. Usage: node scripts/check-any-delta.mjs [--base <ref>] <files...>');
   process.exit(1);
 }
+const { ref: base, label: baseLabel } = resolveBase(explicitBase);
 
 let errors = 0;
 for (const f of files) {
@@ -72,5 +76,5 @@ for (const f of files) {
   }
 }
 
-console.log('\ncheck-any-delta: ' + errors + ' error(s) across ' + files.length + ' file(s).');
+console.log('\ncheck-any-delta: ' + errors + ' error(s) across ' + files.length + ' file(s) [base: ' + baseLabel + '].');
 process.exit(errors > 0 ? 1 : 0);

@@ -1,156 +1,134 @@
-import React from 'react';
+import { useState } from 'react';
+import { motion, Variants } from 'framer-motion';
+import { AlertTriangle, ArrowRight, Search, ShieldCheck } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { CollapsibleFilterCard } from '@/components/layout/CollapsibleFilterCard';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Search, Loader2, ArrowRight,
-  Workflow as WorkflowIcon, ShieldCheck,
-  AlertTriangle, Target, PlusCircle, X as XIcon
-} from 'lucide-react';
-import { BPMModal } from '@/components/bpm/BPMModal';
-import { CSAModal } from '@/components/bpm/CSAModal';
-import { BPMEditor } from '@/components/rcm/BPMEditor';
 import { BPMAccountAssertion } from '@/components/bpm/BPMAccountAssertion';
-import { BPMDiagramList } from '@/components/bpm/BPMDiagramList';
 import { BPMMigrationModal } from '@/components/bpm/BPMMigrationModal';
+import { BPMModal } from '@/components/bpm/BPMModal';
 import { BPMScopingFilters } from '@/components/bpm/BPMScopingFilters';
 import { BPMStatusBanner } from '@/components/bpm/BPMStatusBanner';
-import { 
-  Dialog, DialogContent, DialogDescription, DialogHeader, 
-  DialogTitle, DialogFooter 
-} from '@/components/ui/dialog';
-import { motion, Variants } from 'framer-motion';
+import { CSAModal } from '@/components/bpm/CSAModal';
+import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { useConfirm } from '@/hooks/use-confirm';
-
-import { PageHeader } from '@/components/layout/PageHeader';
-import { CollapsibleFilterCard } from '@/components/layout/CollapsibleFilterCard';
-import { 
-  ResizableHandle, 
-  ResizablePanel, 
-  ResizablePanelGroup 
-} from "@/components/ui/resizable";
-import { WorkflowPanel } from "@/components/workflow/WorkflowPanel";
-import { useBPMPage } from './hooks/useBPMPage';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useFiscalYearStore } from '@/store/useFiscalYearStore';
+import { BpmEditorDialog } from './components/BpmEditorDialog';
+import { BpmProcessToolbar } from './components/BpmProcessToolbar';
+import { BpmProcessWorkspace } from './components/BpmProcessWorkspace';
+import { CreateProcessDialog } from './components/CreateProcessDialog';
+import { useBpmProcessHierarchy } from './hooks/useBpmProcessHierarchy';
+import { useBpmProcessMutations } from './hooks/useBpmProcessMutations';
+import { useBpmScopingSelection } from './hooks/useBpmScopingSelection';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.05
-    }
-  }
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
 };
 
 const itemVariants: Variants = {
   hidden: { y: 15, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 100,
-      damping: 15
-    }
-  }
+  visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 100, damping: 15 } },
 };
 
+/**
+ * BPM workspace orchestrator: composes the scoping-selection, process-hierarchy
+ * and mutation hooks with the workspace components. Holds only the dialog
+ * plumbing and the diagram deep-link.
+ */
 export function BPMPage() {
+  const { t } = useTranslation(['bpm', 'common', 'rcm']);
   const confirm = useConfirm();
   const isMobile = useIsMobile();
-  const {
-    t,
+  const { workingYear: viewYear } = useFiscalYearStore();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { isDirty } = useUnsavedChangesContext();
+
+  const [selectedBpmId, setSelectedBpmId] = useState<string | null>(null);
+  const [selectedBpmName, setSelectedBpmName] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCsaModalOpen, setIsCsaModalOpen] = useState(false);
+
+  const scoping = useBpmScopingSelection({
     viewYear,
-    selectedFsli,
-    setSelectedFsli,
-    selectedAccountKey,
-    setSelectedAccountKey,
-    selectedBpmId,
-    setSelectedBpmId,
-    isModalOpen,
-    setIsModalOpen,
-    isCsaModalOpen,
-    setIsCsaModalOpen,
-    selectedBpmName,
-    setSelectedBpmName,
-    isBpmEditorOpen,
-    selectedDiagramId,
-    currentSubProcess,
-    currentBpmProcessId,
-    isCreatingBPM,
-    setIsCreatingBPM,
-    bpmName,
-    setBpmName,
-    bpmCode,
-    setBpmCode,
-    searchTerm,
-    setSearchTerm,
-    selectedProcess,
-    setSelectedProcess,
-    localAssertion,
-    handleOpenDiagram,
-    handleCloseDiagram,
-    queryClient,
+    searchParams,
+    departmentFallback: t('ownerFallback'),
+    unassignedLabel: t('unassignedDepartment'),
+  });
+  const hierarchy = useBpmProcessHierarchy({
+    viewYear,
+    selectedAccountKey: scoping.selectedAccountKey,
+  });
 
-    // Queries
-    activeSim,
-    activeSnap,
-    snapLoading,
-    simLoading,
-    settings,
-    assertionLoading,
-    bpmLoading,
-    diagrams,
+  const selectedDiagramId = searchParams.get('diagramId');
+  const currentSubProcess = searchParams.get('subProcess') || '';
 
-    // Derived properties
-    significantFsliNames,
-    glNumbers,
-    selectedGLRow,
-    departmentName,
-    hasAccess,
-    filteredBpmProcesses,
-    hierarchicalProcesses,
-    candidateParentProcesses,
-    isAssertionDirty,
+  const handleOpenDiagram = (diagramId: string, subProcess: string, bpmProcessId?: string) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('diagramId', diagramId);
+      next.set('subProcess', subProcess);
+      if (bpmProcessId) next.set('bpmProcessId', bpmProcessId);
+      next.set('year', viewYear);
+      return next;
+    });
+  };
 
-    // Hierarchy & Selection States
-    selectedProcessIds,
-    toggleSelectProcess,
-    toggleSelectAll,
-    expandedProcessIds,
-    toggleExpandProcess,
-    expandAll,
-    collapseAll,
-    isMigrationModalOpen,
-    setIsMigrationModalOpen,
-    bpmProcesses,
+  const handleCloseDiagram = async () => {
+    if (isDirty) {
+      const ok = await confirm({
+        title: t('common:unsavedChanges.title'),
+        description: t('common:unsavedChanges.description'),
+        confirmText: t('common:unsavedChanges.discard'),
+        cancelText: t('common:unsavedChanges.stay'),
+        variant: 'destructive',
+      });
+      if (!ok) return;
+    }
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('diagramId');
+      next.delete('subProcess');
+      next.delete('bpmProcessId');
+      return next;
+    });
+  };
 
-    // Mutations
-    updateAssertionMutation,
-    createDiagramMutation,
-    createBPMMutation,
-    deleteBPMMutation,
-    batchReorganizeMutation,
+  const mutations = useBpmProcessMutations({
+    viewYear,
+    bpmProcesses: hierarchy.bpmProcesses,
+    onOpenDiagram: handleOpenDiagram,
+    onDeleteSuccess: (id) => {
+      setSelectedBpmId(null);
+      hierarchy.setSelectedProcessIds((prev) => prev.filter((itemId) => itemId !== id));
+    },
+    onReorganizeSuccess: () => {
+      hierarchy.setSelectedProcessIds([]);
+      hierarchy.setIsMigrationModalOpen(false);
+    },
+  });
 
-    // Actions
-    handleAssertionChange,
-    handleSaveAssertions,
-  } = useBPMPage();
+  const handleDeleteProcess = async (id: string, name: string) => {
+    const ok = await confirm({
+      title: t('common:actions.deletePermanently'),
+      description: t('bpm:deleteConfirm', { name }),
+      variant: 'destructive',
+    });
+    if (ok) mutations.deleteBPMMutation.mutate(id);
+  };
+
+  const { selectedGLRow, assertions } = scoping;
 
   return (
     <AppLayout container>
-      <motion.div 
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="space-y-6 pb-10"
-      >
+      <motion.div initial="hidden" animate="visible" variants={containerVariants} className="space-y-6 pb-10">
         <motion.div variants={itemVariants}>
-          <PageHeader 
-            title={<span className="font-display tracking-tight text-slate-900 font-extrabold">{t('title')}</span>} 
+          <PageHeader
+            title={<span className="font-display tracking-tight text-slate-900 font-extrabold">{t('title')}</span>}
             description={t('description')}
             badge={
               <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 gap-1.5 py-1 px-3 font-bold uppercase tracking-widest text-xs rounded-md shadow-sm">
@@ -162,53 +140,49 @@ export function BPMPage() {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <CollapsibleFilterCard
-            title={t('selectionTitle')}
-            layout="section"
-            testId="bpm-scoping-filters"
-          >
+          <CollapsibleFilterCard title={t('selectionTitle')} layout="section" testId="bpm-scoping-filters">
             <BPMScopingFilters
-              selectedFsli={selectedFsli}
-              setSelectedFsli={setSelectedFsli}
-              selectedAccountKey={selectedAccountKey}
-              setSelectedAccountKey={setSelectedAccountKey}
+              selectedFsli={scoping.selectedFsli}
+              setSelectedFsli={scoping.setSelectedFsli}
+              selectedAccountKey={scoping.selectedAccountKey}
+              setSelectedAccountKey={scoping.setSelectedAccountKey}
               setSelectedBpmId={setSelectedBpmId}
-              snapLoading={snapLoading}
-              simLoading={simLoading}
-              significantFsliNames={significantFsliNames}
-              glNumbers={glNumbers}
+              snapLoading={scoping.snapLoading}
+              simLoading={scoping.simLoading}
+              significantFsliNames={scoping.significantFsliNames}
+              glNumbers={scoping.glNumbers}
               selectedGLRow={selectedGLRow}
-              isAssertionDirty={isAssertionDirty}
+              isAssertionDirty={assertions.isAssertionDirty}
             />
             <BPMStatusBanner
-              activeSim={activeSim}
-              activeSnap={activeSnap}
-              snapLoading={snapLoading}
+              activeSim={scoping.activeSim}
+              activeSnap={scoping.activeSnap}
+              snapLoading={scoping.snapLoading}
               viewYear={viewYear}
             />
           </CollapsibleFilterCard>
         </motion.div>
 
-        {!activeSim ? null : !selectedAccountKey ? (
-          <motion.div 
+        {!scoping.activeSim ? null : !scoping.selectedAccountKey ? (
+          <motion.div
             variants={itemVariants}
             className="py-24 text-center border-2 border-dashed rounded-lg bg-white border-slate-200 shadow-sm"
           >
             <div className="h-20 w-20 bg-indigo-50/50 text-indigo-400 rounded-lg flex items-center justify-center mx-auto mb-6 ring-8 ring-indigo-50/30">
               <Search className="h-10 w-10" />
             </div>
-            <h3 className="text-lg font-display font-black text-slate-900 uppercase tracking-tight mb-2">Ready to Map Process</h3>
-            <p className="text-slate-500 text-sm max-w-sm mx-auto mb-8 font-medium leading-relaxed">
-              Select an FSLI and GL Account from the selection panel above to begin mapping business processes, risks, and controls.
-            </p>
+            <h3 className="text-lg font-display font-black text-slate-900 uppercase tracking-tight mb-2">
+              {t('emptyTitle')}
+            </h3>
+            <p className="text-slate-500 text-sm max-w-sm mx-auto mb-8 font-medium leading-relaxed">{t('emptyHint')}</p>
             <div className="flex items-center justify-center gap-3">
               <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-400 border border-slate-200">1</div>
               <ArrowRight className="h-4 w-4 text-slate-300" />
               <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-400 border border-slate-200">2</div>
             </div>
           </motion.div>
-        ) : !hasAccess ? (
-          <motion.div 
+        ) : !scoping.hasAccess ? (
+          <motion.div
             variants={itemVariants}
             className="py-12 text-center border-2 border-rose-100 rounded-lg bg-rose-50/30"
           >
@@ -217,257 +191,112 @@ export function BPMPage() {
             </div>
             <h3 className="text-lg font-display font-bold text-rose-900">{t('common:access.restricted')}</h3>
             <p className="text-rose-700/70 text-xs max-w-md mx-auto mt-2 leading-relaxed font-medium px-6">
-              {t('common:access.assignedTo')} <strong className="text-rose-900 underline decoration-rose-200">{departmentName || "Departemen Lain"}</strong>. 
+              {t('common:access.assignedTo')}{' '}
+              <strong className="text-rose-900 underline decoration-rose-200">{scoping.departmentName}</strong>.{' '}
               {t('common:access.lini1Restricted')}
             </p>
           </motion.div>
         ) : (
           <motion.div variants={containerVariants} className="space-y-8">
             <motion.div variants={itemVariants}>
-              <BPMAccountAssertion 
-                localAssertion={localAssertion}
-                assertionLoading={assertionLoading}
-                isAssertionDirty={isAssertionDirty}
-                onAssertionChange={handleAssertionChange}
-                onSave={handleSaveAssertions}
-                isSaving={updateAssertionMutation.isPending}
+              <BPMAccountAssertion
+                localAssertion={assertions.localAssertion}
+                assertionLoading={assertions.assertionLoading}
+                isAssertionDirty={assertions.isAssertionDirty}
+                onAssertionChange={assertions.handleAssertionChange}
+                onSave={assertions.handleSaveAssertions}
+                isSaving={assertions.updateAssertionMutation.isPending}
               />
             </motion.div>
 
             <motion.div variants={itemVariants} className="space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 flex-wrap min-w-0 bg-white p-4 rounded-lg border border-slate-200 shadow-sm max-w-full">
-                <div className="flex-1 w-full md:max-w-md relative group">
-                  <Label htmlFor="bpm-search" className="sr-only">Search BPM Processes</Label>
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
-                  <Input 
-                    id="bpm-search"
-                    placeholder={t('searchPlaceholder')} 
-                    className="pl-10 h-11 sm:h-10 min-h-[44px] sm:min-h-0 bg-slate-50 border-slate-200 text-base sm:text-sm font-medium rounded-lg focus:bg-white transition-all shadow-sm"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 w-full md:w-auto">
-                  <div className="hidden md:block text-right">
-                    <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em]">{t('bpm:modal.owner')}</p>
-                    <p className="text-xs font-bold text-slate-900 flex items-center gap-1.5 justify-end">
-                      <Target className="h-3 w-3 text-indigo-500" />
-                      {departmentName || "Finance & Accounting"}
-                    </p>
-                  </div>
-                  <div className="h-8 w-px bg-slate-100 hidden sm:block" />
-                  <Button onClick={() => setIsCreatingBPM(true)} className="h-10 min-h-[44px] sm:min-h-0 gap-2 bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-6 rounded-lg w-full sm:w-auto justify-center">
-                    <PlusCircle className="h-3.5 w-3.5" /> {t('createProcessButton')}
-                  </Button>
-                </div>
-              </div>
-
-              <ResizablePanelGroup direction={isMobile ? "vertical" : "horizontal"} className="min-h-[320px] md:min-h-[600px] border border-slate-200 rounded-lg bg-white overflow-hidden shadow-xl shadow-slate-100 max-w-full">
-                <ResizablePanel defaultSize={selectedProcess ? 70 : 100} minSize={30}>
-                  <BPMDiagramList 
-                    bpmLoading={bpmLoading}
-                    hierarchicalProcesses={hierarchicalProcesses}
-                    diagrams={diagrams}
-                    settings={settings}
-                    selectedGLRow={selectedGLRow}
-                    selectedProcessId={selectedProcess?.id}
-                    onSelectProcess={setSelectedProcess}
-                    onOpenDiagram={handleOpenDiagram}
-                    onCreateDiagram={(name) => createDiagramMutation.mutate(name)}
-                    onOpenWorksheet={(id, name) => {
-                      setSelectedBpmId(id);
-                      setSelectedBpmName(name);
-                      setIsModalOpen(true);
-                    }}
-                    onDeleteProcess={async (id, name) => {
-                      const ok = await confirm({
-                        title: t('common:actions.deletePermanently'),
-                        description: t('bpm:deleteConfirm', { name }),
-                        variant: 'destructive'
-                      });
-                      if (ok) {
-                        deleteBPMMutation.mutate(id);
-                      }
-                    }}
-                    searchTerm={searchTerm}
-                    selectedProcessIds={selectedProcessIds}
-                    onToggleSelect={toggleSelectProcess}
-                    onToggleSelectAll={toggleSelectAll}
-                    expandedProcessIds={expandedProcessIds}
-                    onToggleExpand={toggleExpandProcess}
-                    onExpandAll={expandAll}
-                    onCollapseAll={collapseAll}
-                    onOpenMigrationModal={() => setIsMigrationModalOpen(true)}
-                  />
-                </ResizablePanel>
-                
-                {selectedProcess && (
-                  <>
-                    <ResizableHandle withHandle className="hidden md:flex" />
-                    <ResizablePanel defaultSize={30} minSize={20} className="bg-slate-50/30">
-                      <div className="h-full flex flex-col min-h-0 overflow-y-auto">
-                        <div className="p-4 border-b bg-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 flex-wrap">
-                           <div className="flex flex-col min-w-0 flex-1">
-                              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Selected Process</span>
-                              <span className="text-sm font-bold text-slate-900 truncate max-w-[200px] sm:max-w-full">{selectedProcess.name}</span>
-                           </div>
-                            <Button variant="ghost" size="icon" aria-label="Close selected process" className="h-10 w-10 min-h-[44px] min-w-[44px] sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0 rounded-md shrink-0" onClick={() => setSelectedProcess(null)}>
-                              <XIcon className="h-4 w-4" />
-                           </Button>
-                        </div>
-                        <WorkflowPanel 
-                           entityType="BPM"
-                           entityId={selectedProcess.id}
-                           currentStatus={selectedProcess.workflowStatus || 'Draft'}
-                           history={selectedProcess.workflowHistory || []}
-                           className="flex-1 border-none shadow-none rounded-none"
-                           onStatusChange={(newStatus) => {
-                             queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
-                             setSelectedProcess(prev => prev ? { ...prev, workflowStatus: newStatus as any } : null);
-                           }}
-                        />
-                      </div>
-                    </ResizablePanel>
-                  </>
-                )}
-              </ResizablePanelGroup>
+              <BpmProcessToolbar
+                searchTerm={hierarchy.searchTerm}
+                onSearchTermChange={hierarchy.setSearchTerm}
+                departmentName={scoping.departmentName}
+                onCreateProcess={() => mutations.setIsCreatingBPM(true)}
+              />
+              <BpmProcessWorkspace
+                isMobile={isMobile}
+                hierarchy={hierarchy}
+                settings={scoping.settings}
+                selectedGLRow={selectedGLRow}
+                onOpenDiagram={handleOpenDiagram}
+                onCreateDiagram={(name) => mutations.createDiagramMutation.mutate(name)}
+                onOpenWorksheet={(id, name) => {
+                  setSelectedBpmId(id);
+                  setSelectedBpmName(name);
+                  setIsModalOpen(true);
+                }}
+                onDeleteProcess={handleDeleteProcess}
+              />
             </motion.div>
           </motion.div>
         )}
 
         {selectedGLRow && (
-          <BPMModal 
-            isOpen={isModalOpen}
-            onOpenChange={setIsModalOpen}
-            noGL={selectedGLRow.noGL}
-            glDesc={selectedGLRow.glDesc}
-            fsliName={selectedFsli}
-            bpmProcessId={selectedBpmId || undefined}
-            subProcessName={selectedBpmName}
-            year={viewYear}
-            initialTab="worksheet"
-          />
+          <>
+            <BPMModal
+              isOpen={isModalOpen}
+              onOpenChange={setIsModalOpen}
+              noGL={selectedGLRow.noGL}
+              glDesc={selectedGLRow.glDesc}
+              fsliName={scoping.selectedFsli}
+              bpmProcessId={selectedBpmId || undefined}
+              subProcessName={selectedBpmName}
+              year={viewYear}
+              initialTab="worksheet"
+            />
+            <CSAModal
+              isOpen={isCsaModalOpen}
+              onOpenChange={setIsCsaModalOpen}
+              noGL={selectedGLRow.noGL}
+              subProcessName={selectedBpmName}
+              bpmProcessId={selectedBpmId || undefined}
+            />
+          </>
         )}
 
         <BPMMigrationModal
-          isOpen={isMigrationModalOpen}
-          onClose={() => setIsMigrationModalOpen(false)}
-          selectedProcessIds={selectedProcessIds}
-          allProcesses={bpmProcesses?.items || []}
-          candidateParents={candidateParentProcesses}
-          onConfirm={(payload) => batchReorganizeMutation.mutate(payload)}
-          isPending={batchReorganizeMutation.isPending}
+          isOpen={hierarchy.isMigrationModalOpen}
+          onClose={() => hierarchy.setIsMigrationModalOpen(false)}
+          selectedProcessIds={hierarchy.selectedProcessIds}
+          allProcesses={hierarchy.bpmProcesses?.items || []}
+          candidateParents={hierarchy.candidateParentProcesses}
+          onConfirm={(payload) => mutations.batchReorganizeMutation.mutate(payload)}
+          isPending={mutations.batchReorganizeMutation.isPending}
         />
 
-        <Dialog open={isBpmEditorOpen} onOpenChange={(open) => !open && handleCloseDiagram()}>
-          <DialogContent className="w-full sm:max-w-[98vw] h-[92dvh] sm:h-[95dvh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-lg">
-            <DialogTitle className="sr-only">BPM Workflow Editor: {currentSubProcess}</DialogTitle>
-            <DialogDescription className="sr-only">Visual editor for BPM workflow processes</DialogDescription>
-            <div className="bg-mancity-pattern p-4 sm:p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 text-primary-foreground">
-              <div className="space-y-1 min-w-0">
-                <div className="flex items-center gap-3 min-w-0 flex-wrap">
-                  <div className="h-9 w-9 rounded-md bg-white/20 flex items-center justify-center text-primary-foreground border border-white/30 shrink-0">
-                    <WorkflowIcon className="h-5 w-5" />
-                  </div>
-                  <h2 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-primary-foreground truncate">BPM Workflow Editor: {currentSubProcess}</h2>
-                </div>
-                <p className="text-primary-foreground/80 text-xs font-medium uppercase tracking-wider ml-0 sm:ml-[48px]">Mapping business processes, risks, and controls visually.</p>
-              </div>
-              <Button variant="ghost" size="icon" onClick={handleCloseDiagram} className="text-primary-foreground/60 hover:text-primary-foreground hover:bg-white/10 rounded-md h-11 w-11 min-h-[44px] min-w-[44px] self-end sm:self-auto shrink-0">
-                 <X className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="flex-1 min-h-0 bg-slate-50">
-              {selectedDiagramId && (
-                <BPMEditor 
-                  diagramId={selectedDiagramId} 
-                  subProcess={currentSubProcess} 
-                  workingYear={viewYear} 
-                  currentGL={selectedGLRow?.noGL}
-                  bpmProcessId={currentBpmProcessId || selectedProcess?.id || undefined}
-                />
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+        <BpmEditorDialog
+          isOpen={!!selectedDiagramId}
+          onClose={handleCloseDiagram}
+          subProcess={currentSubProcess}
+          diagramId={selectedDiagramId}
+          viewYear={viewYear}
+          currentGL={selectedGLRow?.noGL}
+          bpmProcessId={searchParams.get('bpmProcessId') || hierarchy.selectedProcess?.id || undefined}
+        />
 
-        <Dialog open={isCreatingBPM} onOpenChange={setIsCreatingBPM}>
-          <DialogContent className="sm:max-w-[425px] w-[calc(100vw-2rem)] max-h-[90dvh] overflow-y-auto border-none shadow-2xl rounded-lg overflow-hidden p-0">
-            <div className="bg-mancity-pattern p-4 sm:p-6 text-primary-foreground">
-              <DialogHeader>
-                <DialogTitle className="font-display text-xl tracking-tight text-primary-foreground">{t('bpm:createModalTitle')}</DialogTitle>
-                <DialogDescription className="text-primary-foreground/60 text-xs uppercase tracking-wider mt-1">
-                  Define a major process heading for <strong>{selectedGLRow?.noGL}</strong>.
-                </DialogDescription>
-              </DialogHeader>
-            </div>
-            <div className="p-4 sm:p-6 space-y-6">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 px-1">{t('bpm:processNameLabel')}</Label>
-                <Input 
-                  placeholder="e.g. Penerimaan setoran tunai" 
-                  value={bpmName} 
-                  onChange={e => setBpmName(e.target.value)} 
-                  className="h-11 sm:h-10 min-h-[44px] sm:min-h-0 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 px-1">BPM Code</Label>
-                <Input 
-                  placeholder="e.g. FIN-01" 
-                  value={bpmCode} 
-                  onChange={e => setBpmCode(e.target.value.toUpperCase())} 
-                  className="h-11 sm:h-10 min-h-[44px] sm:min-h-0 bg-slate-50 border-slate-200 focus:bg-white transition-all rounded-lg font-bold uppercase"
-                />
-              </div>
-              <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
-                <Button variant="ghost" onClick={() => setIsCreatingBPM(false)} className="w-full sm:w-auto h-11 sm:h-10 min-h-[44px] justify-center font-bold text-xs uppercase tracking-widest text-slate-400 hover:text-slate-600">{t('common:actions.cancel')}</Button>
-                <Button 
-                  disabled={!bpmName || !bpmCode || createBPMMutation.isPending} 
-                  onClick={() => createBPMMutation.mutate({ 
-                    name: bpmName, 
-                    bpmCode,
-                    noGL: selectedGLRow?.noGL || "", 
-                    fsliName: selectedFsli,
-                    year: parseInt(viewYear)
-                  })}
-                  className="h-11 sm:h-10 min-h-[44px] w-full sm:w-auto justify-center px-6 bg-mancity-pattern hover:opacity-90 shadow-sm rounded-lg font-bold text-xs uppercase tracking-widest text-primary-foreground"
-                >
-                  {createBPMMutation.isPending && <Loader2 className="h-3 w-3 animate-spin mr-2" />}
-                  {t('bpm:createProcessButton')}
-                </Button>
-              </DialogFooter>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {selectedGLRow && (
-          <CSAModal
-            isOpen={isCsaModalOpen}
-            onOpenChange={setIsCsaModalOpen}
-            noGL={selectedGLRow.noGL}
-            subProcessName={selectedBpmName}
-            bpmProcessId={selectedBpmId || undefined}
-          />
-        )}
+        <CreateProcessDialog
+          isOpen={mutations.isCreatingBPM}
+          noGL={selectedGLRow?.noGL || ''}
+          name={mutations.bpmName}
+          onNameChange={mutations.setBpmName}
+          code={mutations.bpmCode}
+          onCodeChange={mutations.setBpmCode}
+          onCancel={() => mutations.setIsCreatingBPM(false)}
+          onSubmit={() =>
+            mutations.createBPMMutation.mutate({
+              name: mutations.bpmName,
+              bpmCode: mutations.bpmCode,
+              noGL: selectedGLRow?.noGL || '',
+              fsliName: scoping.selectedFsli,
+              year: parseInt(viewYear),
+            })
+          }
+          isPending={mutations.createBPMMutation.isPending}
+        />
       </motion.div>
     </AppLayout>
   );
 }
-
-const X = ({ className }: { className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width="24" height="24" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M18 6 6 18" />
-    <path d="m6 6 12 12" />
-  </svg>
-);

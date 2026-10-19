@@ -8,19 +8,18 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Trash2, Network, Shield, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import type { ConfirmFunction } from '@/components/providers/ConfirmProvider';
+import type { WorksheetRowCommit } from './worksheet-row';
+
+type WorksheetTranslate = (key: string, options?: Record<string, unknown>) => string;
 
 interface CreateWorksheetColumnsProps {
-  t: any;
-  confirm: any;
-  diagrams?: { items: any[] };
+  t: WorksheetTranslate;
+  confirm: ConfirmFunction;
+  diagrams?: { items: { id: string; subProcess?: string | null }[] };
   apps?: { items: Application[] };
   elcControls: Control[];
-  handleOpenDiagram: (diagramId: string, subProcess: string) => void;
-  createDiagramMutation: any;
-  updateMutation: any;
-  deleteMutation: any;
-  debouncedUpdate: (id: string, field: string, value: any) => void;
+  commit: WorksheetRowCommit;
   setIsAddingApp: (val: boolean) => void;
 }
 
@@ -30,11 +29,7 @@ export function createWorksheetColumns({
   diagrams,
   apps,
   elcControls,
-  handleOpenDiagram,
-  createDiagramMutation,
-  updateMutation,
-  deleteMutation,
-  debouncedUpdate,
+  commit,
   setIsAddingApp,
 }: CreateWorksheetColumnsProps): ColumnDef<Control>[] {
   return [
@@ -49,11 +44,11 @@ export function createWorksheetColumns({
           onClick={async () => {
             const ok = await confirm({
               title: t('common:actions.deletePermanently'),
-              description: "Delete this Risk-Control mapping row? All associated worksheet inputs for this row will be deleted permanently.",
+              description: t('worksheet.deleteRowConfirm'),
               variant: 'destructive'
             });
             if (ok) {
-              deleteMutation.mutate(row.original.id);
+              commit.remove(row.original.id);
             }
           }}
         >
@@ -64,26 +59,26 @@ export function createWorksheetColumns({
     },
     {
       id: 'no',
-      header: 'No',
+      header: t('worksheet.columns.no'),
       cell: info => <span className="text-xs text-slate-400 px-2">{info.row.index + 1}</span>,
       size: 40
     },
     {
-      accessorKey: 'bpmCode',
-      header: 'No. BPM',
+      accessorKey: 'code',
+      header: t('worksheet.columns.bpmCode'),
       cell: ({ row, getValue }) => (
         <Input 
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-mono uppercase w-[100px]"
           placeholder="BPM-001"
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'bpmCode', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'code', e.target.value)}
         />
       ),
       size: 110
     },
     {
       id: 'workflow',
-      header: 'BPM Workflow',
+      header: t('worksheet.columns.bpmWorkflow'),
       cell: ({ row }) => {
         const subProcess = row.original.subProcess;
         const diagram = diagrams?.items.find(d => d.subProcess === subProcess);
@@ -96,18 +91,10 @@ export function createWorksheetColumns({
               "h-11 sm:h-7 min-h-[44px] sm:min-h-0 text-xs gap-1.5 uppercase font-bold mx-2",
               diagram ? "bg-mancity-pattern hover:opacity-90 text-primary-foreground shadow-sm" : "text-slate-400 border-slate-200"
             )}
-            onClick={() => {
-              if (diagram) {
-                handleOpenDiagram(diagram.id, subProcess || "");
-              } else if (subProcess) {
-                createDiagramMutation.mutate(subProcess);
-              } else {
-                toast.error("Please fill Sub-Process name first");
-              }
-            }}
+            onClick={() => commit.openDiagramFor(subProcess || "")}
           >
             <Network className="h-3 w-3" />
-            {diagram ? "View Flow" : "Create Flow"}
+            {diagram ? t('worksheet.viewFlow') : t('worksheet.createFlow')}
           </Button>
         );
       },
@@ -119,9 +106,9 @@ export function createWorksheetColumns({
       cell: ({ row, getValue }) => (
         <Input 
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 min-w-[150px]"
-          placeholder="Isi Proses..."
+          placeholder={t('worksheet.placeholders.businessProcess')}
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'businessProcess', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'businessProcess', e.target.value)}
         />
       )
     },
@@ -131,9 +118,9 @@ export function createWorksheetColumns({
       cell: ({ row, getValue }) => (
         <Input 
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-bold min-w-[180px]"
-          placeholder="Nama Sub-Proses..."
+          placeholder={t('worksheet.placeholders.subProcess')}
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'subProcess', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'subProcess', e.target.value)}
         />
       )
     },
@@ -144,7 +131,7 @@ export function createWorksheetColumns({
         <Input 
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 font-medium text-slate-900 min-w-[200px]"
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'name', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'name', e.target.value)}
         />
       )
     },
@@ -154,31 +141,31 @@ export function createWorksheetColumns({
       cell: ({ row, getValue }) => (
         <Input 
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-slate-400 bg-white px-2 min-w-[100px]"
-          placeholder="Lokasi..."
+          placeholder={t('worksheet.placeholders.location')}
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'location', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'location', e.target.value)}
         />
       )
     },
     {
       accessorKey: 'description',
-      header: 'Proses Bisnis (Aktivitas)',
+      header: t('worksheet.columns.description'),
       cell: ({ row, getValue }) => (
         <textarea 
           className="w-full min-h-[60px] text-base md:text-xs border border-slate-200 focus:ring-1 focus:ring-slate-400 bg-white p-2 resize-none min-w-[250px] rounded-md"
-          placeholder="Deskripsikan aktivitas..."
+          placeholder={t('worksheet.placeholders.description')}
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'description', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'description', e.target.value)}
         />
       )
     },
     {
       accessorKey: 'isFraudRelated',
-      header: 'Risiko Fraud',
+      header: t('worksheet.columns.fraudRisk'),
       cell: ({ row, getValue }) => (
         <Select 
           value={getValue<boolean>() ? 'Y' : 'T'} 
-          onValueChange={(v) => updateMutation.mutate({ id: row.original.id, data: { isFraudRelated: v === 'Y' } })}
+          onValueChange={(v) => commit.patch(row.original.id, { isFraudRelated: v === 'Y' })}
         >
           <SelectTrigger className="h-11 md:h-7 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 bg-white w-full">
             <SelectValue />
@@ -192,18 +179,18 @@ export function createWorksheetColumns({
     },
     {
       accessorKey: 'reference',
-      header: 'Referensi',
+      header: t('worksheet.columns.reference'),
       cell: ({ row, getValue }) => (
         <Input 
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[120px]"
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'reference', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'reference', e.target.value)}
         />
       )
     },
     {
       accessorKey: 'relatedControlIds',
-      header: 'Payung Kebijakan (ELC)',
+      header: t('worksheet.columns.elcUmbrella'),
       cell: ({ row, getValue }) => {
         const selectedIds = getValue<string[]>() || [];
         return (
@@ -211,14 +198,14 @@ export function createWorksheetColumns({
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="h-11 md:h-8 min-h-[44px] md:min-h-0 w-full justify-start font-normal px-2 text-base md:text-xs gap-2 border-slate-200 bg-white">
                 <Shield className={cn("h-3.5 w-3.5", selectedIds.length > 0 ? "text-indigo-600" : "text-slate-300")} />
-                {selectedIds.length > 0 ? `${selectedIds.length} Linked` : "Select ELC..."}
+                {selectedIds.length > 0 ? t('worksheet.elc.linked', { n: selectedIds.length }) : t('worksheet.elc.select')}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[calc(100vw-2rem)] max-w-[300px] sm:w-[300px] p-0" align="start">
               <Command>
-                <CommandInput placeholder="Search ELC policies..." className="h-8 text-xs" />
+                <CommandInput placeholder={t('worksheet.elc.search')} className="h-8 text-xs" />
                 <CommandList>
-                  <CommandEmpty>No ELC policies found.</CommandEmpty>
+                  <CommandEmpty>{t('worksheet.elc.empty')}</CommandEmpty>
                   <CommandGroup>
                     {elcControls.map((elc) => (
                       <CommandItem
@@ -227,7 +214,7 @@ export function createWorksheetColumns({
                           const nextIds = selectedIds.includes(elc.id)
                             ? selectedIds.filter(id => id !== elc.id)
                             : [...selectedIds, elc.id];
-                          updateMutation.mutate({ id: row.original.id, data: { relatedControlIds: nextIds } });
+                          commit.patch(row.original.id, { relatedControlIds: nextIds });
                         }}
                         className="text-xs flex items-center justify-between flex-wrap gap-2"
                       >
@@ -249,22 +236,22 @@ export function createWorksheetColumns({
     },
     {
       accessorKey: 'supportingDocs',
-      header: 'Dokumen Pendukung',
+      header: t('worksheet.columns.supportingDocs'),
       cell: ({ row, getValue }) => (
         <Input 
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[150px]"
           defaultValue={getValue<string>()}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'supportingDocs', e.target.value)}
+          onBlur={(e) => commit.saveField(row.original.id, 'supportingDocs', e.target.value)}
         />
       )
     },
     {
       accessorKey: 'isKeyControl',
-      header: 'Pengendalian Utama',
+      header: t('worksheet.columns.keyControl'),
       cell: ({ row, getValue }) => (
         <Select 
           value={getValue<boolean>() ? 'Y' : 'T'} 
-          onValueChange={(v) => updateMutation.mutate({ id: row.original.id, data: { isKeyControl: v === 'Y' } })}
+          onValueChange={(v) => commit.patch(row.original.id, { isKeyControl: v === 'Y' })}
         >
           <SelectTrigger className="h-11 md:h-7 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 bg-white w-full">
             <SelectValue />
@@ -278,68 +265,68 @@ export function createWorksheetColumns({
     },
     {
       accessorKey: 'ipos',
-      header: 'IPO',
+      header: t('worksheet.columns.ipos'),
       cell: ({ row, getValue }) => (
         <Input 
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[100px]"
           defaultValue={(getValue<string[]>() || []).join(', ')}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'ipos', e.target.value.split(',').map(s => s.trim()))}
+          onBlur={(e) => commit.saveField(row.original.id, 'ipos', e.target.value.split(',').map(s => s.trim()))}
         />
       )
     },
     {
       accessorKey: 'assertions',
-      header: 'Asersi',
+      header: t('worksheet.columns.assertions'),
       cell: ({ row, getValue }) => (
         <Input 
           className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 focus:border-indigo-300 bg-white px-2 min-w-[100px]"
           defaultValue={(getValue<string[]>() || []).join(', ')}
-          onBlur={(e) => debouncedUpdate(row.original.id, 'assertions', e.target.value.split(',').map(s => s.trim()))}
+          onBlur={(e) => commit.saveField(row.original.id, 'assertions', e.target.value.split(',').map(s => s.trim()))}
         />
       )
     },
     {
       accessorKey: 'type',
-      header: 'Tipe',
+      header: t('worksheet.columns.type'),
       cell: ({ row, getValue }) => (
         <Select 
           value={getValue<string>()} 
-          onValueChange={(v: ControlType) => updateMutation.mutate({ id: row.original.id, data: { type: v } })}
+          onValueChange={(v: ControlType) => commit.patch(row.original.id, { type: v })}
         >
           <SelectTrigger className="h-11 md:h-7 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 bg-white w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Preventive">Preventive</SelectItem>
-            <SelectItem value="Detective">Detective</SelectItem>
+            <SelectItem value="Preventive">{t('worksheet.options.preventive')}</SelectItem>
+            <SelectItem value="Detective">{t('worksheet.options.detective')}</SelectItem>
           </SelectContent>
         </Select>
       )
     },
     {
       accessorKey: 'nature',
-      header: 'Sifat',
+      header: t('worksheet.columns.nature'),
       cell: ({ row, getValue }) => (
         <Select 
           value={getValue<string>()} 
-          onValueChange={(v: ControlNature) => updateMutation.mutate({ id: row.original.id, data: { nature: v } })}
+          onValueChange={(v: ControlNature) => commit.patch(row.original.id, { nature: v })}
         >
           <SelectTrigger className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 bg-white min-w-[80px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Manual">Manual</SelectItem>
-            <SelectItem value="Automated">Automated</SelectItem>
-            <SelectItem value="ITDM - IPE">ITDM - IPE</SelectItem>
-            <SelectItem value="ITDM - EUC">ITDM - EUC</SelectItem>
-            <SelectItem value="MRC">MRC</SelectItem>
+            <SelectItem value="Manual">{t('worksheet.options.manual')}</SelectItem>
+            <SelectItem value="Automated">{t('worksheet.options.automated')}</SelectItem>
+            <SelectItem value="ITDM - IPE">{t('worksheet.options.itdmIpe')}</SelectItem>
+            <SelectItem value="ITDM - EUC">{t('worksheet.options.itdmEuc')}</SelectItem>
+            <SelectItem value="MRC">{t('worksheet.options.mrc')}</SelectItem>
           </SelectContent>
         </Select>
       )
     },
     {
       accessorKey: 'applicationId',
-      header: 'Aplikasi Signifikan',
+      header: t('worksheet.columns.application'),
       cell: ({ row, getValue }) => (
         <Select 
           value={getValue<string>() || "none"} 
@@ -347,19 +334,19 @@ export function createWorksheetColumns({
             if (v === 'add-new') {
               setIsAddingApp(true);
             } else {
-              updateMutation.mutate({ id: row.original.id, data: { applicationId: v === 'none' ? undefined : v } });
+              commit.patch(row.original.id, { applicationId: v === 'none' ? undefined : v });
             }
           }}
         >
           <SelectTrigger className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs border-slate-200 bg-white min-w-[120px]">
-            <SelectValue placeholder="Pilih..." />
+            <SelectValue placeholder={t('worksheet.placeholders.application')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">-- None --</SelectItem>
+            <SelectItem value="none">{t('worksheet.options.none')}</SelectItem>
             {apps?.items.map(app => (
               <SelectItem key={app.id} value={app.id}>{app.name}</SelectItem>
             ))}
-            <SelectItem value="add-new" className="text-primary font-bold border-t mt-1">+ Add New Application</SelectItem>
+            <SelectItem value="add-new" className="text-primary font-bold border-t mt-1">{t('worksheet.options.addNewApplication')}</SelectItem>
           </SelectContent>
         </Select>
       )
