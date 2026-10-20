@@ -23,6 +23,11 @@ async function sync() {
     process.exit(1);
   }
 
+  if (!DATABASE_URL) {
+    console.log("⚠️ DATABASE_URL not set. Skipping AI Knowledge Base sync.");
+    return;
+  }
+
   const rawContent = fs.readFileSync(GUIDE_PATH, "utf-8");
   const content = rawContent.replace(/\r\n/g, "\n");
   const hash = crypto.createHash("sha256").update(content).digest("hex");
