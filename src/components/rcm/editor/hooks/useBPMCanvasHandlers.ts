@@ -97,7 +97,7 @@ export function useBPMCanvasHandlers({
           width: actDims.width,
           height: actDims.height,
           draggable: !isLocked,
-          zIndex: 10,
+          zIndex: 5,
           data: {
             label: parsedData.mappedControlName || parsedData.riskDescription || t('bpm:editor.nodes.activity'),
             role: t('bpm:editor.roles.default'),

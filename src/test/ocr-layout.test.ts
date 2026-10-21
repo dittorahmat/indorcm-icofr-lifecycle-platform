@@ -340,5 +340,45 @@ describe('ocr-layout — KUR BPM fidelity', () => {
     expect(edge?.sourceHandle).toBe('right');
     expect(edge?.targetHandle).toBe('left');
   });
+
+  it('dynamically expands swimlane width and spaces parallel branches without overlapping', () => {
+    const raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] } = {
+      nodes: [
+        { id: 'lane-main', type: 'swimlane', label: 'OPERASIONAL', position: { x: 0, y: 0 } },
+        { id: 'start', type: 'start', label: 'Mulai', position: { x: 50, y: 50 }, parentId: 'lane-main' },
+        { id: 'branch-a', type: 'activity', label: 'Cabang A', position: { x: 30, y: 150 }, parentId: 'lane-main' },
+        { id: 'branch-b', type: 'activity', label: 'Cabang B', position: { x: 150, y: 150 }, parentId: 'lane-main' },
+        { id: 'end', type: 'end', label: 'Selesai', position: { x: 50, y: 250 }, parentId: 'lane-main' },
+      ],
+      edges: [
+        { id: 'e1', source: 'start', target: 'branch-a' },
+        { id: 'e2', source: 'start', target: 'branch-b' },
+        { id: 'e3', source: 'branch-a', target: 'end' },
+        { id: 'e4', source: 'branch-b', target: 'end' },
+      ],
+    };
+
+    const laid = layoutOcrDiagram(raw);
+    const laneNode = laid.nodes.find((n) => n.id === 'lane-main');
+    expect(laneNode).toBeDefined();
+    // With 2 parallel activities (width 160 each) + margins, width must expand beyond default 400
+    expect(laneNode!.width).toBeGreaterThanOrEqual(480);
+
+    const nodeA = laid.nodes.find((n) => n.id === 'branch-a')!;
+    const nodeB = laid.nodes.find((n) => n.id === 'branch-b')!;
+    expect(nodeA).toBeDefined();
+    expect(nodeB).toBeDefined();
+
+    // Check horizontal clearance: node B must not overlap node A
+    const leftNode = nodeA.position.x < nodeB.position.x ? nodeA : nodeB;
+    const rightNode = leftNode === nodeA ? nodeB : nodeA;
+    const horizontalClearance = rightNode.position.x - (leftNode.position.x + leftNode.width);
+    expect(horizontalClearance).toBeGreaterThanOrEqual(40);
+
+    // Check vertical clearance between start and branch
+    const startNode = laid.nodes.find((n) => n.id === 'start')!;
+    const verticalClearanceStartToBranch = nodeA.position.y - (startNode.position.y + startNode.height);
+    expect(verticalClearanceStartToBranch).toBeGreaterThanOrEqual(50);
+  });
 });
 

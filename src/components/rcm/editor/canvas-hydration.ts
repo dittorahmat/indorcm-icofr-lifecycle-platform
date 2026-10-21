@@ -16,9 +16,9 @@ import { canonicalizeHandleId } from '@/utils/bpm-constants';
  * with the OCR adapter — it is that path's concern, not the canvas contract.
  */
 
-/** Badge nodes ride above the shape they annotate. */
+/** Badge nodes ride above the shape and edges they annotate. */
 const BADGE_Z_INDEX = 20;
-const SHAPE_Z_INDEX = 10;
+const SHAPE_Z_INDEX = 5;
 
 /** Swimlanes are dragged by their header, never by their body. */
 export const SWIMLANE_DRAG_HANDLE = '.swimlane-drag-handle';

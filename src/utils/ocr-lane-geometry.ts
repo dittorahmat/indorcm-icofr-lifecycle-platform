@@ -41,9 +41,14 @@ export function orderLanes(lanes: OcrRawNode[], childMap: Map<string, OcrRawNode
   });
 }
 
-export function computeLaneWidths(sortedLanes: OcrRawNode[], childMap: Map<string, OcrRawNode[]>): Map<string, number> {
+export function computeLaneWidths(
+  sortedLanes: OcrRawNode[],
+  childMap: Map<string, OcrRawNode[]>,
+  edges: OcrRawEdge[] = []
+): Map<string, number> {
   const out = new Map<string, number>();
   let globalMaxNodeWidth = 0;
+  let maxGlobalParallelInLane = 1;
 
   for (const lane of sortedLanes) {
     const children = childMap.get(lane.id) ?? [];
@@ -51,10 +56,32 @@ export function computeLaneWidths(sortedLanes: OcrRawNode[], childMap: Map<strin
       const d = getStandardNodeDimensions(c.type);
       if (d.width > globalMaxNodeWidth) globalMaxNodeWidth = d.width;
     }
+
+    if (children.length > 1) {
+      const childIdSet = new Set(children.map((c) => c.id));
+      const intraLaneEdges = edges.filter((e) => childIdSet.has(e.source) && childIdSet.has(e.target));
+      const depthMap = buildDepthMap(children, intraLaneEdges);
+      const rankCounts = new Map<number, number>();
+      for (const c of children) {
+        const r = depthMap.get(c.id) ?? 0;
+        rankCounts.set(r, (rankCounts.get(r) ?? 0) + 1);
+      }
+      for (const count of rankCounts.values()) {
+        if (count > maxGlobalParallelInLane) {
+          maxGlobalParallelInLane = count;
+        }
+      }
+    }
   }
 
-  // Uniform equalized width for all lanes: at least LANE_MIN_W, or comfortably wide for the largest node
-  const uniformWidth = Math.max(LANE_MIN_W, globalMaxNodeWidth + 180);
+  // Uniform equalized width for all lanes:
+  // If lanes contain multiple parallel nodes in a rank, expand width so each parallel branch has comfortable room.
+  const baseNodeW = Math.max(200, globalMaxNodeWidth);
+  const minRequiredByParallel = maxGlobalParallelInLane > 1
+    ? maxGlobalParallelInLane * (baseNodeW + 40) + 120
+    : LANE_MIN_W;
+
+  const uniformWidth = Math.max(LANE_MIN_W, minRequiredByParallel, globalMaxNodeWidth + 180);
 
   for (const lane of sortedLanes) {
     out.set(lane.id, uniformWidth);

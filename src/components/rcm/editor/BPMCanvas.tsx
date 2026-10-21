@@ -91,7 +91,7 @@ export function BPMCanvas(props: BPMCanvasProps) {
       {/* ReactFlow Canvas Viewport */}
       <div
         className={
-          'flex-1 relative h-full w-full overflow-hidden' +
+          'flex-1 relative h-full w-full overflow-hidden [&_.react-flow__edges]:z-10' +
           (isConnecting ? ' [&_.react-flow__handle]:opacity-100 [&_.react-flow__handle]:scale-110' : '')
         }
       >

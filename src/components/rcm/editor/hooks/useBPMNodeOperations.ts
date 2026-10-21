@@ -141,7 +141,7 @@ export function useBPMNodeOperations({
           width: dims.width,
           height: dims.height,
           draggable: !isLocked,
-          zIndex: 10,
+          zIndex: 5,
           data: {
             label,
             role: t('bpm:editor.roles.default'),

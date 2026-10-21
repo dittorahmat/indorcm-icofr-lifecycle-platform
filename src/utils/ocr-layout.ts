@@ -105,7 +105,7 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
     }
   }
 
-  const laneWidthMap = computeLaneWidths(sortedLanes, childMap);
+  const laneWidthMap = computeLaneWidths(sortedLanes, childMap, filteredEdges);
   let uniformHeight = computeUniformHeight(sortedLanes, childMap);
 
   const lanePos = new Map<string, { x: number; y: number; width: number; height: number }>();
@@ -174,10 +174,10 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
       const groupNodes = rankGroups.get(r)!;
       groupNodes.sort((a, b) => a.position.x - b.position.x || a.position.y - b.position.y);
 
-      // Ensure targetY respects both rank spacing and the actual bounding box of previously placed nodes
+      // Ensure targetY respects both rank spacing and ample bounding box clearance (>= 50px)
       let targetY = HEADER_OFFSET + r * ROW_HEIGHT;
-      if (targetY <= lastUsedY + 24) {
-        targetY = lastUsedY + 28;
+      if (targetY < lastUsedY + 50) {
+        targetY = lastUsedY + 50;
       }
 
       const count = groupNodes.length;
@@ -189,9 +189,12 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
         let nodeY = targetY;
 
         if (count > 1) {
-          const stepOffset = Math.min(30, (pos.width - dims.width - 40) / count);
-          relX = Math.round((pos.width - dims.width) / 2) + (i - (count - 1) / 2) * stepOffset;
-          nodeY = targetY + i * (dims.height + 20);
+          // Generously distribute parallel branch nodes across the lane width
+          const availableW = pos.width - 60;
+          const slotW = availableW / count;
+          relX = Math.round(30 + i * slotW + (slotW - dims.width) / 2);
+          // Keep same rank nodes aligned on targetY unless they need slight stagger
+          nodeY = targetY;
         }
 
         nodesOut.push({
