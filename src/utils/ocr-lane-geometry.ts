@@ -60,15 +60,10 @@ export function computeLaneWidths(
     if (children.length > 1) {
       const childIdSet = new Set(children.map((c) => c.id));
       const intraLaneEdges = edges.filter((e) => childIdSet.has(e.source) && childIdSet.has(e.target));
-      const depthMap = buildDepthMap(children, intraLaneEdges);
-      const rankCounts = new Map<number, number>();
-      for (const c of children) {
-        const r = depthMap.get(c.id) ?? 0;
-        rankCounts.set(r, (rankCounts.get(r) ?? 0) + 1);
-      }
-      for (const count of rankCounts.values()) {
-        if (count > maxGlobalParallelInLane) {
-          maxGlobalParallelInLane = count;
+      const rankGroups = groupNodesByRank(children, intraLaneEdges);
+      for (const nodesInRank of rankGroups.values()) {
+        if (nodesInRank.length > maxGlobalParallelInLane) {
+          maxGlobalParallelInLane = nodesInRank.length;
         }
       }
     }
@@ -98,6 +93,21 @@ export function computeUniformHeight(sortedLanes: OcrRawNode[], childMap: Map<st
     if (h > maxH) maxH = h;
   }
   return Math.max(LANE_MIN_H, maxH);
+}
+
+export function groupNodesByRank(children: OcrRawNode[], intraEdges: OcrRawEdge[]): Map<number, OcrRawNode[]> {
+  const depthMap = buildDepthMap(children, intraEdges);
+  const rankGroups = new Map<number, OcrRawNode[]>();
+  for (const child of children) {
+    const r = depthMap.get(child.id) ?? 0;
+    const existing = rankGroups.get(r);
+    if (existing) {
+      existing.push(child);
+    } else {
+      rankGroups.set(r, [child]);
+    }
+  }
+  return rankGroups;
 }
 
 export function buildDepthMap(children: OcrRawNode[], intraEdges: OcrRawEdge[]): Map<string, number> {

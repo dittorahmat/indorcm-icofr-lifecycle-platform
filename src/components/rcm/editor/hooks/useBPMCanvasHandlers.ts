@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import type { Dispatch, SetStateAction, DragEvent } from 'react';
 import type { Node, Edge } from 'reactflow';
 import { toast } from 'sonner';
-import { getStandardNodeDimensions } from '@/utils/bpm-constants';
+import { getStandardNodeDimensions, BPM_CANVAS_Z_INDEX } from '@/utils/bpm-constants';
 import type { BPMDiagramSheet } from '@shared/types';
 import { applyOcrImport } from '../ocr/ocr-import-adapter';
 import { enrichCanvasNodes } from '../ocr/ocr-node-normalize';
@@ -97,7 +97,7 @@ export function useBPMCanvasHandlers({
           width: actDims.width,
           height: actDims.height,
           draggable: !isLocked,
-          zIndex: 5,
+          zIndex: BPM_CANVAS_Z_INDEX.SHAPE,
           data: {
             label: parsedData.mappedControlName || parsedData.riskDescription || t('bpm:editor.nodes.activity'),
             role: t('bpm:editor.roles.default'),

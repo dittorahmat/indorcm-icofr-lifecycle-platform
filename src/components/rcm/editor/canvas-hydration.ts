@@ -1,6 +1,6 @@
 import { MarkerType } from 'reactflow';
 import type { Edge, Node } from 'reactflow';
-import { canonicalizeHandleId } from '@/utils/bpm-constants';
+import { canonicalizeHandleId, BPM_CANVAS_Z_INDEX } from '@/utils/bpm-constants';
 
 /**
  * canvas-hydration — the ONE place that turns a persisted or staged node/edge
@@ -15,10 +15,6 @@ import { canonicalizeHandleId } from '@/utils/bpm-constants';
  * Node *data* normalization (labels, `regulatoryPairs`, role defaults) stays
  * with the OCR adapter — it is that path's concern, not the canvas contract.
  */
-
-/** Badge nodes ride above the shape and edges they annotate. */
-const BADGE_Z_INDEX = 20;
-const SHAPE_Z_INDEX = 5;
 
 /** Swimlanes are dragged by their header, never by their body. */
 export const SWIMLANE_DRAG_HANDLE = '.swimlane-drag-handle';
@@ -42,7 +38,9 @@ export function canvasNodeChrome(
   const swimlane = isSwimlaneNode(node);
   return {
     draggable: !isLocked && !node.data?.isLocked,
-    zIndex: swimlane ? -1 : (node.zIndex ?? (node.id.startsWith('badge_') ? BADGE_Z_INDEX : SHAPE_Z_INDEX)),
+    zIndex: swimlane
+      ? BPM_CANVAS_Z_INDEX.SWIMLANE
+      : (node.zIndex ?? (node.id.startsWith('badge_') ? BPM_CANVAS_Z_INDEX.BADGE : BPM_CANVAS_Z_INDEX.SHAPE)),
     dragHandle: swimlane ? SWIMLANE_DRAG_HANDLE : undefined,
   };
 }

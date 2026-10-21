@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { Node, Edge } from 'reactflow';
-import { getStandardNodeDimensions, DEFAULT_SWIMLANE_DIMENSIONS } from '@/utils/bpm-constants';
+import { getStandardNodeDimensions, DEFAULT_SWIMLANE_DIMENSIONS, BPM_CANVAS_Z_INDEX } from '@/utils/bpm-constants';
 import { linkedIdsOf, regulatoryPairsOf } from '@shared/control-linkage';
 import { isBpmNodeType } from '@shared/bpm-node-types';
 import { nodeLabelKeyOf } from '@shared/bpm-node-registry';
@@ -141,7 +141,7 @@ export function useBPMNodeOperations({
           width: dims.width,
           height: dims.height,
           draggable: !isLocked,
-          zIndex: 5,
+          zIndex: BPM_CANVAS_Z_INDEX.SHAPE,
           data: {
             label,
             role: t('bpm:editor.roles.default'),

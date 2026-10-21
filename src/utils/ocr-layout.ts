@@ -6,7 +6,7 @@ import {
   orderLanes,
   computeLaneWidths,
   computeUniformHeight,
-  buildDepthMap,
+  groupNodesByRank,
 } from './ocr-lane-geometry';
 
 export type { OcrRawNode, OcrRawEdge, OcrLayoutWarning } from './ocr-validate';
@@ -158,14 +158,7 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
     // Filter edges that connect nodes within this same swimlane
     const childIdSet = new Set(children.map((c) => c.id));
     const intraLaneEdges = filteredEdges.filter((e) => childIdSet.has(e.source) && childIdSet.has(e.target));
-    const laneDepthMap = buildDepthMap(children, intraLaneEdges);
-
-    const rankGroups = new Map<number, OcrRawNode[]>();
-    for (const child of children) {
-      const r = laneDepthMap.get(child.id) ?? 0;
-      if (!rankGroups.has(r)) rankGroups.set(r, []);
-      rankGroups.get(r)!.push(child);
-    }
+    const rankGroups = groupNodesByRank(children, intraLaneEdges);
 
     const sortedRanks = Array.from(rankGroups.keys()).sort((a, b) => a - b);
     let lastUsedY = HEADER_OFFSET - GAP_Y;
@@ -186,22 +179,19 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
         const dims = getStandardNodeDimensions(child.type);
 
         let relX = Math.round((pos.width - dims.width) / 2);
-        let nodeY = targetY;
 
         if (count > 1) {
           // Generously distribute parallel branch nodes across the lane width
           const availableW = pos.width - 60;
           const slotW = availableW / count;
           relX = Math.round(30 + i * slotW + (slotW - dims.width) / 2);
-          // Keep same rank nodes aligned on targetY unless they need slight stagger
-          nodeY = targetY;
         }
 
         nodesOut.push({
           id: child.id,
           type: child.type,
           label: child.label,
-          position: { x: relX, y: nodeY },
+          position: { x: relX, y: targetY },
           parentId: lane.id,
           width: dims.width,
           height: dims.height,
@@ -209,8 +199,8 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
           function: child.function,
         });
 
-        if (nodeY + dims.height > lastUsedY) {
-          lastUsedY = nodeY + dims.height;
+        if (targetY + dims.height > lastUsedY) {
+          lastUsedY = targetY + dims.height;
         }
       }
     }

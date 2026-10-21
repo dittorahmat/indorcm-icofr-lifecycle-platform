@@ -29,6 +29,15 @@ export const DEFAULT_SWIMLANE_DIMENSIONS: {
   laneGap: 16
 };
 
+// Canonical canvas layering hierarchy
+export const BPM_CANVAS_Z_INDEX = {
+  SWIMLANE: -1,
+  SHAPE: 5,
+  EDGE: 10,
+  BADGE: 20,
+  HANDLE_DRAG: 30,
+} as const;
+
 export const DEFAULT_NODE_SPACING = {
   verticalGap: 70,
   horizontalGap: 60,
