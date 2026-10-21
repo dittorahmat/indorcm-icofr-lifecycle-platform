@@ -1,11 +1,14 @@
 import { getTableName } from 'drizzle-orm';
 import * as schema from '../../worker/db/schema';
+import { toDirectUrl, databaseHost } from './db-url.mjs';
 
 /**
  * Pure planning/verification logic for the identity clone. Kept out of the
  * script (and tested) so the rules that decide "clone succeeded" cannot drift
  * from the rules that perform the copy.
  */
+
+export { toDirectUrl, databaseHost };
 
 export interface IdentityTable {
   table: string;
@@ -26,10 +29,7 @@ export const IDENTITY_TABLES: IdentityTable[] = [
 
 export const IDENTITY_TABLE_NAMES: string[] = IDENTITY_TABLES.map((spec) => spec.table);
 
-/** Neon serves pooled URLs from a `-pooler` host; scripts need the direct one. */
-export function toDirectUrl(url: string): string {
-  return url.replace('-pooler', '');
-}
+
 
 /** True when two connection strings point at the same database (pooled or not). */
 export function isSameDatabase(left: string, right: string): boolean {
@@ -40,6 +40,80 @@ export function isSameDatabase(left: string, right: string): boolean {
   } catch {
     return toDirectUrl(left) === toDirectUrl(right);
   }
+}
+
+export interface TargetEnvSelection {
+  envName: string;
+  url: string;
+}
+
+export interface TargetEnvResult {
+  selection?: TargetEnvSelection;
+  error?: string;
+}
+
+/**
+ * Known target environment variable naming pattern. Target names identify an
+ * isolated instance database (e.g. `TEST_DATABASE_URL`, `DEMO_DATABASE_URL`).
+ */
+export const TARGET_ENV_SUFFIX = '_DATABASE_URL';
+
+/**
+ * Resolves the clone destination from `--target-env <NAME>` and the process
+ * environment (populated by dotenv or current shell process). There is deliberately
+ * no default: a shared target variable becomes ambiguous as soon as a third
+ * database exists.
+ */
+export function resolveTargetEnv(
+  argv: string[],
+  env: Record<string, string | undefined>,
+): TargetEnvResult {
+  const flagIndex = argv.indexOf('--target-env');
+  if (flagIndex === -1) {
+    return {
+      error:
+        'Missing --target-env <NAME>. Pass the environment variable name that holds the destination, ' +
+        'for example --target-env TEST_DATABASE_URL (or set it in .env / current environment).',
+    };
+  }
+
+  const envName = argv[flagIndex + 1];
+  if (!envName || envName.startsWith('--')) {
+    return { error: '--target-env requires a variable name, for example TEST_DATABASE_URL.' };
+  }
+
+  const url = env[envName];
+  if (!url || url.trim().length === 0) {
+    return {
+      error:
+        `Environment variable "${envName}" is not set or empty. Add ${envName}=... to .env ` +
+        'or export it before running the clone.',
+    };
+  }
+
+  return { selection: { envName, url } };
+}
+
+
+
+export interface TargetContentVerdict {
+  ok: boolean;
+  nonEmptyTables: string[];
+}
+
+/**
+ * Pre-write guard: the target's content tables must all be empty. Identity and
+ * operational tables are excluded by `selectContentTables` before this runs.
+ * The same verdict is used in dry-run and --apply, so a mis-targeted dry run
+ * fails before anyone can add --apply.
+ */
+export function evaluateTargetContent(counts: Record<string, number>): TargetContentVerdict {
+  const nonEmptyTables = Object.entries(counts)
+    .filter(([, count]) => count > 0)
+    .map(([table]) => table)
+    .sort();
+
+  return { ok: nonEmptyTables.length === 0, nonEmptyTables };
 }
 
 /**
@@ -121,4 +195,24 @@ export function evaluateClone(verification: CloneVerification): CloneVerdict {
   }
 
   return { ok: failures.length === 0, countMismatches, failures };
+}
+
+export interface PublicSchemaTableVerdict {
+  ok: boolean;
+  leftoverTables: string[];
+}
+
+/**
+ * Bootstrap invariant check: no application tables may exist in the public schema.
+ * All application tables must reside in the `icofr` schema with search_path pinned.
+ */
+export function evaluatePublicSchemaTables(tableNames: string[]): PublicSchemaTableVerdict {
+  const systemPublicTables = new Set(['spatial_ref_sys']);
+  const leftoverTables = tableNames
+    .filter((t) => !systemPublicTables.has(t))
+    .sort();
+  return {
+    ok: leftoverTables.length === 0,
+    leftoverTables,
+  };
 }

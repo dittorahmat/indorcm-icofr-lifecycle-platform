@@ -8,6 +8,10 @@ import {
   isSameDatabase,
   selectContentTables,
   evaluateClone,
+  evaluateTargetContent,
+  databaseHost,
+  resolveTargetEnv,
+  evaluatePublicSchemaTables,
   type CloneVerification,
 } from '../lib/clone-identity';
 
@@ -60,6 +64,72 @@ describe('connection string helpers', () => {
   it('falls back to string comparison for unparsable URLs', () => {
     expect(isSameDatabase('not-a-url', 'not-a-url')).toBe(true);
     expect(isSameDatabase('not-a-url', 'other')).toBe(false);
+  });
+});
+
+describe('resolveTargetEnv', () => {
+  const env = {
+    TEST_DATABASE_URL: 'postgresql://user:secret@ep-test.neon.tech/neondb',
+    EMPTY_DATABASE_URL: '',
+  };
+
+  it('requires the explicit flag instead of a shared default target', () => {
+    const result = resolveTargetEnv(['node', 'clone.ts'], env);
+    expect(result.selection).toBeUndefined();
+    expect(result.error).toContain('--target-env');
+  });
+
+  it('rejects a flag without a variable name', () => {
+    const result = resolveTargetEnv(['node', 'clone.ts', '--target-env'], env);
+    expect(result.selection).toBeUndefined();
+    expect(result.error).toContain('variable name');
+  });
+
+  it('fails closed when the named variable is missing or empty', () => {
+    expect(resolveTargetEnv(['node', 'clone.ts', '--target-env', 'NOPE_DATABASE_URL'], env).error).toContain(
+      'NOPE_DATABASE_URL',
+    );
+    expect(
+      resolveTargetEnv(['node', 'clone.ts', '--target-env', 'EMPTY_DATABASE_URL'], env).error,
+    ).toContain('EMPTY_DATABASE_URL');
+  });
+
+  it('returns the URL behind the named variable', () => {
+    const result = resolveTargetEnv(['node', 'clone.ts', '--target-env', 'TEST_DATABASE_URL'], env);
+    expect(result.error).toBeUndefined();
+    expect(result.selection).toEqual({
+      envName: 'TEST_DATABASE_URL',
+      url: env.TEST_DATABASE_URL,
+    });
+  });
+});
+
+describe('databaseHost', () => {
+  it('prints the host without credentials and strips the pooler marker', () => {
+    const host = databaseHost('postgresql://user:secret@ep-x-pooler.c-2.neon.tech/neondb');
+    expect(host).toBe('ep-x.c-2.neon.tech');
+    expect(host).not.toContain('secret');
+    expect(host).not.toContain('user');
+  });
+
+  it('never echoes an unparsable URL', () => {
+    expect(databaseHost('not-a-url')).toBe('invalid-url');
+  });
+});
+
+describe('evaluateTargetContent', () => {
+  it('passes only when every content table is empty', () => {
+    expect(evaluateTargetContent({ rcms: 0, documents: 0 })).toEqual({
+      ok: true,
+      nonEmptyTables: [],
+    });
+  });
+
+  it('names every non-empty table before a write', () => {
+    expect(evaluateTargetContent({ rcms: 2, documents: 0, materiality: 1 })).toEqual({
+      ok: false,
+      nonEmptyTables: ['materiality', 'rcms'],
+    });
   });
 });
 
@@ -135,5 +205,18 @@ describe('evaluateClone', () => {
     const verdict = evaluateClone({ ...passing, contentCounts: { rcms: 0, documents: 3 } });
     expect(verdict.ok).toBe(false);
     expect(verdict.failures.join(' ')).toContain('documents');
+  });
+});
+
+describe('evaluatePublicSchemaTables (Spec L48, L60 bootstrap invariant)', () => {
+  it('passes when no non-system tables exist in the public schema', () => {
+    expect(evaluatePublicSchemaTables([])).toEqual({ ok: true, leftoverTables: [] });
+    expect(evaluatePublicSchemaTables(['spatial_ref_sys'])).toEqual({ ok: true, leftoverTables: [] });
+  });
+
+  it('fails closed and flags any application table leftovers found in the public schema', () => {
+    const verdict = evaluatePublicSchemaTables(['documents', 'document_embeddings', 'spatial_ref_sys']);
+    expect(verdict.ok).toBe(false);
+    expect(verdict.leftoverTables).toEqual(['document_embeddings', 'documents']);
   });
 });

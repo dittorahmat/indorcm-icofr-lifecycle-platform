@@ -180,8 +180,16 @@ match. Runbook: `docs/DEPLOYMENT-MULTI-INSTANCE.md`; schema-sync exception:
   for a manual/CI deploy: it points at the last build, so a stale redirect can
   overwrite the other Worker. The shared-key, name, bucket, `ENV`,
   `BETTER_AUTH_URL`, no-secrets, and artifact-path invariants are locked by
-  `scripts/__tests__/deployment-config.test.ts`; add the equivalent test when a
-  third instance appears.
+  `scripts/__tests__/deployment-config.test.ts`, which derives its table from
+  every `wrangler*.jsonc` and fails on an uncovered config. Adding an instance
+  means adding its config, scripts, and table row — not another copy of the
+  assertions.
+- **Provisioning names its target.** The identity clone takes
+  `--target-env <NAME>` (no default), prints source/target hosts without
+  credentials, and refuses a non-empty target before writing. Every database
+  bootstrap must also pin the role's `search_path` to `icofr, public`
+  (`scripts/db-extensions.mjs`); the Worker opens connections without one, so a
+  fresh Neon database otherwise resolves `public` and fails every query.
 - **Verification reads both sides and fails closed.** A clone/sync/mirror script
   compares each value from its own database/file — never the target joined to
   itself — and treats "no comparable rows" as failure, not success. No
@@ -199,6 +207,17 @@ match. Runbook: `docs/DEPLOYMENT-MULTI-INSTANCE.md`; schema-sync exception:
   resolve to the same database, and `check:any-delta` now counts non-null
   assertions as well as `any`/escape-casts (test files are exempt from the
   non-null half because banned syntax is legitimate fixture data).
+- **Integritas multi-instance & zero drift normalizer.** Helper URL/database host wajib
+  bersumber tunggal via `scripts/lib/db-url.mjs` (`toDirectUrl`, `databaseHost`).
+  Dilarang duplikasi inline `new URL(...).host` fallback di script baru.
+  Target clone wajib ditentukan secara eksplisit via `--target-env <NAME>` tanpa default.
+- **Bootstrap schema & public exclusion invariant.** Setiap bootstrap database instance baru
+  wajib mengunci `search_path TO icofr, public` dan memastikan tidak ada tabel aplikasi yang tertinggal
+  di skema `public`. Invariant ini dikunci otomatis secara runtime oleh `npm run db:check` dan unit test
+  pendamping `evaluatePublicSchemaTables` (`scripts/__tests__/clone-identity.test.ts`).
+- **Locking tests untuk syarat deployment/spec.** Setiap requirement provisioning, DDL, atau deployment
+  baru pada proposal/spec wajib disertai unit test pengunci otomatis (pure verdict logic / table contract /
+  coverage scan) sebelum implementasi dianggap selesai.
 - **Secrets vs vars.** Deployment docs must not claim a value is a `vars` entry
   without showing it in the config; dashboard-only secrets are written as
   "secret Worker (dashboard)".

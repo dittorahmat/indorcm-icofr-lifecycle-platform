@@ -7,7 +7,11 @@ import {
   selectContentTables,
   toDirectUrl,
   evaluateClone,
+  evaluateTargetContent,
+  databaseHost,
+  resolveTargetEnv,
   type CloneVerification,
+  type TargetEnvSelection,
 } from './lib/clone-identity';
 
 /**
@@ -29,27 +33,36 @@ import {
  * or `ChangeLog` row. Application-level auditability starts after go-live.
  *
  * Usage:
- *   TARGET_DATABASE_URL=... npx tsx scripts/clone-identity-to-tenant.ts            # dry run
- *   TARGET_DATABASE_URL=... npx tsx scripts/clone-identity-to-tenant.ts --apply    # write
+ *   npx tsx scripts/clone-identity-to-tenant.ts --target-env TEST_DATABASE_URL            # dry run
+ *   npx tsx scripts/clone-identity-to-tenant.ts --target-env TEST_DATABASE_URL --apply    # write
  *
- * Source resolution: SOURCE_DATABASE_URL, else DATABASE_URL.
+ * `.env` is loaded inside this process by dotenv. The named variable must
+ * exist in `.env` or in the process's exported environment.
+ *
+ * Both modes refuse a non-empty target before reading identity rows, so a
+ * mis-targeted dry run also fails safely. Source resolution:
+ * SOURCE_DATABASE_URL, else DATABASE_URL.
  */
 
 const apply = process.argv.includes('--apply');
 const sourceUrl = process.env.SOURCE_DATABASE_URL || process.env.DATABASE_URL;
-const targetUrl = process.env.TARGET_DATABASE_URL;
+const resolvedTarget = resolveTargetEnv(process.argv, process.env);
+const selection = resolvedTarget.selection;
 
-if (!sourceUrl || !targetUrl) {
-  console.error('❌ SOURCE_DATABASE_URL (or DATABASE_URL) and TARGET_DATABASE_URL are required.');
+if (!sourceUrl) {
+  console.error('❌ SOURCE_DATABASE_URL (or DATABASE_URL) is required.');
   process.exitCode = 1;
-} else if (apply && isSameDatabase(sourceUrl, targetUrl)) {
+} else if (!selection) {
+  console.error(`❌ ${resolvedTarget.error}`);
+  process.exitCode = 1;
+} else if (apply && isSameDatabase(sourceUrl, selection.url)) {
   console.error(
     '❌ Refusing to --apply: source and target resolve to the same database.\n' +
       '   Drop --apply to run the read-only parity check against one database.',
   );
   process.exitCode = 1;
 } else {
-  run(sourceUrl, targetUrl).catch((error) => {
+  run(sourceUrl, selection).catch((error) => {
     console.error('❌ Identity clone failed:', error);
     process.exitCode = 1;
   });
@@ -137,7 +150,13 @@ async function compareCredentialHashes(source: postgres.Sql, target: postgres.Sq
   return { credentialRows: sourceAccounts.length, comparableHashes, hashMismatches };
 }
 
-async function run(sourceUrl: string, targetUrl: string): Promise<void> {
+async function run(sourceUrl: string, selection: TargetEnvSelection): Promise<void> {
+  const targetUrl = selection.url;
+
+  console.log(`🔗 Source database: ${databaseHost(sourceUrl)}`);
+  console.log(`🎯 Target (${selection.envName}): ${databaseHost(targetUrl)}`);
+  console.log(`   Mode: ${apply ? 'APPLY' : 'DRY RUN'}`);
+
   if (isSameDatabase(sourceUrl, targetUrl)) {
     console.log('ℹ️  Source and target are the same database — read-only parity check.');
   }
@@ -152,6 +171,21 @@ async function run(sourceUrl: string, targetUrl: string): Promise<void> {
   await target.unsafe('SET search_path TO icofr, public');
 
   try {
+    const targetContentTables = await listContentTables(target);
+    const contentBefore = await countAll(target, targetContentTables);
+    const targetVerdict = evaluateTargetContent(contentBefore);
+    if (!targetVerdict.ok) {
+      console.error(
+        `\n❌ Refusing to continue: target content is not empty: ${targetVerdict.nonEmptyTables.join(', ')}.`,
+      );
+      console.error(
+        '   No identity row was written. Check --target-env, or start from a database whose content is empty.',
+      );
+      process.exitCode = 1;
+      return;
+    }
+    console.log(`\n✅ Preflight: ${targetContentTables.length} content table(s) are empty on the target.`);
+
     console.log(`🔎 Reading identity tables from the source (${apply ? 'APPLY' : 'DRY RUN'})...`);
     const sourceCounts = await countAll(source, IDENTITY_TABLE_NAMES);
     const targetCountsBefore = await countAll(target, IDENTITY_TABLE_NAMES);

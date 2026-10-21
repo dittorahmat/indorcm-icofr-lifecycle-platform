@@ -49,14 +49,35 @@ if (process.env.DATABASE_URL) {
     const rows = await sql.unsafe(
       "SELECT extname FROM pg_extension WHERE extname IN ('vector','pg_trgm')",
     );
-    await sql.end();
     const have = new Set(rows.map((r) => r.extname));
     const missing = ['vector', 'pg_trgm'].filter((e) => !have.has(e));
     if (missing.length > 0) {
       console.error(`[db:check] FAIL: missing DB extensions: ${missing.join(', ')}. Run \`npm run db:extensions\` first.`);
+      await sql.end();
       process.exit(1);
     }
     console.log('[db:check] OK: extensions vector + pg_trgm present.');
+
+    // Public schema table exclusion gate: application tables must reside in icofr schema,
+    // not left accidentally in public during fresh database bootstrap.
+    const publicAppTables = await sql.unsafe(`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_type = 'BASE TABLE'
+        AND table_name NOT IN ('spatial_ref_sys')
+    `);
+    await sql.end();
+
+    if (publicAppTables.length > 0) {
+      const offending = publicAppTables.map((t) => t.table_name).join(', ');
+      console.error(
+        `[db:check] FAIL: found application/leftover tables in public schema (${offending}). ` +
+          'All tables must reside in `icofr` schema with search_path pinned to `icofr, public`.',
+      );
+      process.exit(1);
+    }
+    console.log('[db:check] OK: public schema has no application table leftovers.');
   } catch (e) {
     console.error(`[db:check] FAIL: extension check errored: ${e.code ?? ''} ${e.message ?? e}`);
     process.exit(1);
