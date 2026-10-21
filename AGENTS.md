@@ -90,6 +90,9 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
     *   **Integritas Multi-Instance & Zero Drift Normalizer:** Normalizer URL/host untuk database dan DDL wajib bersumber tunggal (via `scripts/lib/db-url.mjs`); dilarang duplikasi inline `new URL(...).host` fallback. Variabel target clone wajib eksplisit melalui `--target-env <NAME>` tanpa shared fallback ambigu (`scripts/lib/clone-identity.ts`).
     *   **Bootstrap Schema & Public Exclusion Invariant:** Setiap bootstrap database instance baru wajib mengunci `search_path TO icofr, public` dan memastikan tidak ada tabel aplikasi yang tertinggal di skema `public`. Invariant ini dikunci otomatis oleh `npm run db:check` dan unit test pendamping `evaluatePublicSchemaTables`.
     *   **Locking Tests untuk Syarat Deployment/Spec:** Setiap requirement provisioning atau deployment baru pada spec/proposal wajib disertai unit test pengunci otomatis (pure verdict logic / table contract / coverage scan) sebelum implementasi dianggap selesai; tidak boleh hanya mengandalkan smoke-test manual.
+12. **Protokol Validasi Pra-Commit & Konsistensi Line-Ending (Wajib):**
+    *   **Gate Prasyarat Commit:** Sebelum menjalankan `git commit`, agen WAJIB menjalankan `npm run check:any-delta -- <file-tersentuh...>` untuk memastikan tidak ada non-null assertion (`!`), `any`, atau escape-cast yang tidak sengaja tertulis pada refactoring atau kode baru. Menunda pengecekan hingga hook commit berisiko mematahkan alur eksekusi otomatis.
+    *   **Konsistensi LF Windows:** Repository ini mengunci line-ending LF secara universal via `.gitattributes`. Dilarang mengedit file menjadi CRLF (`\r\n`); semua tools atau manipulasi file harus mempertahankan LF murni agar pencarian string/diff tidak gagal.
 
 ## Development Conventions
 
