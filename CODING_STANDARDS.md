@@ -180,3 +180,25 @@ data (an application's own name). Precedent: `BPMWorksheetColumns.tsx`
 (`worksheet.columns.*`, `worksheet.placeholders.*`, `worksheet.options.*`,
 `worksheet.elc.*`), locked by `BPMWorksheetColumns.test.ts`, where every string
 header must match `/^worksheet\./`.
+
+## Verification scripts read both sides and fail closed
+
+A script that claims two things are identical — identity clone, tenant sync,
+mirror, restore check — must obtain each compared value from its own source. A
+comparison that joins the target to itself proves only self-consistency: it
+passes on an empty database and on a completely wrong copy. "Nothing to compare"
+is a failure, not a pass.
+
+Why: the first identity-clone verifier joined `account` to `account` on the
+target, so the hash check compared zero rows and still reported "identical"; the
+hand-picked content list then missed tables added after it was written, while
+the source database was never read.
+
+Check: for every comparison in the diff, point at (a) the query against the
+source, (b) the query against the target, (c) the branch that fails when the
+comparable count is zero or below the expected count, and (d) the test locking
+the verdict. Emptiness claims enumerate the live catalog
+(`pg_tables`/`information_schema`); excluded runtime tables are named and
+justified in code. `--apply` refuses when source and target resolve to the same
+database. Precedents: `scripts/lib/clone-identity.ts`,
+`scripts/__tests__/clone-identity.test.ts`.

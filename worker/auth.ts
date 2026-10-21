@@ -4,11 +4,12 @@ import { organization } from "better-auth/plugins";
 import { getDb } from "./db";
 import * as schema from "./db/schema";
 import crypto from "node:crypto";
+import { resolveTrustedOrigins } from "./lib/trusted-origins";
 
 let authInstance: any = null;
 let lastDbUrl: string | null = null;
 
-export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string; BETTER_AUTH_URL?: string; SKIP_LICENSE?: string }) => {
+export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string; BETTER_AUTH_URL?: string; TRUSTED_ORIGINS?: string; SKIP_LICENSE?: string }) => {
     const isCloudflare = typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers';
 
     if (!isCloudflare && authInstance && lastDbUrl === env.DATABASE_URL) {
@@ -32,10 +33,7 @@ export const getAuth = (env: { DATABASE_URL: string; BETTER_AUTH_SECRET: string;
         secret: env.BETTER_AUTH_SECRET,
         baseURL: env.BETTER_AUTH_URL || "http://localhost:3000",
         basePath: "/api/auth",
-        trustedOrigins: [
-            env.BETTER_AUTH_URL || "http://localhost:3000",
-            "https://icofr.tech1solusi.workers.dev"
-        ],
+        trustedOrigins: resolveTrustedOrigins(env.BETTER_AUTH_URL, env.TRUSTED_ORIGINS),
         emailAndPassword: {
             enabled: true,
             password: {

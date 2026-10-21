@@ -1,13 +1,13 @@
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from '../worker/db/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { config } from 'dotenv';
 import path from 'path';
+import { requireEnv } from './lib/require-env';
 
 config({ path: path.resolve(process.cwd(), '.env') });
-const dbUrl = process.env.DATABASE_URL;
-const sqlClient = neon(dbUrl!);
+const sqlClient = neon(requireEnv('DATABASE_URL'));
 const db = drizzle(sqlClient, { schema });
 
 async function run() {
@@ -21,8 +21,7 @@ async function run() {
     
     // Check if there's a 2026 version of this process
     const proc2026 = await db.select().from(schema.bpmProcesses)
-      .where(eq(schema.bpmProcesses.name, proc[0].name))
-      .where(eq(schema.bpmProcesses.year, 2026));
+      .where(and(eq(schema.bpmProcesses.name, proc[0].name), eq(schema.bpmProcesses.year, 2026)));
     console.log('Is there a 2026 version of this process?', proc2026.length > 0 ? 'Yes' : 'No');
     if (proc2026.length > 0) {
         console.log('2026 Process ID:', proc2026[0].id);

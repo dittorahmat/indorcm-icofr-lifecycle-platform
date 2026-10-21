@@ -1,9 +1,11 @@
 # Repo guardrails: gates beyond type-check/lint/test
 
-Three gate families live outside `tsc`/`eslint`/`vitest`. All are plain-node
-scripts (one, `check:workflows`, needs a YAML parser — see its row) plus
-route-lock tests. Run them before pushing; CI
-(`verify.yml`, step "Repo gates") re-runs the deterministic subset on PRs.
+`tsc` covers four projects (`src`, `worker`, `scripts/**`, `vite.config.ts`) —
+every `.ts` file in the repo belongs to one of them. The gate families below add
+smell/contract checks on top; all are plain-node scripts (one,
+`check:workflows`, needs a YAML parser — see its row) plus route-lock tests. Run
+them before pushing; CI (`verify.yml`, step "Repo gates") re-runs the
+deterministic subset on PRs.
 
 ## Delta gates (touched files vs a base)
 
@@ -27,7 +29,7 @@ after the commit that passed before it.
 | Gate | Command | Rule |
 | --- | --- | --- |
 | LOC | `npm run check:loc -- [--base <ref>] <files...>` | Touched `src`/`worker`/`shared` `.ts`/`.tsx` file `>400` non-empty lines fails — except grandfathered files that strictly shrink vs the base (bug-fix paydown). Files outside that scope (locale/data JSON, docs, lockfiles) print `SKIP (out of LOC scope)` and never fail: touched mode applies the same scope as `--all`. `--all` scans the repo (fails on `>600`). Enforced in CI (not in the pre-commit hook — see "Local pre-commit" below); the shrink-only rule is mechanical, so no human judgement is needed. Count method: non-empty lines (`scripts/check-loc.mjs`), never raw `Measure-Object -Line`. |
-| any | `npm run check:any-delta -- [--base <ref>] <files...>` | More `any`/`as any`/`as never`/`as unknown as X` than base fails. Base defaults to the branch point; CI passes `--base origin/<base-ref>`. |
+| any | `npm run check:any-delta -- [--base <ref>] <files...>` | More `any`/`as any`/`as never`/`as unknown as X`/non-null `!` than base fails. Base defaults to the branch point; CI passes `--base origin/<base-ref>`. Test files are exempt from the non-null half (banned syntax is legitimate fixture data). Patterns live in `scripts/lib/any-smell-patterns.mjs` and are unit-tested. |
 | i18n | `npm run check:i18n -- [--base <ref>] <files...>` | (a) More hardcoded first-arg `toast.*("…")` literals than base fails. Dynamic args (`err.message`, `t('key')`) never match. (b) Any NEW static `t('key')` missing from the `en` locale bundle fails (delta vs base; pre-existing misses grandfathered). Dynamic keys skipped; missing-in-`id`-but-present-in-`en` allowed (English fallback). Test files excluded. Dev logs missing keys via `missingKey` in `src/i18n/config.ts`. Scope note: this gate does NOT see hardcoded copy in JSX text or `header:`/`placeholder:`/`title:` literals — a detector over those fires ~800 times across ~140 existing files (enum values, dates, tokens), so it would fail the next honest change. That half of the mandate is a reviewer rule in `CODING_STANDARDS.md`. |
 | worker prose | `npm run check:worker-strings -- [--base <ref>] <files...>` | More user-facing prose in a worker **code** slot than base fails — `bad(c, 'Kontrol tidak ditemukan')`, `notFound(c, '…')`, or `throw new Error('…')`. The code belongs on a literal union; prose belongs in the message arg (`AppError(code, message, status)`). Scope `worker/**/*.ts`, test files excluded. Baseline 81 findings (grandfathered by the delta; burn down on touch). Whole-tree inventory: `npm run check:worker-strings` (report mode, exits 0). |
 | route guards | `npm run check:rbac-delta -- [--base <ref>] <files...>` | A touched `worker/routes/**/*.ts` file that declares MORE mutating route registrations (POST/PUT/PATCH/DELETE) without a guard (`rbac(...)` / `assertDevAllowed(...)`) than its base fails. Files outside `worker/routes/**` print `SKIP`. Detection is **not** re-implemented: the gate runs the real `local/routes-require-rbac` rule (`eslint-local/index.js`) in memory over both the working-tree text and the base blob, so the gate and `npm run lint` can never disagree about what an unguarded route is. The rule stays `warn` (baseline 61 → 44 on 2026-10-19, → 28 on the second pass the same day: nine guards plus seven documented exemptions) so the remainder burns down per area; this gate is the tooth. |
@@ -165,3 +167,50 @@ per-key `useQuery` data. New/edited page tests must pair it with one
 `vi.mocked(useQuery).mockImplementation(({ queryKey }: any) …)` (the `any`
 plumbing trips `check:any-delta`; CSA hub post-mortem). Legacy per-test
 plumbing burns down boy-scout on touch.
+
+## Deployment & cross-boundary verification
+
+Rules for instance/deployment work and for any script that claims two things
+match. Runbook: `docs/DEPLOYMENT-MULTI-INSTANCE.md`; schema-sync exception:
+`docs/adr/0009-schema-sync-push-and-fresh-db-bootstrap.md`.
+
+- **One target, one explicit artifact.** A new instance gets its own Wrangler
+  config plus a build/deploy script that names the generated artifact
+  (`dist/<worker>/wrangler.json`). Never rely on `.wrangler/deploy/config.json`
+  for a manual/CI deploy: it points at the last build, so a stale redirect can
+  overwrite the other Worker. The shared-key, name, bucket, `ENV`,
+  `BETTER_AUTH_URL`, no-secrets, and artifact-path invariants are locked by
+  `scripts/__tests__/deployment-config.test.ts`; add the equivalent test when a
+  third instance appears.
+- **Verification reads both sides and fails closed.** A clone/sync/mirror script
+  compares each value from its own database/file — never the target joined to
+  itself — and treats "no comparable rows" as failure, not success. No
+  `?? true` / `?? 0` fallback that passes on empty input.
+- **"Empty" enumerates the live catalog.** Query `pg_tables` /
+  `information_schema` instead of a hand-picked table list so a new content
+  table is covered automatically. Excluded runtime tables (`session`,
+  `verification`, `notifications`, `audit_logs`, `ai_cache_entries`,
+  `system_licenses`) are named, justified in code, and tested.
+- **`scripts/**` is product code.** `npm run type-check` covers app, worker,
+  `scripts/**` (`tsconfig.scripts.json`), and `vite.config.ts`
+  (`tsconfig.node.json`); a new `.ts` file must fall inside one of those
+  projects. Decision logic lives in pure modules with tests
+  (`scripts/lib/clone-identity.ts`), `--apply` refuses when source and target
+  resolve to the same database, and `check:any-delta` now counts non-null
+  assertions as well as `any`/escape-casts (test files are exempt from the
+  non-null half because banned syntax is legitimate fixture data).
+- **Secrets vs vars.** Deployment docs must not claim a value is a `vars` entry
+  without showing it in the config; dashboard-only secrets are written as
+  "secret Worker (dashboard)".
+- **Bootstrap and the audit trail.** A one-shot provisioning script may skip
+  `audit_logs`, but it states that in its header and in the runbook.
+- **Session origin isolation.** `BETTER_AUTH_URL` is the only trusted auth
+  origin for an instance (`worker/lib/trusted-origins.ts`); never add another
+  instance's origin to that list. Extra custom domains go through
+  `TRUSTED_ORIGINS`.
+- **Verifying a deploy without the dashboard.**
+  `npx wrangler deployments list --name <worker>`,
+  `npx wrangler secret list --name <worker>`, `npx wrangler r2 bucket list`.
+  Workers Builds settings (connect-to-git, build command/env, previews) have no
+  CLI: a human confirms them in the dashboard, and the next push to `main` is
+  the only proof auto-deploy is live.

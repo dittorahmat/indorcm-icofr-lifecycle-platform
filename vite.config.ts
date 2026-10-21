@@ -93,6 +93,9 @@ export default ({ mode }: { mode: string }) => {
     plugins: [
       react(), 
       cloudflare({
+        // Build target: defaults to the primary instance; set WRANGLER_CONFIG
+        // to wrangler.demo.jsonc (npm run build:demo) for the demo instance.
+        configPath: process.env.WRANGLER_CONFIG ?? "wrangler.jsonc",
         // FIX: This enables connection to real R2/D1 during development
         // @ts-expect-error - cloudflare vite plugin types might be outdated
         platformProxy: {

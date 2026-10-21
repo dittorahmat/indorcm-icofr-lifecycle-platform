@@ -66,9 +66,11 @@ describe('useBPMEditor seam (one interface over eleven hooks)', () => {
 
   it('loads, edits, and undoes through the graph namespace', async () => {
     const { result } = renderHook(() => useBPMEditor(PARAMS), { wrapper: wrapper() });
-    await waitFor(() => expect(result.current.state.isDiagramLoading).toBe(false));
+    await waitFor(() => {
+      expect(result.current.state.isDiagramLoading).toBe(false);
+      expect(result.current.graph.nodes.map((n) => n.id)).toContain('2');
+    });
 
-    expect(result.current.graph.nodes.map((n) => n.id)).toContain('2');
     expect(result.current.graph.canUndo).toBe(false);
 
     act(() => {

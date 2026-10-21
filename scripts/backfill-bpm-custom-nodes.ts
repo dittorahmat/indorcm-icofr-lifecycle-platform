@@ -39,7 +39,7 @@ async function backfillBpmNodes() {
                 const body = {
                     name: diagram.name,
                     year: diagram.year,
-                    subProcess: diagram.subProcess,
+                    subProcess: diagram.subProcess ?? '',
                     nodes: diagram.nodes || [],
                     edges: diagram.edges || [],
                     metadata: diagram.metadata || {}
@@ -48,7 +48,7 @@ async function backfillBpmNodes() {
                 const orgId = diagram.organizationId;
                 
                 // Pastikan userId valid di tabel user
-                let userId = diagram.updatedBy || diagram.createdBy;
+                let userId = diagram.createdBy;
                 if (userId) {
                     const exists = await db.select().from(schema.user).where(eq(schema.user.id, userId)).limit(1);
                     if (exists.length === 0) {

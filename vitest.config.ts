@@ -16,6 +16,12 @@ export default defineConfig({
     // timeout, 0 tests collected). Threads is behavior-identical for jsdom.
     pool: 'threads',
     setupFiles: ['./src/test/setup.ts'],
+    // The full suite mounts ~200 jsdom files in one run; the 5s default times
+    // out integration-style tests that pass standalone (AIAnalyticsMockup,
+    // useBPMEditor). Generous ceilings keep real failures visible without
+    // retries masking them.
+    testTimeout: 20_000,
+    hookTimeout: 30_000,
     exclude: [
       '**/node_modules/**',
       '**/dist/**',

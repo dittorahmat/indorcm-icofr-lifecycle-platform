@@ -4,15 +4,11 @@ import fs from 'fs';
 import { eq, inArray, sql } from 'drizzle-orm';
 import { createDbAndPool } from '../worker/db';
 import * as schema from '../worker/db/schema';
+import { requireEnv } from './lib/require-env';
 
 // Load .env
 config({ path: path.resolve(process.cwd(), '.env') });
-const dbUrl = process.env.DATABASE_URL;
-
-if (!dbUrl) {
-  console.error("❌ DATABASE_URL is not set in environment or .env file.");
-  process.exit(1);
-}
+const dbUrl = requireEnv('DATABASE_URL');
 
 const isDryRun = process.argv.includes('--dry-run') || !process.argv.includes('--apply');
 const isApply = process.argv.includes('--apply');

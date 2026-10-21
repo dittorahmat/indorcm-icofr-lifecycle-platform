@@ -33,10 +33,11 @@ async function migrateData() {
 
         console.log("✅ Data berhasil dipindahkan!");
         
-        // Cek hasil
+        // Cek hasil (kolom lama `automated_type` sudah tidak ada di schema,
+        // jadi dibaca lewat SQL eksplisit agar sampel lama/baru tetap terlihat)
         const items = await db.select({
             id: schema.rcmControls.id,
-            old_value: schema.rcmControls.automatedType,
+            old_value: sql<string | null>`automated_type`,
             new_value: schema.rcmControls.automatedControlType
         }).from(schema.rcmControls).limit(10);
 

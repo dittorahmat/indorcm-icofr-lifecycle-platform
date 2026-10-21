@@ -49,10 +49,11 @@ async function backfill() {
           const diag = await db.select().from(schema.bpmDiagrams).where(eq(schema.bpmDiagrams.id, risk.diagramId)).limit(1);
           if (diag.length > 0) {
               const diagYear = diag[0].year || 2026;
+              const diagramSubProcess = diag[0].subProcess;
               // Also update process/subProcess if they don't match the diagram to enforce consistency
-              if (risk.year !== diagYear || risk.process !== diag[0].name || risk.subProcess !== diag[0].subProcess) {
+              if (risk.year !== diagYear || risk.process !== diag[0].name || (diagramSubProcess !== null && risk.subProcess !== diagramSubProcess)) {
                   await db.update(schema.rcms)
-                    .set({ year: diagYear, process: diag[0].name, subProcess: diag[0].subProcess })
+                    .set({ year: diagYear, process: diag[0].name, ...(diagramSubProcess === null ? {} : { subProcess: diagramSubProcess }) })
                     .where(eq(schema.rcms.id, risk.id));
                   risksUpdated++;
               }

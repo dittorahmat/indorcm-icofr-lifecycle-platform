@@ -51,6 +51,7 @@ export interface HonoEnv {
     DATABASE_URL: string;
     BETTER_AUTH_SECRET: string;
     BETTER_AUTH_URL?: string;
+    TRUSTED_ORIGINS?: string;
     GEMINI_API_KEY: string;
     AI_PROVIDER?: string;
     AI_BASE_URL?: string;

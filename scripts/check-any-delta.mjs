@@ -1,28 +1,17 @@
-// scripts/check-any-delta.mjs — "no new `any`" gate (no deps, runs on plain node).
+// scripts/check-any-delta.mjs — "no new `any` / escape-cast / non-null" gate
+// (no deps, runs on plain node).
 // Usage:
 //   node scripts/check-any-delta.mjs [--base <ref>] <touched-files...>
-// Fails when a touched file contains MORE `any`/escape-cast occurrences than
-// its <base> version. <base> defaults to the branch point (merge-base with
-// origin/main) so the verdict does not change when you commit — see
-// scripts/lib/delta-base.mjs. New files are compared against a zero baseline.
-// Deleted/unreadable files are skipped.
+// Fails when a touched file contains MORE smell occurrences (`any`, `as any`,
+// `as never`, `as unknown as`, non-null assertions) than its <base> version.
+// <base> defaults to the branch point (merge-base with origin/main) so the
+// verdict does not change when you commit — see scripts/lib/delta-base.mjs.
+// New files are compared against a zero baseline. Deleted/unreadable files are
+// skipped. Patterns live in scripts/lib/any-smell-patterns.mjs (unit-tested).
 import { readFileSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { resolveBase } from './lib/delta-base.mjs';
-
-const ANY_PATTERN = /:\s*any\b/g;
-const AS_ANY_PATTERN = /\bas any\b/g;
-const AS_NEVER_PATTERN = /\bas never\b/g;
-const AS_UNKNOWN_AS_PATTERN = /\bas unknown as\b/g;
-
-function countSmells(text) {
-  let n = 0;
-  for (const re of [ANY_PATTERN, AS_ANY_PATTERN, AS_NEVER_PATTERN, AS_UNKNOWN_AS_PATTERN]) {
-    re.lastIndex = 0;
-    n += (text.match(re) || []).length;
-  }
-  return n;
-}
+import { countSmells } from './lib/any-smell-patterns.mjs';
 
 function headContent(path, base) {
   try {
@@ -58,6 +47,12 @@ for (const f of files) {
     console.log('SKIP  ' + f + ' (not a code file)');
     continue;
   }
+  // The pattern definition site spells every pattern by construction; it is
+  // covered by scripts/__tests__/any-smell-patterns.test.mjs instead.
+  if (/(^|\/)scripts\/lib\/any-smell-patterns\.mjs$/.test(f.replace(/\\/g, '/'))) {
+    console.log('SKIP  ' + f + ' (pattern definition site)');
+    continue;
+  }
   let now;
   try {
     now = readFileSync(f, 'utf-8');
@@ -66,13 +61,15 @@ for (const f of files) {
     continue;
   }
   const baseText = headContent(f, base);
-  const baseCount = baseText === null ? 0 : countSmells(baseText);
-  const nowCount = countSmells(now);
+  // Test files may spell banned syntax as fixture data; production files may not.
+  const includeNonNull = !/(\.(test|spec)\.|(^|\/)__tests__\/)/.test(f.replace(/\\/g, '/'));
+  const baseCount = baseText === null ? 0 : countSmells(baseText, { includeNonNull });
+  const nowCount = countSmells(now, { includeNonNull });
   if (nowCount > baseCount) {
-    console.log('FAIL  ' + f + ' — any/escape-cast ' + baseCount + ' -> ' + nowCount + ' (+' + (nowCount - baseCount) + ')');
+    console.log('FAIL  ' + f + ' — any/escape-cast/non-null ' + baseCount + ' -> ' + nowCount + ' (+' + (nowCount - baseCount) + ')');
     errors += 1;
   } else {
-    console.log('OK    ' + f + ' — any/escape-cast ' + baseCount + ' -> ' + nowCount);
+    console.log('OK    ' + f + ' — any/escape-cast/non-null ' + baseCount + ' -> ' + nowCount);
   }
 }
 

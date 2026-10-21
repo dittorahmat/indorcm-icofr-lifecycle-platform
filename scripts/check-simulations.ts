@@ -1,10 +1,9 @@
 import { neon } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from '../worker/db/schema';
-import { eq } from 'drizzle-orm';
+import { requireEnv } from './lib/require-env';
 
-const url = process.env.DATABASE_URL;
-if (!url) throw new Error('DATABASE_URL_MISSING: set DATABASE_URL before running check-simulations');
+const url = requireEnv('DATABASE_URL');
 
 async function check() {
     console.log("🔍 Checking Simulations Content...");
@@ -16,7 +15,7 @@ async function check() {
     
     sims.forEach(s => {
         console.log(`\n--- Simulation: ${s.name} (Status: ${s.status}, Year: ${s.year}) ---`);
-        const accounts = s.significantAccounts as any[];
+        const accounts = s.significantAccounts;
         if (accounts && Array.isArray(accounts)) {
             console.log(`Significant Accounts (${accounts.length}):`);
             accounts.slice(0, 5).forEach(a => {

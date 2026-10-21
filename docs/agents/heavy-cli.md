@@ -72,3 +72,10 @@ killed the host, while the same `tsc` redirected to a file exited 0).
   cases: the silent no-commit above, and `gh run watch` reporting `exit=1` for a
   run that was merely CANCELLED as superseded by the next push — read
   `status/conclusion/headSha` before diagnosing a failure.
+- Ad-hoc probe scripts: write a throwaway `.ts` under `scripts/` (delete it
+  before commit) and run `npx tsx scripts/<name>.ts`. Do not use `tsx -e`:
+  PowerShell strips backticks before node sees them, so tagged SQL templates
+  arrive truncated. A temp file outside the repo fails too (no `node_modules`
+  resolution, and the CJS output rejects top-level await) — the repo root is
+  what makes the probe ESM and resolvable. Observed 2026-10-21: three failed
+  attempts before running the same probe from `scripts/`.

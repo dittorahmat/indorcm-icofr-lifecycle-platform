@@ -1,0 +1,50 @@
+/**
+ * Wrangler config for the isolated `icofr-demo` instance.
+ *
+ * Deployed with:  npm run deploy:demo
+ * Build target:   WRANGLER_CONFIG=wrangler.demo.jsonc
+ *
+ * KEEP IN SYNC with wrangler.jsonc: `main`, `compatibility_date`,
+ * `compatibility_flags`, `assets`, `durable_objects`, and `migrations` must stay
+ * byte-identical. Only `name`, the R2 bucket and per-instance `vars` may differ.
+ * Do not add environment-specific secrets here — they live in Worker secrets.
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "icofr-demo",
+	"main": "worker/index.ts",
+	"compatibility_date": "2025-04-24",
+	"compatibility_flags": ["nodejs_compat", "no_handle_cross_request_promise_resolution"],
+	"assets": {
+		"not_found_handling": "single-page-application",
+		"run_worker_first": ["/api/*", "!/api/docs/*"]
+	},
+	"observability": {
+		"enabled": true
+	},
+	"r2_buckets": [
+		{
+			"binding": "DOCUMENTS_BUCKET",
+			"bucket_name": "icofr-documents-demo"
+		}
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "GlobalDurableObject",
+				"class_name": "GlobalDurableObject"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["GlobalDurableObject"]
+		}
+	],
+	"vars": {
+		"SKIP_LICENSE": "true",
+		"ENV": "production",
+		"BETTER_AUTH_URL": "https://icofr-demo.tech1solusi.workers.dev"
+	}
+}

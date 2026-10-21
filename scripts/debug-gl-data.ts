@@ -22,7 +22,7 @@ async function debugData() {
 
     const counts = new Map<string, number>();
     rows.forEach(r => {
-      const key = `${r.noGL}|${r.glDesc}|${r.fsliName}|${Math.round(r.balance)}`;
+      const key = `${r.noGL}|${r.glDesc}|${r.fsliName}|${Math.round(r.balance ?? 0)}`;
       counts.set(key, (counts.get(key) || 0) + 1);
     });
 
