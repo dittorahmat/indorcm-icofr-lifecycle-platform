@@ -125,12 +125,13 @@ bpm.post('/bpm-diagrams/ocr', rbac(['Line 1', 'Admin']), async (c) => {
     chatModel: c.env.AI_CHAT_MODEL,
   });
 
-  const { systemInstruction, messages } = buildOcrPrompt({ image: body.image });
+  const { systemInstruction, messages, temperature } = buildOcrPrompt({ image: body.image });
 
   try {
     const result = await aiService.generateChatResponse({
       systemInstruction,
       messages,
+      temperature,
       responseSchema: BPM_OCR_RESPONSE_SCHEMA,
     });
 

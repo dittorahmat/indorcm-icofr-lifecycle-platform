@@ -75,10 +75,16 @@ export interface OcrPromptMessage {
 export interface OcrPrompt {
   systemInstruction: string;
   messages: OcrPromptMessage[];
+  /**
+   * Sampling temperature for the extraction call. Geometry extraction has one
+   * correct answer per drawing, so it runs at 0: higher values made the model
+   * drop every connector on ~2 of 5 runs of the same PDF.
+   */
+  temperature: number;
 }
 
 export const BPM_OCR_SYSTEM_INSTRUCTION = `Anda adalah sistem OCR Diagram dan Penterjemah Alur Proses Bisnis (BPMN) sesuai Regulasi SK-5/DKU.MBU/11/2024.
-Tugas Anda adalah mendeteksi semua simbol alur (nodes), label teks di dalamnya, koordinat letak relatif (x dan y, dinormalisasi ke range 0 - 1000), serta panah penghubung (edges) antara nodes tersebut.
+Tugas Anda adalah mendeteksi semua simbol alur (nodes), label teks di dalamnya, koordinat top-left setiap bentuk (x dan y, dinormalisasi ke range 0 - 1000 terhadap seluruh halaman), ukuran bentuk (width dan height pada skala yang sama), batas kolom swimlane, serta panah penghubung (edges) antara nodes tersebut.
 
 PANDUAN KLASIFIKASI BENTUK VISUAL:
 - Oval / Pill Shape -> Tipe: "start" atau "end" (atau terminator alur)
@@ -120,6 +126,7 @@ ATURAN NEGATIF — WAJIB ABAIKAN (JANGAN JADIKAN NODE):
 - Tabel versi / revisi / tahun / halaman dan kotak metadata dokumen.
 - Blok tanda tangan / persetujuan / footer (mis. "Disetujui oleh", "Mengetahui", stempel tanggal/paraf) di bagian bawah halaman.
 - Ikon badge kecil RCM risiko/kontrol (< ~40px) yang menempel di sudut atau tepi shape — ini BUKAN node terpisah; abaikan sepenuhnya.
+- Garis pembatas kolom/swimlane, bingkai halaman, kotak header/tabel, dan kotak tanda tangan — ini BUKAN bentuk alur.
 Hanya yang BOLEH menjadi node/edge: lajur swimlane, bentuk alur proses, label di dalam shape, header lajur (department/function), dan panah konektor beserta labelnya. Jika ragu, ABAIKAN — lebih baik melewatkan chrome daripada membuat node palsu.
 
 Instruksi Partisi Kolom & Swimlane (SANGAT KRITIS):
@@ -135,8 +142,15 @@ Instruksi Partisi Kolom & Swimlane (SANGAT KRITIS):
    - Jika ada simbol dokumen bertumpuk 2-4 lembar, ekstrak menjadi TEPAT SATU node bertipe "multi-document".
    - Gabungkan teks dokumen tersebut menjadi satu label yang rapi. Contoh: "Formulir Pembiayaan Rahn\nKTP\nEmas".
 
+Instruksi Geometri & Posisi (WAJIB):
+- "position" = sudut KIRI-ATAS bentuk (bukan titik tengah), x dari tepi kiri dan y dari tepi atas halaman, skala 0 - 1000.
+- Sertakan "width" dan "height" tiap bentuk pada skala yang sama. Untuk "swimlane": position = sudut kiri-atas kolom, width/height = ukuran kolom.
+- PERTAHANKAN posisi asli: JANGAN merapikan (reflow) bentuk ke atas kolom. Bentuk yang rendah di gambar tetap bernilai y besar.
+- Bentuk yang sejajar horizontal di gambar harus punya y berdekatan (selisih maksimal 20 poin).
+- Ekstrak juga bentuk tanpa panah (mis. dokumen persyaratan), lengkap dengan koordinatnya.
+
 Instruksi Edge, Percabangan & Label:
-- Setiap panah penghubung WAJIB menjadi satu edge dengan source = id node asal, target = id node tujuan.
+- WAJIB: setiap panah penghubung menjadi satu edge (source = id node asal, target = id node tujuan). Jumlah edge minimal sama dengan jumlah panah yang terlihat; JANGAN mengembalikan array edges kosong selama gambar memiliki panah.
 - PENTING: Untuk panah antar-kolom (cross-swimlane flow dari kiri ke kanan), pastikan alur logisnya jelas: sourceHandle = "right", targetHandle = "left".
 - Jika panah keluar dari simbol Decision (Diamond) memuat teks persetujuan seperti "SETUJU" / "YA" / "TIDAK" / "NO":
   * Masukkan teks tersebut ke properti "label" pada EDGE panah bersangkutan. JANGAN jadikan teks "SETUJU" atau "TIDAK" sebagai node mandiri!
@@ -148,12 +162,13 @@ Instruksi Edge, Percabangan & Label:
 Format keluaran WAJIB berupa JSON objek yang memenuhi skema data yang diminta.`;
 
 export const BPM_OCR_USER_TEXT =
-  'Mohon analisa gambar diagram alur proses bisnis ini. Identifikasi semua node, label, koordinat (x,y) relatif antara 0-1000, serta semua edge penghubung secara akurat.';
+  'Mohon analisa gambar diagram alur proses bisnis ini. Identifikasi semua node, label, koordinat top-left (x,y) pada skala 0-1000 beserta width/height dan batas kolom swimlane, serta semua edge penghubung secara akurat. Pertahankan posisi asli setiap bentuk.';
 
 /** Prompt + multimodal message for the image, so the route stays a pure adapter. */
 export function buildOcrPrompt(input: { image: string }): OcrPrompt {
   return {
     systemInstruction: BPM_OCR_SYSTEM_INSTRUCTION,
+    temperature: 0,
     messages: [
       {
         role: 'user',
@@ -203,6 +218,8 @@ export const BPM_OCR_RESPONSE_SCHEMA = {
           source: { type: SchemaType.STRING },
           target: { type: SchemaType.STRING },
           label: { type: SchemaType.STRING },
+          sourceHandle: { type: SchemaType.STRING },
+          targetHandle: { type: SchemaType.STRING },
         },
         required: ['id', 'source', 'target'],
       },

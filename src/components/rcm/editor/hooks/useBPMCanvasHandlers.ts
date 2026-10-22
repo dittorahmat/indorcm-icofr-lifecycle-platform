@@ -6,6 +6,7 @@ import { getStandardNodeDimensions, BPM_CANVAS_Z_INDEX } from '@/utils/bpm-const
 import type { BPMDiagramSheet } from '@shared/types';
 import { applyOcrImport } from '../ocr/ocr-import-adapter';
 import { enrichCanvasNodes } from '../ocr/ocr-node-normalize';
+import { computeLandingViewport } from '@/utils/ocr-landing-viewport';
 import type { OcrApplyRequest } from '../ocr/ocr-types';
 
 interface UseBPMCanvasHandlersProps {
@@ -172,7 +173,7 @@ export function useBPMCanvasHandlers({
         setDirty(true);
         toast.success(t('bpm:ocr.toast.applySuccess'));
         setTimeout(() => {
-          rfInstance?.fitView?.({ padding: 0.15, duration: 300 });
+          rfInstance?.fitView?.({ padding: 0.1, minZoom: 0.5, duration: 300 });
         }, 150);
         return;
       }
@@ -192,8 +193,18 @@ export function useBPMCanvasHandlers({
       setEdges(canvasEdges);
       setDirty(true);
       toast.success(t('bpm:ocr.toast.applySuccess'));
+      // Land at a legible zoom on the drawing's top-left corner. Fitting the
+      // whole diagram shrinks a four-lane KUR sheet to ~22% and makes the 12px
+      // labels unreadable; "Fit to Screen" stays available for the overview.
+      const roots = finalNodes.filter((node) => !node.parentId);
+      const bounds = roots.length
+        ? {
+            minX: Math.min(...roots.map((node) => node.position.x)),
+            minY: Math.min(...roots.map((node) => node.position.y)),
+          }
+        : null;
       setTimeout(() => {
-        rfInstance?.fitView?.({ padding: 0.15, duration: 300 });
+        rfInstance?.setViewport?.(computeLandingViewport(bounds), { duration: 300 });
       }, 150);
     },
     [nodes, edges, isLocked, t, pushState, setNodes, setEdges, setDirty, rfInstance, toggleNodeLock, updateNodeData, handleSwimlaneResizeEnd, onImportMultipleSheets]

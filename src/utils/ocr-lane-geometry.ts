@@ -4,11 +4,7 @@
 import { getStandardNodeDimensions, DEFAULT_SWIMLANE_DIMENSIONS } from './bpm-constants';
 import type { OcrRawNode, OcrRawEdge } from './ocr-validate';
 
-const HEADER_H = DEFAULT_SWIMLANE_DIMENSIONS.headerHeight;
 const LANE_MIN_W = DEFAULT_SWIMLANE_DIMENSIONS.minWidth;
-const LANE_MIN_H = DEFAULT_SWIMLANE_DIMENSIONS.defaultHeight;
-const V_STEP_DEFAULT = 126;
-const FOOTER_PAD = 120;
 
 interface LaneSortMeta {
   id: string;
@@ -82,17 +78,6 @@ export function computeLaneWidths(
     out.set(lane.id, uniformWidth);
   }
   return out;
-}
-
-export function computeUniformHeight(sortedLanes: OcrRawNode[], childMap: Map<string, OcrRawNode[]>): number {
-  if (sortedLanes.length === 0) return LANE_MIN_H;
-  let maxH = LANE_MIN_H;
-  for (const lane of sortedLanes) {
-    const count = (childMap.get(lane.id) ?? []).length;
-    const h = HEADER_H + count * V_STEP_DEFAULT + FOOTER_PAD;
-    if (h > maxH) maxH = h;
-  }
-  return Math.max(LANE_MIN_H, maxH);
 }
 
 export function groupNodesByRank(children: OcrRawNode[], intraEdges: OcrRawEdge[]): Map<number, OcrRawNode[]> {

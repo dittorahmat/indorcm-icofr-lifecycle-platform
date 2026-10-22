@@ -1,0 +1,144 @@
+{
+  "nodes": [
+    {
+      "id": "swimlane-1",
+      "type": "swimlane",
+      "label": "STAFF",
+      "position": {
+        "x": 400,
+        "y": 186
+      },
+      "width": 599
+    },
+    {
+      "id": "start-1",
+      "type": "start",
+      "label": "Menerima slip setoran tunai & Uang",
+      "position": {
+        "x": 453,
+        "y": 214
+      },
+      "parentId": "swimlane-1",
+      "width": 232
+    },
+    {
+      "id": "activity-1",
+      "type": "activity",
+      "label": "Menghitung Uang tunai & verifikasi data transaksi",
+      "position": {
+        "x": 403,
+        "y": 286
+      },
+      "parentId": "swimlane-1",
+      "width": 327
+    },
+    {
+      "id": "decision-1",
+      "type": "decision",
+      "label": "SESUAI?",
+      "position": {
+        "x": 475,
+        "y": 378
+      },
+      "parentId": "swimlane-1",
+      "width": 169
+    },
+    {
+      "id": "activity-2",
+      "type": "activity",
+      "label": "Hitung Ulang",
+      "position": {
+        "x": 323,
+        "y": 425
+      },
+      "parentId": "swimlane-1",
+      "width": 131
+    },
+    {
+      "id": "activity-3",
+      "type": "activity",
+      "label": "Input Transaksi",
+      "position": {
+        "x": 540,
+        "y": 428
+      },
+      "parentId": "swimlane-1",
+      "width": 139
+    },
+    {
+      "id": "activity-4",
+      "type": "activity",
+      "label": "Simpan Uang Tunai & Cetak Mutasi",
+      "position": {
+        "x": 408,
+        "y": 495
+      },
+      "parentId": "swimlane-1",
+      "width": 319
+    },
+    {
+      "id": "end-1",
+      "type": "end",
+      "label": "A",
+      "position": {
+        "x": 396,
+        "y": 407
+      },
+      "parentId": "swimlane-1",
+      "width": 40
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "start-1",
+      "target": "activity-1",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-2",
+      "source": "activity-1",
+      "target": "decision-1",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-3",
+      "source": "decision-1",
+      "target": "activity-2",
+      "label": "NO",
+      "sourceHandle": "left",
+      "targetHandle": "right"
+    },
+    {
+      "id": "edge-4",
+      "source": "decision-1",
+      "target": "activity-3",
+      "label": "YES",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-5",
+      "source": "activity-2",
+      "target": "decision-1",
+      "sourceHandle": "left",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-6",
+      "source": "activity-3",
+      "target": "activity-4",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-7",
+      "source": "activity-4",
+      "target": "end-1",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    }
+  ]
+}

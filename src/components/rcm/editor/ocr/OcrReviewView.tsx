@@ -53,7 +53,7 @@ export function OcrReviewView({
     <div className="flex flex-col gap-3 mt-2">
       {totalPages > 1 && (
         <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 rounded-lg overflow-x-auto">
-          <span className="text-xs font-bold text-slate-700 px-2 shrink-0">Halaman PDF:</span>
+          <span className="text-xs font-bold text-slate-700 px-2 shrink-0">{t('bpm:ocr.pageLabel')}</span>
           {Array.from({ length: totalPages }).map((_, idx) => {
             const pageNum = idx + 1;
             const isSelected = pageNum === activePage;
@@ -66,7 +66,7 @@ export function OcrReviewView({
                 onClick={() => onSelectPage?.(pageNum)}
                 className={cn("h-7 px-2.5 text-xs font-semibold", isSelected && "bg-emerald-600 hover:bg-emerald-700 text-white")}
               >
-                Halaman {pageNum}
+                {t('bpm:ocr.pageNumber', { page: pageNum })}
               </Button>
             );
           })}
@@ -76,10 +76,10 @@ export function OcrReviewView({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 lg:h-[640px]">
         <div className="border border-border rounded-xl overflow-hidden bg-muted/30 flex flex-col p-3 gap-3 min-h-[280px] lg:min-h-0 overflow-y-auto">
           <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            {t('bpm:ocr.originalImage')} {totalPages > 1 ? `(Halaman ${activePage})` : ''}
+            {t('bpm:ocr.originalImage')} {totalPages > 1 ? `(${t('bpm:ocr.pageNumber', { page: activePage })})` : ''}
           </span>
           <div className="flex-1 flex items-center justify-center rounded-lg border border-border bg-white p-2 overflow-hidden">
-            <img src={ocrPreviewUrl || ''} className="max-h-full max-w-full object-contain shadow-sm rounded-lg" alt="Source Diagram" />
+            <img src={ocrPreviewUrl || ''} className="max-h-full max-w-full object-contain shadow-sm rounded-lg" alt={t('bpm:ocr.sourceAlt')} />
           </div>
           <p className="text-xs text-muted-foreground">{t('bpm:ocr.staging.thumbnailHint')}</p>
         </div>
@@ -112,7 +112,7 @@ export function OcrReviewView({
           </div>
         )}
 
-        <div className="h-[200px] sm:h-[230px] border-b border-border relative bg-white mt-3 mx-3 rounded-lg overflow-hidden shrink-0">
+        <div className="h-[320px] sm:h-[360px] lg:h-[420px] border-b border-border relative bg-white mt-3 mx-3 rounded-lg overflow-hidden shrink-0">
           <ReactFlow
             nodes={stagingNodes}
             edges={stagingEdges}
@@ -124,6 +124,7 @@ export function OcrReviewView({
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             fitView
+            fitViewOptions={{ minZoom: 0.5 }}
             onInit={onInitCanvas}
             className="bg-white"
           >

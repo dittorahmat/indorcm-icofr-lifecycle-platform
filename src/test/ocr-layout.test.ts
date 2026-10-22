@@ -1,60 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { layoutOcrDiagram, validateOcrResponse, type OcrRawNode, type OcrRawEdge } from '../utils/ocr-layout';
-
-// KUR-like fixture: 4 vertical swimlanes DEBITUR, MARKETING, KREDIT ADMIN, PEJABAT BERWENANG
-function buildKurFixture(): { nodes: OcrRawNode[]; edges: OcrRawEdge[] } {
-  const lanes: OcrRawNode[] = [
-    { id: 'lane-debitur', type: 'swimlane', label: 'DEBITUR', position: { x: 10, y: 0 }, width: 180, height: 600, department: 'DEBITUR', function: 'Nasabah' },
-    { id: 'lane-marketing', type: 'swimlane', label: 'MARKETING', position: { x: 350, y: 0 }, department: 'MARKETING', function: 'Sales' },
-    { id: 'lane-kredit', type: 'swimlane', label: 'KREDIT ADMIN', position: { x: 700, y: 0 }, width: 500, height: 900, department: 'KREDIT ADMIN', function: 'Admin' },
-    { id: 'lane-pejabat', type: 'swimlane', label: 'PEJABAT BERWENANG', position: { x: 1100, y: 0 }, department: 'PEJABAT BERWENANG', function: 'Approval' },
-  ];
-
-  // shuffle lanes in input to test ordering by median x
-  const shuffledLanes = [lanes[3], lanes[1], lanes[0], lanes[2]];
-
-  const nodes: OcrRawNode[] = [
-    // DEBITUR lane: 3 nodes
-    { id: 'n1', type: 'start', label: 'Mulai', position: { x: 50, y: 100 }, parentId: 'lane-debitur' },
-    { id: 'n2', type: 'activity', label: 'Ajukan Kredit', position: { x: 55, y: 220 }, parentId: 'lane-debitur' },
-    { id: 'n3', type: 'document', label: 'Form KUR', position: { x: 60, y: 340 }, parentId: 'lane-debitur' },
-
-    // MARKETING lane: 3 nodes
-    { id: 'n4', type: 'activity', label: 'Verifikasi Berkas', position: { x: 380, y: 130 }, parentId: 'lane-marketing' },
-    { id: 'n5', type: 'decision', label: 'Lengkap?', position: { x: 390, y: 260 }, parentId: 'lane-marketing' },
-    { id: 'n6', type: 'activity', label: 'Survey Lapangan', position: { x: 385, y: 400 }, parentId: 'lane-marketing' },
-
-    // KREDIT ADMIN lane: 4 nodes (includes decision targets)
-    { id: 'n7', type: 'activity', label: 'Input Data', position: { x: 750, y: 120 }, parentId: 'lane-kredit' },
-    { id: 'n8', type: 'activity', label: 'Analisa Kredit', position: { x: 755, y: 250 }, parentId: 'lane-kredit' },
-    { id: 'n9', type: 'document', label: 'Laporan Analisa', position: { x: 760, y: 380 }, parentId: 'lane-kredit' },
-    { id: 'n10', type: 'archive', label: 'Arsip', position: { x: 765, y: 520 }, parentId: 'lane-kredit' },
-
-    // PEJABAT lane: 3 nodes
-    { id: 'n11', type: 'activity', label: 'Review Komite', position: { x: 1130, y: 150 }, parentId: 'lane-pejabat' },
-    { id: 'n12', type: 'decision', label: 'Setuju?', position: { x: 1140, y: 300 }, parentId: 'lane-pejabat' },
-    { id: 'n13', type: 'end', label: 'Cair', position: { x: 1135, y: 460 }, parentId: 'lane-pejabat' },
-  ];
-
-  const edges: OcrRawEdge[] = [
-    { id: 'e1', source: 'n1', target: 'n2' },
-    { id: 'e2', source: 'n2', target: 'n3' },
-    { id: 'e3', source: 'n3', target: 'n4' }, // cross-lane
-    { id: 'e4', source: 'n4', target: 'n5' },
-    { id: 'e5', source: 'n5', target: 'n6', label: 'NO' },
-    { id: 'e6', source: 'n5', target: 'n7', label: 'YES' }, // cross-lane decision branch
-    { id: 'e7', source: 'n6', target: 'n7' }, // cross-lane return?
-    { id: 'e8', source: 'n7', target: 'n8' },
-    { id: 'e9', source: 'n8', target: 'n9' },
-    { id: 'e10', source: 'n9', target: 'n10' },
-    { id: 'e11', source: 'n9', target: 'n11' }, // cross-lane to pejabat
-    { id: 'e12', source: 'n11', target: 'n12' },
-    { id: 'e13', source: 'n12', target: 'n13', label: 'YES' },
-    { id: 'e14', source: 'n12', target: 'n6', label: 'NO' }, // cross-lane loop back
-  ];
-
-  return { nodes: [...shuffledLanes, ...nodes], edges };
-}
+import { auditOcrLayout, auditSourceOrder } from '../utils/ocr-layout-audit';
+import { countOverlaps } from '../utils/ocr-layout-deoverlap';
+import {
+  buildKurSourceFixture,
+  KUR_LANE_ORDER,
+  KUR_UPWARD_EDGE_IDS,
+} from './fixtures/bpm-kur-source';
 
 function absoluteRect(
   node: { id: string; position: { x: number; y: number }; width: number; height: number; parentId?: string },
@@ -71,55 +23,62 @@ function rectsOverlap(a: { x: number; y: number; w: number; h: number }, b: { x:
   return !(a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.h <= b.y || b.y + b.h <= a.y);
 }
 
-describe('ocr-layout — KUR BPM fidelity', () => {
-  it('lays out 4 lanes and ~13 nodes with zero shape overlaps and preserved lane order', () => {
-    const fixture = buildKurFixture();
+describe('ocr-layout — KUR drawing (image-derived fixture)', () => {
+  it('reproduces the drawing: lane order, per-lane order, exact upward set, zero overlaps', () => {
+    const fixture = buildKurSourceFixture();
     const result = layoutOcrDiagram(fixture);
 
-    // lanes are present and ordered left-to-right by median AI x (DEBITUR < MARKETING < KREDIT ADMIN < PEJABAT)
-    const lanes = result.nodes.filter((n) => n.type === 'swimlane');
-    expect(lanes).toHaveLength(4);
-    const laneById = new Map(lanes.map((l) => [l.id, l] as const));
-    const xDebitur = laneById.get('lane-debitur')!.position.x;
-    const xMarketing = laneById.get('lane-marketing')!.position.x;
-    const xKredit = laneById.get('lane-kredit')!.position.x;
-    const xPejabat = laneById.get('lane-pejabat')!.position.x;
-    expect(xDebitur).toBeLessThan(xMarketing);
-    expect(xMarketing).toBeLessThan(xKredit);
-    expect(xKredit).toBeLessThan(xPejabat);
+    // lane order comes from the source x coordinates, not the input order
+    const lanes = result.nodes.filter((node) => node.type === 'swimlane');
+    expect(lanes.map((lane) => lane.id)).toEqual([...KUR_LANE_ORDER]);
 
-    // lane dims clamped: min 400 wide, uniform height, at least 1000
-    const widths = lanes.map((l) => l.width);
-    const heights = lanes.map((l) => l.height);
-    for (const w of widths) expect(w).toBeGreaterThanOrEqual(400);
-    for (const h of heights) expect(h).toBeGreaterThanOrEqual(1000);
-    expect(new Set(heights).size).toBe(1); // uniform height
+    // geometry audit: no overlap/clearance break, children inside lanes,
+    // lane height == content + footer
+    const audit = auditOcrLayout(result);
+    expect(audit.violations).toEqual([]);
+    expect(audit.ok).toBe(true);
+    expect(audit.stats.laneCount).toBe(4);
+    expect(audit.stats.shapeCount).toBe(14);
 
-    // zero overlaps among shape nodes (parent containment allowed, shapes must not overlap each other)
+    // the source's top-to-bottom order survives in every lane
+    expect(auditSourceOrder(fixture.nodes, result)).toEqual([]);
+
+    // exactly the two real forward handoffs climb a lane; nothing else is inverted
+    expect(audit.stats.upwardEdgeIds.sort()).toEqual([...KUR_UPWARD_EDGE_IDS].sort());
+
+    // uniform lane height, sized from the deepest content + footer
+    const heights = lanes.map((lane) => lane.height);
+    expect(new Set(heights).size).toBe(1);
+    const deepest = Math.max(
+      ...result.nodes.filter((node) => node.type !== 'swimlane').map((node) => node.position.y + node.height),
+    );
+    expect(heights[0]).toBe(Math.round(deepest + 80));
+    for (const lane of lanes) expect(lane.width).toBeGreaterThanOrEqual(400);
+
+    // shapes do not overlap each other (lane containment allowed)
     const laneMap = new Map(lanes.map((l) => [l.id, { x: l.position.x, y: l.position.y, width: l.width, height: l.height }] as const));
-    const shapes = result.nodes.filter((n) => n.type !== 'swimlane');
-    expect(shapes.length).toBe(13);
-    const rects = shapes.map((s) => absoluteRect(s, laneMap));
+    const shapes = result.nodes.filter((node) => node.type !== 'swimlane');
+    const rects = shapes.map((shape) => absoluteRect(shape, laneMap));
     for (let i = 0; i < rects.length; i++) {
       for (let j = i + 1; j < rects.length; j++) {
         expect(rectsOverlap(rects[i], rects[j]), `Nodes ${rects[i].id} and ${rects[j].id} overlap`).toBe(false);
       }
     }
+    expect(countOverlaps(rects.map((r) => ({ id: r.id, x: r.x, y: r.y, width: r.w, height: r.h })))).toBe(0);
 
-    // lanes themselves must not overlap horizontally
-    for (let i = 0; i < lanes.length; i++) {
-      for (let j = i + 1; j < lanes.length; j++) {
-        const a = { x: lanes[i].position.x, y: lanes[i].position.y, w: lanes[i].width, h: lanes[i].height };
-        const b = { x: lanes[j].position.x, y: lanes[j].position.y, w: lanes[j].width, h: lanes[j].height };
-        expect(rectsOverlap(a, b), `Lanes ${lanes[i].id} and ${lanes[j].id} overlap`).toBe(false);
-      }
-    }
+    // the drawing's decision labels survive extraction
+    expect(result.edges.filter((edge) => edge.label === 'YES')).toHaveLength(2);
+    expect(result.edges.filter((edge) => edge.label === 'NO')).toHaveLength(2);
 
-    // cross-lane edges preserved with YES/NO labels
-    const yesEdges = result.edges.filter((e) => e.label === 'YES');
-    const noEdges = result.edges.filter((e) => e.label === 'NO');
-    expect(yesEdges.length).toBeGreaterThanOrEqual(2);
-    expect(noEdges.length).toBeGreaterThanOrEqual(2);
+    // wrapped label reserves its real height
+    expect(result.nodes.find((node) => node.id === 'k-deliberate')?.height).toBeGreaterThanOrEqual(90);
+  });
+
+  it('lands at a readable zoom instead of fitting the whole sheet', () => {
+    const audit = auditOcrLayout(layoutOcrDiagram(buildKurSourceFixture()));
+
+    expect(audit.stats.fitZoom).toBeLessThan(1);
+    expect(audit.stats.landingZoom).toBeGreaterThanOrEqual(0.7);
   });
 
   it('drops orphan edges and returns orphan-edge warnings', () => {
@@ -157,7 +116,34 @@ describe('ocr-layout — KUR BPM fidelity', () => {
     expect(laid.warnings.filter((w) => w.code === 'unlabeled-node')).toHaveLength(2);
   });
 
-  it('clamps lane dims: warns missing-dims and expands to at least 400x1000 uniform', () => {
+  it('falls back to the rank layout for degenerate coordinates', () => {
+    const raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] } = {
+      nodes: [
+        { id: 'lane-a', type: 'swimlane', label: 'A', position: { x: 0, y: 0 } },
+        { id: 'lane-b', type: 'swimlane', label: 'B', position: { x: 500, y: 0 } },
+        { id: 'n1', type: 'activity', label: 'Satu', position: { x: 10, y: 0 }, parentId: 'lane-a' },
+        { id: 'n2', type: 'activity', label: 'Dua', position: { x: 15, y: 0 }, parentId: 'lane-a' },
+        { id: 'n3', type: 'activity', label: 'Tiga', position: { x: 510, y: 0 }, parentId: 'lane-b' },
+      ],
+      edges: [
+        { id: 'e1', source: 'n1', target: 'n2' },
+        { id: 'e2', source: 'n2', target: 'n3' },
+      ],
+    };
+
+    const laid = layoutOcrDiagram(raw);
+    const lane = laid.nodes.find((n) => n.id === 'lane-a')!;
+    // The fallback still sizes the band from its own content: no empty 1000px
+    // band below a three-node stack.
+    const deepest = Math.max(
+      ...laid.nodes.filter((n) => n.parentId === 'lane-a').map((n) => n.position.y + n.height),
+    );
+    expect(lane.height).toBe(Math.max(300, Math.round(deepest + 80)));
+    const childYs = new Set(laid.nodes.filter((n) => n.parentId === 'lane-a').map((n) => n.position.y));
+    expect(childYs.size).toBe(2);
+  });
+
+  it('clamps lane dims: warns missing-dims and expands to at least 400x300 in rank mode', () => {
     const raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] } = {
       nodes: [
         { id: 'lane-small', type: 'swimlane', label: 'SMALL', position: { x: 0, y: 0 }, width: 180, height: 400, department: 'D', function: 'F' },
@@ -174,7 +160,7 @@ describe('ocr-layout — KUR BPM fidelity', () => {
     expect(lanes).toHaveLength(2);
     for (const l of lanes) {
       expect(l.width).toBeGreaterThanOrEqual(400);
-      expect(l.height).toBeGreaterThanOrEqual(1000);
+      expect(l.height).toBeGreaterThanOrEqual(300);
     }
     expect(lanes[0].height).toBe(lanes[1].height);
     expect(laid.warnings.some((w) => w.code === 'missing-dims')).toBe(true);
@@ -199,13 +185,11 @@ describe('ocr-layout — KUR BPM fidelity', () => {
     const n3 = laid.nodes.find((n) => n.id === 'n3')!;
     expect(n2.parentId).toBeUndefined();
     expect(n3.parentId).toBeUndefined();
-    // top-level nodes are placed below lanes, not overlapping them
     const lane = laid.nodes.find((n) => n.id === 'lane-a')!;
     expect(n2.position.y).toBeGreaterThan(lane.position.y + lane.height - 1);
   });
 
   it('per-lane BFS depth ignores cross-lane incoming (nodes with only cross-lane incoming are entries)', () => {
-    // lane-b node b2 has only cross-lane incoming from lane-a, so depth 0 in its lane
     const raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] } = {
       nodes: [
         { id: 'lane-a', type: 'swimlane', label: 'A', position: { x: 0, y: 0 }, department: 'D', function: 'F' },
@@ -215,18 +199,17 @@ describe('ocr-layout — KUR BPM fidelity', () => {
         { id: 'b2', type: 'activity', label: 'B2', position: { x: 515, y: 100 }, parentId: 'lane-b' },
       ],
       edges: [
-        { id: 'e1', source: 'a1', target: 'b2' }, // cross-lane
-        { id: 'e2', source: 'b1', target: 'b2' }, // intra-lane to b2 as well
+        { id: 'e1', source: 'a1', target: 'b2' },
+        { id: 'e2', source: 'b1', target: 'b2' },
       ],
     };
     const laid = layoutOcrDiagram(raw);
-    // b1 is entry (no intra incoming), b2 has intra incoming from b1 so depth 1 => b1 above b2
     const b1 = laid.nodes.find((n) => n.id === 'b1')!;
     const b2 = laid.nodes.find((n) => n.id === 'b2')!;
     expect(b1.position.y).toBeLessThan(b2.position.y);
   });
 
-  it('top-level nodes sorted by (y,x) and placed in single row below lanes without overlap', () => {
+  it('top-level nodes keep the source vertical order below the lanes without overlap', () => {
     const raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] } = {
       nodes: [
         { id: 'lane-a', type: 'swimlane', label: 'A', position: { x: 0, y: 0 }, department: 'D', function: 'F' },
@@ -241,16 +224,27 @@ describe('ocr-layout — KUR BPM fidelity', () => {
     const t1 = laid.nodes.find((n) => n.id === 't1')!;
     const t2 = laid.nodes.find((n) => n.id === 't2')!;
     const t3 = laid.nodes.find((n) => n.id === 't3')!;
-    // all top-level share same Y (single row) below lane
-    expect(t1.position.y).toBe(t2.position.y);
+    // Same source row stays a row; the lower shape stays below.
     expect(t2.position.y).toBe(t3.position.y);
-    expect(t1.position.y).toBeGreaterThan(lane.position.y + lane.height - 1);
-    // x order respects (y,x) sort: t2 (y100,x10) < t3 (y100,x20) < t1 (y300,x50)
-    expect(t2.position.x).toBeLessThan(t3.position.x);
-    expect(t3.position.x).toBeLessThan(t1.position.x);
+    expect(t1.position.y).toBeGreaterThan(t2.position.y);
+    // All of them start below the lane block (the lane sits above them in the source).
+    for (const node of [t1, t2, t3]) {
+      expect(node.position.y).toBeGreaterThan(lane.position.y + lane.height - 1);
+    }
+    expect(
+      countOverlaps(
+        [t1, t2, t3].map((node) => ({
+          id: node.id,
+          x: node.position.x,
+          y: node.position.y,
+          width: node.width,
+          height: node.height,
+        })),
+      ),
+    ).toBe(0);
   });
 
-  it('getNodeDimensions mirror BridgeEdge: decision 110x110, archive 64x64, data-media 100x80, reference 40x40', () => {
+  it('mirrors BridgeEdge dimensions: decision 110x110, archive 64x64, data-media 100x80, reference 40x40', () => {
     const raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] } = {
       nodes: [
         { id: 'lane-a', type: 'swimlane', label: 'A', position: { x: 0, y: 0 }, department: 'D', function: 'F' },
@@ -280,13 +274,10 @@ describe('ocr-layout — KUR BPM fidelity', () => {
     expect(warnings.filter((w) => w.code === 'unlabeled-node')).toHaveLength(0);
 
     const laid = layoutOcrDiagram(raw);
-    const debitur = laid.nodes.find((n) => n.id === 'swimlane_debitur');
-    const kreditAdmin = laid.nodes.find((n) => n.id === 'swimlane_kredit_admin');
-
-    expect(debitur?.label).toBe('DEBITUR');
-    expect(debitur?.department).toBe('DEBITUR');
-    expect(kreditAdmin?.label).toBe('KREDIT ADMIN');
-    expect(kreditAdmin?.department).toBe('KREDIT ADMIN');
+    expect(laid.nodes.find((n) => n.id === 'swimlane_debitur')?.label).toBe('DEBITUR');
+    expect(laid.nodes.find((n) => n.id === 'swimlane_debitur')?.department).toBe('DEBITUR');
+    expect(laid.nodes.find((n) => n.id === 'swimlane_kredit_admin')?.label).toBe('KREDIT ADMIN');
+    expect(laid.nodes.find((n) => n.id === 'swimlane_kredit_admin')?.department).toBe('KREDIT ADMIN');
   });
 
   it('snaps unparented nodes to closest swimlane column when established lane children exist', () => {
@@ -295,30 +286,12 @@ describe('ocr-layout — KUR BPM fidelity', () => {
         { id: 'lane-nasabah', type: 'swimlane', label: 'NASABAH', position: { x: 50, y: 0 }, department: 'NASABAH' },
         { id: 'lane-penaksir', type: 'swimlane', label: 'PENAKSIR', position: { x: 300, y: 0 }, department: 'PENAKSIR' },
         { id: 'n-explicit', type: 'activity', label: 'Taksir Emas', position: { x: 310, y: 100 }, parentId: 'lane-penaksir' },
-        // n-unparented is at x: 60 (close to lane-nasabah at x: 50), with no parentId specified
         { id: 'n-unparented', type: 'document', label: 'Formulir Rahn', position: { x: 60, y: 120 } },
       ],
-      edges: [
-        { id: 'e1', source: 'n-unparented', target: 'n-explicit' },
-      ],
+      edges: [{ id: 'e1', source: 'n-unparented', target: 'n-explicit' }],
     };
     const laid = layoutOcrDiagram(raw);
-    const docNode = laid.nodes.find((n) => n.id === 'n-unparented');
-    expect(docNode).toBeDefined();
-    expect(docNode?.parentId).toBe('lane-nasabah');
-  });
-
-  it('ensures all swimlane child nodes are placed with sufficient header clearance (Y >= 110)', () => {
-    const fixture = buildKurFixture();
-    const result = layoutOcrDiagram(fixture);
-
-    const childNodes = result.nodes.filter((n) => n.parentId !== undefined && n.type !== 'swimlane');
-    expect(childNodes.length).toBeGreaterThan(0);
-
-    for (const child of childNodes) {
-      // Child node position.y inside a swimlane must respect HEADER_H + 50 (>= 130px)
-      expect(child.position.y).toBeGreaterThanOrEqual(110);
-    }
+    expect(laid.nodes.find((n) => n.id === 'n-unparented')?.parentId).toBe('lane-nasabah');
   });
 
   it('assigns horizontal right-to-left handles for cross-lane connections', () => {
@@ -329,86 +302,65 @@ describe('ocr-layout — KUR BPM fidelity', () => {
         { id: 'n1', type: 'document', label: 'Berkas', position: { x: 100, y: 100 }, parentId: 'lane-1' },
         { id: 'n2', type: 'activity', label: 'Proses', position: { x: 500, y: 120 }, parentId: 'lane-2' },
       ],
-      edges: [
-        { id: 'e1', source: 'n1', target: 'n2' },
-      ],
+      edges: [{ id: 'e1', source: 'n1', target: 'n2' }],
     };
 
     const laid = layoutOcrDiagram(raw);
     const edge = laid.edges.find((e) => e.id === 'e1');
-    expect(edge).toBeDefined();
     expect(edge?.sourceHandle).toBe('right');
     expect(edge?.targetHandle).toBe('left');
   });
 
-  it('dynamically expands swimlane width and spaces parallel branches without overlapping', () => {
-    const raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] } = {
-      nodes: [
-        { id: 'lane-main', type: 'swimlane', label: 'OPERASIONAL', position: { x: 0, y: 0 } },
-        { id: 'start', type: 'start', label: 'Mulai', position: { x: 50, y: 50 }, parentId: 'lane-main' },
-        { id: 'branch-a', type: 'activity', label: 'Cabang A', position: { x: 30, y: 150 }, parentId: 'lane-main' },
-        { id: 'branch-b', type: 'activity', label: 'Cabang B', position: { x: 150, y: 150 }, parentId: 'lane-main' },
-        { id: 'end', type: 'end', label: 'Selesai', position: { x: 50, y: 250 }, parentId: 'lane-main' },
-      ],
-      edges: [
-        { id: 'e1', source: 'start', target: 'branch-a' },
-        { id: 'e2', source: 'start', target: 'branch-b' },
-        { id: 'e3', source: 'branch-a', target: 'end' },
-        { id: 'e4', source: 'branch-b', target: 'end' },
-      ],
-    };
-
-    const laid = layoutOcrDiagram(raw);
-    const laneNode = laid.nodes.find((n) => n.id === 'lane-main');
-    expect(laneNode).toBeDefined();
-    // With 2 parallel activities (width 160 each) + margins, width must expand beyond default 400
-    expect(laneNode!.width).toBeGreaterThanOrEqual(480);
-
-    const nodeA = laid.nodes.find((n) => n.id === 'branch-a')!;
-    const nodeB = laid.nodes.find((n) => n.id === 'branch-b')!;
-    expect(nodeA).toBeDefined();
-    expect(nodeB).toBeDefined();
-
-    // Check horizontal clearance: node B must not overlap node A
-    const leftNode = nodeA.position.x < nodeB.position.x ? nodeA : nodeB;
-    const rightNode = leftNode === nodeA ? nodeB : nodeA;
-    const horizontalClearance = rightNode.position.x - (leftNode.position.x + leftNode.width);
-    expect(horizontalClearance).toBeGreaterThanOrEqual(40);
-
-    // Check vertical clearance between start and branch
-    const startNode = laid.nodes.find((n) => n.id === 'start')!;
-    const verticalClearanceStartToBranch = nodeA.position.y - (startNode.position.y + startNode.height);
-    expect(verticalClearanceStartToBranch).toBeGreaterThanOrEqual(50);
-  });
-
-  it('spaces unlinked initial document requirements sequentially with >= 50px vertical clearance', () => {
-    // Real-world KUR scenario: multiple document requirements (Formulir, KTP, KK, Surat Usaha)
-    // present in the initial lane without intra-lane edges between each other
-    const raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] } = {
-      nodes: [
-        { id: 'lane-nasabah', type: 'swimlane', label: 'NASABAH / DEBITUR', position: { x: 0, y: 0 } },
-        { id: 'doc-form', type: 'document', label: 'Formulir Permohonan', position: { x: 50, y: 120 }, parentId: 'lane-nasabah' },
-        { id: 'doc-ktp', type: 'document', label: 'Fotokopi KTP', position: { x: 50, y: 220 }, parentId: 'lane-nasabah' },
-        { id: 'doc-kk', type: 'document', label: 'Kartu Keluarga', position: { x: 50, y: 320 }, parentId: 'lane-nasabah' },
-        { id: 'doc-sku', type: 'document', label: 'Surat Keterangan Usaha', position: { x: 50, y: 420 }, parentId: 'lane-nasabah' },
-      ],
-      edges: [],
-    };
-
-    const laid = layoutOcrDiagram(raw);
-    const docs = laid.nodes.filter((n) => n.parentId === 'lane-nasabah');
-    expect(docs).toHaveLength(4);
-
-    // Sort by rendered Y position
-    docs.sort((a, b) => a.position.y - b.position.y);
-
-    // Verify each sequential pair has >= 50px clearance (no vertical overlap or clumping)
-    for (let i = 0; i < docs.length - 1; i++) {
-      const topNode = docs[i];
-      const bottomNode = docs[i + 1];
-      const clearance = bottomNode.position.y - (topNode.position.y + topNode.height);
-      expect(clearance).toBeGreaterThanOrEqual(50);
-    }
+  it('ensures all swimlane child nodes are placed with sufficient header clearance (Y >= 110)', () => {
+    const result = layoutOcrDiagram(buildKurSourceFixture());
+    const childNodes = result.nodes.filter((n) => n.parentId !== undefined && n.type !== 'swimlane');
+    expect(childNodes.length).toBeGreaterThan(0);
+    for (const child of childNodes) expect(child.position.y).toBeGreaterThanOrEqual(110);
   });
 });
 
+describe('ocr-layout - flow chart with a sign-off table (no real swimlanes)', () => {
+  // Mirrors the captured response of BPM_Penerimaan_Setoran_Tunai: a vertical
+  // flow chart in the upper half and "Disusun/Direview/Disetujui" columns in the
+  // lower half, which the model reports as swimlanes without children.
+  const raw = {
+    nodes: [
+      { id: 'node_1', type: 'activity', label: 'STAFF\nMenerima slip setoran tunai & Uang', position: { x: 457, y: 198 }, width: 218 },
+      { id: 'node_2', type: 'activity', label: 'STAFF\nMenghitung Uang tunai & verifikasi data transaksi', position: { x: 395, y: 309 }, width: 320 },
+      { id: 'node_3', type: 'decision', label: 'SESUAI?', position: { x: 480, y: 422 }, width: 149 },
+      { id: 'node_4', type: 'activity', label: 'STAFF\nHitung Ulang', position: { x: 307, y: 529 }, width: 159 },
+      { id: 'node_5', type: 'activity', label: 'STAFF\nInput Transaksi', position: { x: 538, y: 535 }, width: 159 },
+      { id: 'node_6', type: 'activity', label: 'STAFF\nSimpan Uang Tunai & Cetak Mutasi', position: { x: 437, y: 634 }, width: 239 },
+      { id: 'node_7', type: 'swimlane', label: 'Disusun Oleh (Lini 1)', position: { x: 184, y: 834 }, width: 329 },
+      { id: 'node_8', type: 'swimlane', label: 'Direview Oleh (Lini 2)', position: { x: 514, y: 834 }, width: 328 },
+      { id: 'node_9', type: 'swimlane', label: 'Disetujui Oleh (CFO)', position: { x: 842, y: 834 }, width: 158 },
+    ] as OcrRawNode[],
+    edges: [
+      { id: 'edge_1', source: 'node_1', target: 'node_2', sourceHandle: 'bottom', targetHandle: 'top' },
+      { id: 'edge_2', source: 'node_2', target: 'node_3', sourceHandle: 'bottom', targetHandle: 'top' },
+    ] as OcrRawEdge[],
+  };
+
+  it('keeps the flow above the sign-off columns and does not inflate empty lanes', () => {
+    const result = layoutOcrDiagram(raw);
+    const lanes = result.nodes.filter((node) => node.type === 'swimlane');
+    const shapes = result.nodes.filter((node) => node.type !== 'swimlane');
+
+    expect(lanes).toHaveLength(3);
+    for (const lane of lanes) expect(lane.height).toBe(300);
+
+    const flowBottom = Math.max(...shapes.map((shape) => shape.position.y + shape.height));
+    const laneTop = Math.min(...lanes.map((lane) => lane.position.y));
+    expect(flowBottom).toBeLessThan(laneTop);
+
+    const order = [...shapes].sort((a, b) => a.position.y - b.position.y).map((shape) => shape.id);
+    expect(order).toEqual(['node_1', 'node_2', 'node_3', 'node_4', 'node_5', 'node_6']);
+    expect(auditSourceOrder(raw.nodes, result)).toEqual([]);
+    expect(auditOcrLayout(result).violations).toEqual([]);
+  });
+
+  it('keeps the sign-off columns left-to-right in source order', () => {
+    const lanes = layoutOcrDiagram(raw).nodes.filter((node) => node.type === 'swimlane');
+    expect(lanes.map((lane) => lane.label)).toEqual(['Disusun Oleh (Lini 1)', 'Direview Oleh (Lini 2)', 'Disetujui Oleh (CFO)']);
+  });
+});

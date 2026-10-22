@@ -13,11 +13,14 @@ vi.mock('reactflow', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, opts?: { defaultValue?: string; count?: number }) => {
+    t: (key: string, opts?: { defaultValue?: string; count?: number; page?: number }) => {
       if (key === 'bpm:ocr.originalImage') return 'Source Reference Image';
       if (key === 'bpm:ocr.shapeDetection') return 'Extracted Elements Preview';
       if (key === 'bpm:ocr.staging.thumbnailHint') return 'Compare with original BPM document';
       if (key === 'bpm:ocr.staging.canvasHint') return 'Click and drag to reposition';
+      if (key === 'bpm:ocr.pageNumber') return `Halaman ${opts?.page ?? ''}`;
+      if (key === 'bpm:ocr.pageLabel') return 'Halaman PDF:';
+      if (key === 'bpm:ocr.sourceAlt') return 'Source Diagram';
       return opts?.defaultValue ?? key;
     },
   }),
@@ -76,5 +79,17 @@ describe('OcrReviewView visual comparison & split-view reference', () => {
 
     expect(screen.getByText('Halaman 1')).toBeInTheDocument();
     expect(screen.getByText('Halaman 2')).toBeInTheDocument();
+  });
+
+  it('reserves a readable preview height instead of the old 200px strip', () => {
+    render(
+      <OcrReviewView {...dummyProps}>
+        <div>Content</div>
+      </OcrReviewView>
+    );
+
+    const canvas = screen.getByTestId('mock-react-flow').closest('div[class*="h-[320px]"]');
+    expect(canvas).not.toBeNull();
+    expect(canvas?.className).toContain('lg:h-[420px]');
   });
 });

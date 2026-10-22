@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { AIService, clearAiServiceCaches, invalidateAiCachesForOrg, suggestResponseCache } from './ai-service';
 
 const SCOPE = { orgId: 'org-1', kbVersion: '', simulationId: '' };
@@ -96,5 +96,46 @@ describe('invalidateAiCachesForOrg', () => {
     expect(service.calls).toBe(2);
     expect(service.lastEmbeddingCacheHit).toBe(false);
     expect(suggestResponseCache.get('org-2:suggest:bbb', SCOPE)?.payload).toBeDefined();
+  });
+});
+
+describe('AIService chat temperature', () => {
+  const calls: Array<Record<string, unknown>> = [];
+
+  beforeEach(() => {
+    calls.length = 0;
+    vi.stubGlobal('fetch', async (_url: string, init?: { body?: string }) => {
+      calls.push(JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>);
+      return new Response(JSON.stringify({ choices: [{ message: { content: '{}' } }] }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  function service(): AIService {
+    return new AIService({
+      provider: 'openai-compatible',
+      apiKey: 'test',
+      baseUrl: 'http://localhost:9999',
+    });
+  }
+
+  it('forwards an explicit temperature to the provider payload', async () => {
+    await service().generateChatResponse({ messages: [{ role: 'user', content: 'halo' }], temperature: 0 });
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0].temperature).toBe(0);
+  });
+
+  it('leaves the provider default untouched when temperature is omitted', async () => {
+    await service().generateChatResponse({ messages: [{ role: 'user', content: 'halo' }] });
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).not.toHaveProperty('temperature');
   });
 });

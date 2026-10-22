@@ -200,6 +200,8 @@ export class AIService {
     messages: Array<{ role: string; content: string | any[] }>;
     tools?: any[];
     responseSchema?: any;
+    /** Optional sampling temperature; omitted means the provider default. */
+    temperature?: number;
   }): Promise<{ content: string; toolCalls?: any[] }> {
     // Helper to parse data URI into base64 data and mimeType
     const parseDataUri = (dataUri: string) => {
@@ -239,6 +241,7 @@ export class AIService {
         tools: params.tools ? [{ functionDeclarations: params.tools }] : undefined,
         generationConfig: {
           maxOutputTokens: 65536,
+          ...(params.temperature !== undefined ? { temperature: params.temperature } : {}),
           ...(params.responseSchema ? {
             responseMimeType: "application/json",
             responseSchema: params.responseSchema,
@@ -281,6 +284,7 @@ export class AIService {
         body: JSON.stringify({
           model: this.config.chatModel || "gemma4",
           messages,
+          ...(params.temperature !== undefined ? { temperature: params.temperature } : {}),
           tools: params.tools?.map(t => ({ type: "function", function: t })),
           response_format: params.responseSchema ? {
             type: "json_object"
