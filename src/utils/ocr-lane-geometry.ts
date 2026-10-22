@@ -128,13 +128,42 @@ export function buildDepthMap(children: OcrRawNode[], intraEdges: OcrRawEdge[]):
       if (arr) arr.push(e.target);
     }
   }
-  const queue: string[] = [];
-  for (const c of children) {
-    if ((incoming.get(c.id) ?? 0) === 0) {
-      depth.set(c.id, 0);
-      queue.push(c.id);
+
+  // Identify root candidates (incoming intra-edges == 0)
+  const rootCandidates = children.filter((c) => (incoming.get(c.id) ?? 0) === 0);
+  // Partition into:
+  // 1. Root nodes connected to downstream intra-lane nodes (branch roots)
+  // 2. Standalone unlinked nodes (e.g. initial document requirements: Formulir, KTP, KK, Surat Usaha)
+  const connectedRoots: OcrRawNode[] = [];
+  const standaloneRoots: OcrRawNode[] = [];
+
+  for (const r of rootCandidates) {
+    const succs = outgoing.get(r.id) ?? [];
+    if (succs.length > 0) {
+      connectedRoots.push(r);
+    } else {
+      standaloneRoots.push(r);
     }
   }
+
+  // Sort standalone roots by natural visual order (top-to-bottom, left-to-right)
+  standaloneRoots.sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
+
+  const queue: string[] = [];
+  let currentRank = 0;
+
+  // Stagger standalone unlinked nodes sequentially so each occupies its own vertical slot/rank
+  for (const standalone of standaloneRoots) {
+    depth.set(standalone.id, currentRank);
+    currentRank += 1;
+  }
+
+  // Connected branch roots share the next available rank level
+  for (const conn of connectedRoots) {
+    depth.set(conn.id, currentRank);
+    queue.push(conn.id);
+  }
+
   let head = 0;
   while (head < queue.length) {
     const cur = queue[head++];
@@ -147,6 +176,7 @@ export function buildDepthMap(children: OcrRawNode[], intraEdges: OcrRawEdge[]):
       }
     }
   }
+
   let maxD = -1;
   for (const v of depth.values()) if (v > maxD) maxD = v;
   const unvisited = children.filter((c) => !depth.has(c.id));

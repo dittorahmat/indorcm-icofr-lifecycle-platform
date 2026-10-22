@@ -380,5 +380,35 @@ describe('ocr-layout — KUR BPM fidelity', () => {
     const verticalClearanceStartToBranch = nodeA.position.y - (startNode.position.y + startNode.height);
     expect(verticalClearanceStartToBranch).toBeGreaterThanOrEqual(50);
   });
+
+  it('spaces unlinked initial document requirements sequentially with >= 50px vertical clearance', () => {
+    // Real-world KUR scenario: multiple document requirements (Formulir, KTP, KK, Surat Usaha)
+    // present in the initial lane without intra-lane edges between each other
+    const raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] } = {
+      nodes: [
+        { id: 'lane-nasabah', type: 'swimlane', label: 'NASABAH / DEBITUR', position: { x: 0, y: 0 } },
+        { id: 'doc-form', type: 'document', label: 'Formulir Permohonan', position: { x: 50, y: 120 }, parentId: 'lane-nasabah' },
+        { id: 'doc-ktp', type: 'document', label: 'Fotokopi KTP', position: { x: 50, y: 220 }, parentId: 'lane-nasabah' },
+        { id: 'doc-kk', type: 'document', label: 'Kartu Keluarga', position: { x: 50, y: 320 }, parentId: 'lane-nasabah' },
+        { id: 'doc-sku', type: 'document', label: 'Surat Keterangan Usaha', position: { x: 50, y: 420 }, parentId: 'lane-nasabah' },
+      ],
+      edges: [],
+    };
+
+    const laid = layoutOcrDiagram(raw);
+    const docs = laid.nodes.filter((n) => n.parentId === 'lane-nasabah');
+    expect(docs).toHaveLength(4);
+
+    // Sort by rendered Y position
+    docs.sort((a, b) => a.position.y - b.position.y);
+
+    // Verify each sequential pair has >= 50px clearance (no vertical overlap or clumping)
+    for (let i = 0; i < docs.length - 1; i++) {
+      const topNode = docs[i];
+      const bottomNode = docs[i + 1];
+      const clearance = bottomNode.position.y - (topNode.position.y + topNode.height);
+      expect(clearance).toBeGreaterThanOrEqual(50);
+    }
+  });
 });
 

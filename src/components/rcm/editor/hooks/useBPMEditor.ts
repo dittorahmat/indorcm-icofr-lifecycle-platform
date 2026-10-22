@@ -54,17 +54,11 @@ export function useBPMEditor({ diagramId, subProcess, workingYear, currentGL, bp
   useUnsavedChanges(state.isDirty || view.isExporting);
 
   const history = useBPMEditorHistory({
-    nodes: graph.nodes,
-    edges: graph.edges,
-    setNodes: graph.setNodes,
-    setEdges: graph.setEdges,
-    pushState: graph.pushState,
     setDirty,
     canUndo: graph.canUndo,
     canRedo: graph.canRedo,
     executeUndo: graph.undoDiagram,
     executeRedo: graph.redoDiagram,
-    rfInstance: view.rfInstance,
     t,
   });
 

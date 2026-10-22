@@ -73,7 +73,6 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
                 isFullscreen={view.isFullscreen}
                 onUndo={history.handleUndo}
                 onRedo={history.handleRedo}
-                onAutoArrange={history.handleAutoArrange}
                 onFitView={view.handleFitView}
                 onToggleFullscreen={view.toggleFullscreen}
                 onOpenDocumentView={() => view.setDocumentView(true)}

@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { 
-  Undo2, Redo2, Wand2, Layout, Link as LinkIcon, 
+  Undo2, Redo2, Layout, Link as LinkIcon, 
   Upload, ShieldCheck, RefreshCw, Save,
   Maximize2, Maximize, Minimize
 } from 'lucide-react';
@@ -27,7 +27,6 @@ export interface BPMCanvasToolbarProps {
   isFullscreen?: boolean;
   onUndo: () => void;
   onRedo: () => void;
-  onAutoArrange: () => void;
   onOpenDocumentView: () => void;
   onOpenOcrDialog: () => void;
   onOpenRcmImportDialog?: () => void;
@@ -52,7 +51,6 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
   isFullscreen,
   onUndo,
   onRedo,
-  onAutoArrange,
   onOpenDocumentView,
   onOpenOcrDialog,
   onOpenRcmImportDialog,
@@ -66,74 +64,59 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
   const { t } = useTranslation(['bpm']);
 
   return (
-    <div className="min-h-14 border-b border-slate-200 bg-background px-3 sm:px-6 flex items-center gap-2 py-2 shrink-0 z-20 print:hidden">
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full py-1 w-full touch-pan-x overscroll-x-contain">
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-0.5 shadow-sm shrink-0">
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={!canUndo || isLocked}
-              onClick={onUndo}
-              className="h-8 px-2 text-xs text-slate-700 hover:text-slate-900 gap-1 font-bold rounded-lg disabled:opacity-30"
-              title={`${t('bpm:editor.actions.undo', { defaultValue: 'Undo' })} (Ctrl+Z)`}
-            >
-              <Undo2 className="h-3.5 w-3.5" />
-              <span className="hidden xl:inline text-xs uppercase tracking-wider">{t('bpm:editor.actions.undo', { defaultValue: 'Undo' })}</span>
-            </Button>
-            <Separator orientation="vertical" className="h-4" />
-            <Button
-              size="sm"
-              variant="ghost"
-              disabled={!canRedo || isLocked}
-              onClick={onRedo}
-              className="h-8 px-2 text-xs text-slate-700 hover:text-slate-900 gap-1 font-bold rounded-lg disabled:opacity-30"
-              title={`${t('bpm:editor.actions.redo', { defaultValue: 'Redo' })} (Ctrl+Y)`}
-            >
-              <Redo2 className="h-3.5 w-3.5" />
-              <span className="hidden xl:inline text-xs uppercase tracking-wider">{t('bpm:editor.actions.redo', { defaultValue: 'Redo' })}</span>
-            </Button>
-          </div>
-
-          <Button 
-            size="sm" 
-            variant="outline" 
-            disabled={!hasNodes || isLocked}
-            className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-3 rounded-xl shadow-sm shrink-0"
-            onClick={onAutoArrange}
-            title={t('bpm:editor.actions.autoArrange', { defaultValue: 'Auto Arrange' })}
+    <div className="min-h-14 border-b border-slate-200 bg-background px-3 sm:px-6 flex items-center justify-between gap-2 py-2 shrink-0 z-20 print:hidden">
+      {/* Scrollable Tools Cluster (Left) */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 flex-1 min-w-0 touch-pan-x overscroll-x-contain">
+        <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-0.5 shadow-sm shrink-0">
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={!canUndo || isLocked}
+            onClick={onUndo}
+            className="h-8 px-2 text-xs text-slate-700 hover:text-slate-900 gap-1 font-bold rounded-lg disabled:opacity-30"
+            title={`${t('bpm:editor.actions.undo', { defaultValue: 'Undo' })} (Ctrl+Z)`}
           >
-            <Wand2 className="h-3.5 w-3.5 text-indigo-500" />
-            <span className="hidden md:inline">{t('bpm:editor.actions.autoArrange', { defaultValue: 'Auto Arrange' })}</span>
+            <Undo2 className="h-3.5 w-3.5" />
+            <span className="hidden xl:inline text-xs uppercase tracking-wider">{t('bpm:editor.actions.undo', { defaultValue: 'Undo' })}</span>
           </Button>
-
-          {onFitView && (
-            <Button 
-              size="sm" 
-              variant="outline" 
-              disabled={!hasNodes}
-              className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-3 rounded-xl shadow-sm shrink-0"
-              onClick={onFitView}
-              title={t('bpm:editor.actions.fitView', { defaultValue: 'Fit to Screen' })}
-            >
-              <Maximize2 className="h-3.5 w-3.5 text-sky-500" />
-              <span className="hidden md:inline">{t('bpm:editor.actions.fitView', { defaultValue: 'Fit to Screen' })}</span>
-            </Button>
-          )}
-
-          <Button 
-            size="sm" 
-            variant="outline" 
-            className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-3 rounded-xl shadow-sm shrink-0"
-            onClick={onOpenDocumentView}
-            title={t('bpm:editor.actions.documentView')}
+          <Separator orientation="vertical" className="h-4" />
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={!canRedo || isLocked}
+            onClick={onRedo}
+            className="h-8 px-2 text-xs text-slate-700 hover:text-slate-900 gap-1 font-bold rounded-lg disabled:opacity-30"
+            title={`${t('bpm:editor.actions.redo', { defaultValue: 'Redo' })} (Ctrl+Y)`}
           >
-            <Layout className="h-3.5 w-3.5 text-indigo-500" />
-            <span className="hidden md:inline">{t('bpm:editor.actions.documentView')}</span>
+            <Redo2 className="h-3.5 w-3.5" />
+            <span className="hidden xl:inline text-xs uppercase tracking-wider">{t('bpm:editor.actions.redo', { defaultValue: 'Redo' })}</span>
           </Button>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        {onFitView && (
+          <Button 
+            size="sm" 
+            variant="outline" 
+            disabled={!hasNodes}
+            className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-3 rounded-xl shadow-sm shrink-0"
+            onClick={onFitView}
+            title={t('bpm:editor.actions.fitView', { defaultValue: 'Fit to Screen' })}
+          >
+            <Maximize2 className="h-3.5 w-3.5 text-sky-500" />
+            <span className="hidden md:inline">{t('bpm:editor.actions.fitView', { defaultValue: 'Fit to Screen' })}</span>
+          </Button>
+        )}
+
+        <Button 
+          size="sm" 
+          variant="outline" 
+          className="h-9 gap-1.5 bg-white border-slate-200 hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-widest px-3 rounded-xl shadow-sm shrink-0"
+          onClick={onOpenDocumentView}
+          title={t('bpm:editor.actions.documentView')}
+        >
+          <Layout className="h-3.5 w-3.5 text-indigo-500" />
+          <span className="hidden md:inline">{t('bpm:editor.actions.documentView')}</span>
+        </Button>
 
         <Popover>
           <PopoverTrigger asChild>
@@ -250,7 +233,10 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
             </Button>
           </>
         )}
+      </div>
 
+      {/* Persistent Action Cluster (Right) */}
+      <div className="flex items-center gap-2 shrink-0 pl-2 sm:pl-3 border-l border-slate-200 bg-background">
         {isLocked && (
           <Badge variant="outline" className="h-9 bg-amber-50 text-amber-700 border-amber-200 gap-1.5 px-3 font-bold text-xs uppercase tracking-widest rounded-xl shadow-sm shrink-0">
             <ShieldCheck className="h-3.5 w-3.5" />
@@ -267,7 +253,6 @@ export const BPMCanvasToolbar: React.FC<BPMCanvasToolbarProps> = ({
           {isSaving ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
           <span>{isSaving ? t('bpm:editor.actions.saving') : t('bpm:editor.actions.save')}</span>
         </Button>
-        </div>
       </div>
     </div>
   );
