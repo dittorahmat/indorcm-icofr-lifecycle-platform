@@ -22,18 +22,11 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('@tanstack/react-query', () => ({
+  useQuery: () => ({ data: { role: sessionRole.role } }),
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }));
 
 const sessionRole = vi.hoisted(() => ({ role: 'Line 1' as string | undefined }));
-
-vi.mock('@/lib/auth-client', () => ({
-  authClient: {
-    useSession: () => ({
-      data: sessionRole.role ? { user: { role: sessionRole.role } } : null,
-    }),
-  },
-}));
 
 import { useCsaWorklist } from '../utils/use-csa-worklist';
 

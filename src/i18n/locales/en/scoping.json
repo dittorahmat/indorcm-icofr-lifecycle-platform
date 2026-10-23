@@ -232,6 +232,7 @@
     "scope": "Scope",
     "significant": "Significant",
     "notSignificant": "Not Significant",
+    "unassigned": "Unassigned",
     "inScope": "In Scope",
     "outScope": "Out Scope",
     "selectApp": "Select application...",

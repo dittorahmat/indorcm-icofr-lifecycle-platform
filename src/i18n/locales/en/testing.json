@@ -84,7 +84,8 @@
   "coolingOff": {
     "violation": "COOLING-OFF VIOLATION (BAB II)",
     "restricted": "Access Restricted (Chapter II point d.2)",
-    "prohibited": "In accordance with regulations, Internal Auditors are prohibited from testing activities that were previously their responsibility (as Line 1 or Line 2) before a cooling-off period of at least 12 months has passed."
+    "prohibited": "In accordance with regulations, Internal Auditors are prohibited from testing activities that were previously their responsibility (as Line 1 or Line 2) before a cooling-off period of at least 12 months has passed.",
+    "contactAdmin": "Contact Compliance Administrator"
   },
   "badges": {
     "highRisk": "HIGH RISK",
@@ -96,7 +97,8 @@
   },
   "gatekeeper": {
     "csaIneffectiveTitle": "Line 3 Testing Suspended (SK-5 BAB V p. 54)",
-    "csaIneffectiveDescription": "Based on Line 1 CSA and/or Line 2 validation, this control was concluded as Ineffective. In accordance with Chapter V Point 1.2 Item 3, Line 3 does not perform testing until the control is declared Effective through remediation."
+    "csaIneffectiveDescription": "Based on Line 1 CSA and/or Line 2 validation, this control was concluded as Ineffective. In accordance with Chapter V Point 1.2 Item 3, Line 3 does not perform testing until the control is declared Effective through remediation.",
+    "remediationStatus": "Status: Awaiting Line 1 & Line 2 Remediation"
   },
   "sampling": {
     "title": "Regulatory Sampling Grid",

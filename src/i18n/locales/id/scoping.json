@@ -232,6 +232,7 @@
     "scope": "Ruang Lingkup",
     "significant": "Signifikan",
     "notSignificant": "Tidak Signifikan",
+    "unassigned": "Belum Ditugaskan",
     "inScope": "Masuk Lingkup",
     "outScope": "Luar Lingkup",
     "selectApp": "Pilih aplikasi...",

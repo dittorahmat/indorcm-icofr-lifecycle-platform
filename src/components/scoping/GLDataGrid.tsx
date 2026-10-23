@@ -27,6 +27,8 @@ import { formatIDRPlain } from '@/components/reports/dod/dod-format';
 import { sortGLHierarchically } from '@/lib/compliance-utils';
 import { buildGLDataGridColumns } from './GLDataGridColumns';
 import { GLDataGridToolbar } from './GLDataGridToolbar';
+import { buildGlExportRows } from './gl-data-grid-export';
+import { isAccountInScope } from '@shared/scoping-materiality';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 
 interface GLDataGridProps {
@@ -154,60 +156,27 @@ export const GLDataGrid = React.memo(function GLDataGrid({
   });
 
   const handleExportExcel = async () => {
-    const rows = table.getRowModel().rows;
-    const exportData: Array<Record<string, unknown>> = [];
-
-    rows.forEach(row => {
-      // Header FSLI
-      if (row.getIsGrouped()) {
-        const fsliName = row.getValue('fsliName');
-        const leafRows = row.getLeafRows();
-        const groupExplicitTotal = leafRows[0]?.original.fsliBalance;
-        const balance = (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0)
-          ? groupExplicitTotal
-          : leafRows.reduce((sum, r) => sum + r.original.balance, 0);
-
-        const assessments = assessmentData[String(fsliName) || ''] || {};
-        const isQualSignificant = Object.values(assessments).some(v => v === 'High');
-        const isKuanSignificant = Math.abs(balance) >= pmValue;
-        const isFSLIInScope = isQualSignificant || isKuanSignificant;
-
-        // Add a separator row for FSLI
-        exportData.push({
-          [t('grid.entityCode')]: '',
-          [t('grid.fsli')]: `[FSLI] ${fsliName}`,
-          [t('grid.accountCode')]: '',
-          [t('grid.accountDesc')]: '',
-          [t('grid.balance')]: balance,
-          [t('grid.quantHeader')]: Math.abs(balance) >= pmValue ? t('grid.significant') : t('grid.notSignificant'),
-          [t('grid.lini1Owner')]: '',
-          [t('grid.ownerAcceptance')]: '',
-          [t('grid.scope')]: isFSLIInScope ? t('grid.inScope') : t('grid.outScope')
-        });
-
-        // Add accounts under this FSLI
-        row.getLeafRows().forEach(leaf => {
-          const assessments = assessmentData[String(fsliName) || ''] || {};
-          const isQualSignificant = Object.values(assessments).some(v => v === 'High');
-          const isKuanSignificant = Math.abs(leaf.original.balance) >= pmValue;
-          const isInScope = isKuanSignificant || isQualSignificant;
-          const assignedDeptIds = leaf.original.assignedDepartmentIds || [];
-          const depts = assignedDeptIds.map(id => departments.find(d => d.id === id)?.name).filter(Boolean).join(", ");
-          const acceptance = leaf.original.ownerAcceptance || t('grid.pending');
-
-          exportData.push({
-            [t('grid.entityCode')]: leaf.original.entityCode,
-            [t('grid.fsli')]: leaf.original.fsliName,
-            [t('grid.accountCode')]: leaf.original.noGL,
-            [t('grid.accountDesc')]: leaf.original.glDesc,
-            [t('grid.balance')]: leaf.original.balance,
-            [t('grid.quantHeader')]: isKuanSignificant ? t('grid.significant') : t('grid.notSignificant'),
-            [t('grid.lini1Owner')]: depts || 'Unassigned',
-            [t('grid.ownerAcceptance')]: acceptance,
-            [t('grid.scope')]: isInScope ? t('grid.inScope') : t('grid.outScope')
-          });
-        });
-      }
+    const exportData = buildGlExportRows({
+      rows: sortedData,
+      pmValue,
+      departments,
+      labels: {
+        entityCode: t('grid.entityCode'),
+        fsli: t('grid.fsli'),
+        accountCode: t('grid.accountCode'),
+        accountDesc: t('grid.accountDesc'),
+        balance: t('grid.balance'),
+        quantitative: t('grid.quantHeader'),
+        owner: t('grid.lini1Owner'),
+        acceptance: t('grid.ownerAcceptance'),
+        scope: t('grid.scope'),
+        significant: t('grid.significant'),
+        notSignificant: t('grid.notSignificant'),
+        inScope: t('grid.inScope'),
+        outScope: t('grid.outScope'),
+        pending: t('grid.pending'),
+        unassigned: t('grid.unassigned', { defaultValue: 'Unassigned' }),
+      },
     });
 
     const exported = await exportGridNow({
@@ -243,7 +212,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
         ) : (
           <>
             {sortedData.slice(0, 10).map((row) => {
-              const isSignificant = Math.abs(row.balance ?? 0) >= pmValue;
+              const isSignificant = isAccountInScope(row, pmValue);
               return (
                 <div key={row.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2 shadow-sm">
                   <div className="flex items-start justify-between gap-2 flex-wrap">

@@ -17,6 +17,7 @@ type TestTestRecord = Pick<
 const pageState = vi.hoisted(() => ({
   records: new Array<TestControl>(),
   processes: new Array<TestTestRecord>(),
+  user: undefined as unknown,
 }));
 
 vi.mock('@tanstack/react-query', () =>
@@ -123,6 +124,24 @@ describe('TestWorkbench', () => {
     // truthy string — so the raw key is what reached the user. strictT validates
     // the key against the en bundle, so a regression fails here.
     expect(screen.getByPlaceholderText('searchPlaceholder')).toBeInTheDocument();
+  });
+
+  it('blocks a process the signed-in user owned inside the Bab II window', () => {
+    pageState.records = [validatedControl];
+    pageState.user = {
+      processOwnershipHistory: [
+        { processId: 'RCM-1', role: 'Line 1', endDate: Date.now() - 24 * 60 * 60 * 1000 },
+      ],
+    };
+
+    render(<TestWorkbench />);
+
+    expect(screen.getByText('coolingOff.violation')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Persetujuan Vendor'));
+
+    expect(screen.getByText('coolingOff.restricted')).toBeInTheDocument();
+    expect(screen.getByText('coolingOff.contactAdmin')).toBeInTheDocument();
   });
 
   it('exports the ONE shared column set for the visible controls', async () => {

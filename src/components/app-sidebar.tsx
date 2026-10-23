@@ -1,356 +1,119 @@
 import React, { useEffect } from "react";
-import { 
-  LayoutDashboard, 
-  Target, 
-  ShieldCheck, 
-  BookOpen,
-  CheckSquare, 
-  Microscope, 
-  AlertTriangle, 
-  BarChart3, 
-  Settings,
-  FileText,
-  Briefcase,
-  History,
-  Megaphone,
-  Network,
-  Bell as BellIcon,
-  UploadCloud,
-  Cpu,
-  Bot,
-  UserCog,
-  Workflow,
-  Database,
-  ShieldAlert,
-  ClipboardCheck,
-  Search,
-  ListChecks,
-  Settings2,
-  RefreshCw,
-  FileBarChart,
-  FileSpreadsheet,
-  Calendar as CalendarIcon,
-  ListTodo,
-  LogOut,
-  Shield,
-  Pin,
-  PinOff,
-  PanelLeft,
-  BrainCircuit
-} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarHeader,
-  SidebarSeparator,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarMenuBadge,
   SidebarRail,
-  useSidebar
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api-client";
-import { MaterialitySimulation, BPMProcess, ActionPlan, UserRole } from "@shared/types";
-import { allowedRolesAt } from "@shared/workflow-transitions";
-import { resolveSimulationStatus, simulationApprovalStages } from "@shared/scoping-simulation-status";
-
 import { authClient } from "@/lib/auth-client";
 import { useFiscalYearStore } from "@/store/useFiscalYearStore";
 import { useTranslation } from "react-i18next";
-import { LanguageSwitcher } from "./LanguageSwitcher";
-import { NotificationBell } from "./layout/NotificationBell";
-import { cn } from "@/lib/utils";
-import { Button } from "./ui/button";
 import { useAIChatStore } from "@/context/ai-chat-store";
 import { registeredExtensions } from "@/extensions";
-import * as LucideIcons from "lucide-react";
-
-function DynamicIcon({ name, className }: { name: string; className?: string }) {
-  const IconComponent = (LucideIcons as any)[name];
-  if (!IconComponent) {
-    return <LucideIcons.HelpCircle className={className} />;
-  }
-  return <IconComponent className={className} />;
-}
-
-
-function PendingApprovalBadge({ role }: { role: UserRole | null | undefined }) {
-  const { data: simulations } = useQuery({
-    queryKey: ['simulations-pending-badge'],
-    queryFn: () => api<{ items: MaterialitySimulation[] }>('/api/simulations'),
-    enabled: role === 'CFO' || role === 'Commissioner' || role === 'Admin',
-    refetchInterval: 30000, // Poll every 30s
-  });
-
-  // Same queue as ApprovalPage: stages and authority come from the SCOPING table.
-  const stages = simulationApprovalStages();
-  const count = role
-    ? (simulations?.items.filter(s => {
-        const status = resolveSimulationStatus(s);
-        return stages.includes(status) && allowedRolesAt('SCOPING', status).includes(role);
-      }).length ?? 0)
-    : 0;
-
-  if (count === 0) return null;
-
-  return (
-    <div className="h-5 min-w-[1.25rem] px-1 rounded bg-red-600 text-xs font-semibold text-white flex items-center justify-center">
-      {count}
-    </div>
-  );
-}
-
-
-function NotificationBadge() {
-  const { data: notificationData } = useQuery({
-    queryKey: ['notifications', 'unread-count'],
-    queryFn: () => api<{ count: number }>('/api/notifications/unread-count'),
-    refetchInterval: 30000 // Refetch every 30s
-  });
-
-  if (!notificationData?.count || notificationData.count <= 0) return null;
-
-  return (
-    <div className="h-5 min-w-[1.25rem] px-1 rounded bg-rose-700 text-xs font-semibold text-white flex items-center justify-center">
-      {notificationData.count > 9 ? '9+' : notificationData.count}
-    </div>
-  );
-}
+import { useCurrentRole } from "@/hooks/use-current-role";
+import { ExtensionIcon } from "./layout/ExtensionIcon";
+import { SidebarNavItemRow, SIDEBAR_ITEM_CLASS } from "@/components/layout/SidebarNavItem";
+import { visibleNavGroups, visibleUserNavItems } from "@/components/layout/sidebar-nav";
 
 export function AppSidebar(): JSX.Element {
   const location = useLocation();
   const navigate = useNavigate();
   const pathname = location.pathname;
-  const { t, i18n } = useTranslation('sidebar');
+  const { t, i18n } = useTranslation("sidebar");
   const { data: session } = authClient.useSession();
-  const userRole: UserRole | undefined = (session?.user as any)?.role;
-  const { isPinned, setIsPinned, state, toggleSidebar, setOpen, isMobile, setOpenMobile } = useSidebar();
+  const userRole = useCurrentRole();
+  const { isMobile, setOpenMobile } = useSidebar();
   const { workingYear } = useFiscalYearStore();
+  const { toggleChat } = useAIChatStore();
 
   const withYear = (path: string) => {
     if (!workingYear) return path;
-    const separator = path.includes('?') ? '&' : '?';
+    const separator = path.includes("?") ? "&" : "?";
     return `${path}${separator}year=${workingYear}`;
   };
 
   useEffect(() => {
-    const userLang = (session?.user as any)?.language;
-    if (userLang && i18n.language !== userLang) {
-      i18n.changeLanguage(userLang);
+    const userLanguage = (session?.user as { language?: string } | undefined)?.language;
+    if (userLanguage && i18n.language !== userLanguage) {
+      i18n.changeLanguage(userLanguage);
     }
   }, [session?.user, i18n]);
 
   // Close mobile sidebar automatically upon route transition
   useEffect(() => {
-    if (isMobile) {
-      setOpenMobile(false);
-    }
-  }, [location.pathname, isMobile, setOpenMobile]);
+    if (isMobile) setOpenMobile(false);
+  }, [pathname, isMobile, setOpenMobile]);
 
   const isActive = (path: string) => {
     if (path === "/reports") return pathname === "/reports";
     return pathname === path || pathname.startsWith(path);
   };
 
-  const handleLogout = async () => {
-    await authClient.signOut();
-    navigate("/");
+  const handleAction = (action: "ai-assistant" | "logout") => {
+    if (action === "ai-assistant") {
+      toggleChat();
+      return;
+    }
+    void authClient.signOut().then(() => navigate("/"));
   };
-
-  const { toggleChat } = useAIChatStore();
 
   return (
     <Sidebar variant="sidebar" collapsible="icon" className="w-64 border-r border-sidebar-border bg-sidebar">
       <SidebarContent className="py-4">
-        {/* MASTER */}
-        <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="font-bold text-slate-500 uppercase text-xs tracking-wider h-8 px-6 mb-1">
-            {t('groups.mainTasks')}
-          </SidebarGroupLabel>
-          <SidebarMenu className="px-3 gap-1">
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/dashboard")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.dashboard')}>
-                <Link to={withYear("/dashboard")} className="font-semibold text-sm"><LayoutDashboard className="h-4 w-4" /> <span>{t('items.dashboard')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/scoping")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.scoping')}>
-                <Link to={withYear("/scoping")} className="font-semibold text-sm"><Target className="h-4 w-4" /> <span>{t('items.scoping')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/bpm")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.bpm')}>
-                <Link to={withYear("/bpm")} className="flex items-center justify-between w-full font-semibold text-sm flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <Workflow className="h-4 w-4" /> <span>{t('items.bpm')}</span>
-                  </div>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/todo")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.todo')}>
-                <Link to={withYear("/todo")} className="font-semibold text-sm"><ListTodo className="h-4 w-4" /> <span>{t('items.todo')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            {(userRole === 'Commissioner' || userRole === 'CFO' || userRole === 'Line 2' || userRole === 'Admin') && (
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/scoping/approval")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                  <Link to={withYear("/scoping/approval")} className="flex items-center justify-between w-full font-semibold text-sm flex-wrap gap-2">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4" /> <span>{t('items.approval')}</span>
-                    </div>
-                    <PendingApprovalBadge role={userRole} />
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )}
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/csa")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.csaReports')}>
-                <Link to={withYear("/csa")} className="font-semibold text-sm"><ClipboardCheck className="h-4 w-4" /> <span>{t('items.csaReports')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/verification-design")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to={withYear("/rcm/verification-design")} className="font-semibold text-sm"><ClipboardCheck className="h-4 w-4" /> <span>{t('items.verificationDesign')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/applications")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight" title={t('items.applications')}>
-                <Link to={withYear("/applications")} className="font-semibold text-sm"><Cpu className="h-4 w-4" /> <span>{t('items.applications')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-
-        {/* Report */}
-        <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="font-bold text-slate-500 uppercase text-xs tracking-wider h-8 px-6 mb-1">
-            {t('groups.reportingRcm')}
-          </SidebarGroupLabel>
-          <SidebarMenu className="px-3 gap-1">
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/elc")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to={withYear("/rcm/elc")} className="font-semibold text-sm"><Shield className="h-4 w-4" /> <span>{t('items.rcmElc')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/tlc")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to={withYear("/rcm/tlc")} className="font-semibold text-sm"><ListChecks className="h-4 w-4" /> <span>{t('items.rcmTlc')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/rcm/itgc")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to={withYear("/rcm/itgc")} className="font-semibold text-sm"><Database className="h-4 w-4" /> <span>{t('items.rcmItgc')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/wbs-recap")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to={withYear("/wbs-recap")} className="font-semibold text-sm"><AlertTriangle className="h-4 w-4" /> <span>{t('items.wbs')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/reports/appendix-10")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to={withYear("/reports/appendix-10")} className="font-semibold text-sm"><FileSpreadsheet className="h-4 w-4" /> <span>{t('items.app10')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/reports")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to={withYear("/reports")} className="font-semibold text-sm"><FileBarChart className="h-4 w-4" /> <span>{t('items.app11')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-
-        {/* TOD/TOE */}
-        <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="font-bold text-slate-500 uppercase text-xs tracking-wider h-8 px-6 mb-1">
-            {t('groups.testing')}
-          </SidebarGroupLabel>
-          <SidebarMenu className="px-3 gap-1">
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/deficiencies")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to={withYear("/deficiencies")} className="flex items-center justify-between w-full font-semibold text-sm flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4" /> <span>{t('items.deficiencies')}</span>
-                  </div>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-
-        {/* Others */}
-        <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="font-bold text-slate-500 uppercase text-xs tracking-wider h-8 px-6 mb-1">
-            {t('groups.others')}
-          </SidebarGroupLabel>
-          <SidebarMenu className="px-3 gap-1">
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/ai-hub")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to={withYear("/ai-hub")} className="font-semibold text-sm"><BrainCircuit className="h-4 w-4" /> <span>{t('items.aiAnalytics')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton 
-                onClick={toggleChat} 
-                className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] font-semibold text-sm"
-                title={t('items.aiAssistant')}
-              >
-                <Bot className="h-4 w-4 text-primary" />
-                <span>{t('items.aiAssistant')}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/documents")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to={withYear("/documents")} className="font-semibold text-sm"><FileText className="h-4 w-4" /> <span>{t('items.documents')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/notifications")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to={withYear("/notifications")} className="flex items-center justify-between w-full font-semibold text-sm flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <BellIcon className="h-4 w-4" /> <span>{t('items.notifications')}</span>
-                  </div>
-                  <NotificationBadge />
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
+        {visibleNavGroups(userRole).map((group) => (
+          <SidebarGroup key={group.labelKey} className="py-2">
+            <SidebarGroupLabel className="font-bold text-slate-500 uppercase text-xs tracking-wider h-8 px-6 mb-1">
+              {t(group.labelKey)}
+            </SidebarGroupLabel>
+            <SidebarMenu className="px-3 gap-1">
+              {group.items.map((item) => (
+                <SidebarNavItemRow
+                  key={item.kind === "link" ? item.path : item.action}
+                  item={item}
+                  role={userRole}
+                  isActivePath={isActive}
+                  withYear={withYear}
+                  onAction={handleAction}
+                />
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+        ))}
 
         {/* Extensions */}
-        {registeredExtensions.some(ext => ext.navigation.length > 0) && (
+        {registeredExtensions.some((ext) => ext.navigation.length > 0) && (
           <SidebarGroup className="py-2">
             <SidebarGroupLabel className="font-bold text-slate-500 uppercase text-xs tracking-wider h-8 px-6 mb-1">
               Extensions
             </SidebarGroupLabel>
             <SidebarMenu className="px-3 gap-1">
-              {registeredExtensions.flatMap(ext =>
+              {registeredExtensions.flatMap((ext) =>
                 ext.navigation.map((item, idx) => {
-                  if (item.roleRequired && !item.roleRequired.includes(userRole ?? '')) {
+                  if (item.roleRequired && !item.roleRequired.includes(userRole ?? "")) {
                     return null;
                   }
                   return (
                     <SidebarMenuItem key={`${ext.id}-${idx}`}>
-                      <SidebarMenuButton 
-                        asChild 
-                        isActive={isActive(item.path)} 
-                        className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight"
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive(item.path)}
+                        className={SIDEBAR_ITEM_CLASS}
                         title={item.label}
                       >
                         <Link to={withYear(item.path)} className="font-semibold text-sm">
-                          <DynamicIcon name={item.iconName} className="h-4 w-4" />
+                          <ExtensionIcon name={item.iconName} className="h-4 w-4" />
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
-                })
+                }),
               )}
             </SidebarMenu>
           </SidebarGroup>
@@ -359,30 +122,18 @@ export function AppSidebar(): JSX.Element {
         {/* User */}
         <SidebarGroup className="mt-auto pt-4 pb-6 border-t border-sidebar-border/30">
           <SidebarMenu className="px-3 gap-1">
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isActive("/settings")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                <Link to={withYear("/settings")} className="font-semibold text-sm"><Settings2 className="h-4 w-4" /> <span>{t('items.settings')}</span></Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            {userRole === 'Admin' && (
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/admin/users")} className="min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight">
-                  <Link to={withYear("/admin/users")} className="font-semibold text-sm"><UserCog className="h-4 w-4" /> <span>{t('items.adminUsers')}</span></Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={handleLogout}
-                className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 px-3 rounded-md text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-all active:scale-[0.98] font-semibold text-sm"
-              >
-                <LogOut className="h-4 w-4 shrink-0" />
-                <span>{t('items.logout')}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {visibleUserNavItems(userRole).map((item) => (
+              <SidebarNavItemRow
+                key={item.kind === "link" ? item.path : item.action}
+                item={item}
+                role={userRole}
+                isActivePath={isActive}
+                withYear={withYear}
+                onAction={handleAction}
+              />
+            ))}
           </SidebarMenu>
         </SidebarGroup>
-
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

@@ -12,7 +12,7 @@ import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
-import { useAuth } from '@/context/AuthContext';
+import { useCurrentRole } from '@/hooks/use-current-role';
 import { resolveWorkflowAction } from '@/lib/deficiency-workflow';
 import { exportRegulatoryTableToExcel } from '@/lib/rcm-excel-export';
 import { findingsColumns, findingsFilename, mapFindingsRows } from '@/lib/findings-excel-export';
@@ -30,17 +30,39 @@ import type {
 export function useDeficiencyBoard(t: TranslateFn) {
   const queryClient = useQueryClient();
   const { workingYear } = useFiscalYearStore();
-  const { user } = useAuth();
-  const mockRole = localStorage.getItem('mockRole');
-  const userRole = user?.role || mockRole || 'Admin';
+  const roleFromServer = useCurrentRole();
+  // `mockRole` is a development affordance only; production fails closed.
+  const devRole =
+    import.meta.env.DEV && typeof localStorage !== 'undefined' ? localStorage.getItem('mockRole') : null;
+  const userRole = roleFromServer ?? devRole ?? '';
 
-  const [isWizardOpen, setWizardOpen] = React.useState(false);
+  const [dialog, setDialog] = React.useState({
+    wizardOpen: false,
+    remediationOpen: false,
+    aggregateMode: false,
+    deficiencyId: null as string | null,
+    plan: null as ActionPlan | null,
+  });
+  const {
+    wizardOpen: isWizardOpen,
+    remediationOpen: isRemediationOpen,
+    aggregateMode: isAggregateMode,
+    deficiencyId: activeDeficiencyId,
+    plan: activePlan,
+  } = dialog;
+
+  const setWizardOpen = useCallback((open: boolean) => {
+    setDialog((current) => ({ ...current, wizardOpen: open }));
+  }, []);
+  const setRemediationOpen = useCallback((open: boolean) => {
+    setDialog((current) => ({ ...current, remediationOpen: open }));
+  }, []);
+  const setAggregateMode = useCallback((enabled: boolean) => {
+    setDialog((current) => ({ ...current, aggregateMode: enabled }));
+  }, []);
+
   const [isExportingExcel, setIsExportingExcel] = React.useState(false);
-  const [isRemediationOpen, setRemediationOpen] = React.useState(false);
-  const [isAggregateMode, setAggregateMode] = React.useState(false);
   const [selectedDeficiencies, setSelectedDeficiencies] = React.useState<string[]>([]);
-  const [activeDeficiencyId, setActiveDeficiencyId] = React.useState<string | null>(null);
-  const [activePlan, setActivePlan] = React.useState<ActionPlan | null>(null);
   const [sourceFilter, setSourceFilter] = React.useState<string>('all');
   const [mobileStatus, setMobileStatus] = React.useState<string>(KANBAN_COLUMNS[0] as string);
   const [activeId, setActiveId] = React.useState<string | null>(null);
@@ -77,11 +99,6 @@ export function useDeficiencyBoard(t: TranslateFn) {
   const pmValue = activeSimulation?.pmValue;
 
   const actionPlans = React.useMemo(() => actionPlansData?.items ?? [], [actionPlansData?.items]);
-
-  const actionPlansRef = React.useRef<ActionPlan[]>([]);
-  React.useEffect(() => {
-    actionPlansRef.current = actionPlans;
-  }, [actionPlans]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -120,6 +137,9 @@ export function useDeficiencyBoard(t: TranslateFn) {
       toast.success(t('toast.severityUpdated', { defaultValue: 'Deficiency severity updated based on DoD assessment.' }));
       queryClient.invalidateQueries({ queryKey: ['deficiencies'] });
     },
+    onError: (error: Error) => {
+      toast.error(t('toast.updateFailed', { message: error.message, defaultValue: `Update failed: ${error.message}` }));
+    },
   });
 
   const aggregateMutation = useMutation({
@@ -130,6 +150,9 @@ export function useDeficiencyBoard(t: TranslateFn) {
       queryClient.invalidateQueries({ queryKey: ['aggregatedeficiencies'] });
       setAggregateMode(false);
       setSelectedDeficiencies([]);
+    },
+    onError: (error: Error) => {
+      toast.error(t('toast.updateFailed', { message: error.message, defaultValue: `Update failed: ${error.message}` }));
     },
   });
 
@@ -149,7 +172,7 @@ export function useDeficiencyBoard(t: TranslateFn) {
       await queryClient.cancelQueries({ queryKey: ['actionplans'] });
       return {
         serverPlans: queryClient.getQueryData<{ items: ActionPlan[] }>(['actionplans']),
-        localSnapshot: actionPlansRef.current,
+        localSnapshot: queryClient.getQueryData<{ items: ActionPlan[] }>(['actionplans'])?.items ?? [],
       };
     },
     onSuccess: () => {
@@ -167,8 +190,7 @@ export function useDeficiencyBoard(t: TranslateFn) {
   });
 
   const handleAssess = useCallback((id: string) => {
-    setActiveDeficiencyId(id);
-    setWizardOpen(true);
+    setDialog((current) => ({ ...current, deficiencyId: id, wizardOpen: true }));
   }, []);
 
   const handleWizardComplete = useCallback(
@@ -272,7 +294,7 @@ export function useDeficiencyBoard(t: TranslateFn) {
       return;
     }
     setWizardOpen(true);
-  }, [selectedDeficiencies.length, t]);
+  }, [selectedDeficiencies.length, t, setWizardOpen]);
 
   const handleStatusChange = useCallback(
     (apId: string, action: string) => {
@@ -286,14 +308,13 @@ export function useDeficiencyBoard(t: TranslateFn) {
   );
 
   const handleEditPlan = useCallback((plan: ActionPlan) => {
-    setActivePlan(plan);
-    setRemediationOpen(true);
+    setDialog((current) => ({ ...current, plan, remediationOpen: true }));
   }, []);
 
   const cancelAggregateMode = useCallback(() => {
     setAggregateMode(false);
     setSelectedDeficiencies([]);
-  }, []);
+  }, [setAggregateMode]);
 
   const handleExportExcel = useCallback(async () => {
     if (filteredDeficiencies.length === 0 || isExportingExcel) return;

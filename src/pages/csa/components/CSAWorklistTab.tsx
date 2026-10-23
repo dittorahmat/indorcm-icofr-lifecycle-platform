@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { AlertTriangle, ClipboardList, Loader2, Play, Search } from 'lucide-react';
 import { CSAModal } from '@/components/bpm/CSAModal';
-import { authClient } from '@/lib/auth-client';
+import { useCurrentRole } from '@/hooks/use-current-role';
+import { can } from '@shared/entity-authority';
 import { useCsaWorklist, type WorklistTabItem } from '../utils/use-csa-worklist';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 
@@ -26,9 +27,8 @@ export function CSAWorklistTab() {
   const { workingYear } = useFiscalYearStore();
   const [selected, setSelected] = React.useState<WorklistTabItem | null>(null);
   const [searchTerm, setSearchTerm] = React.useState('');
-  const { data: session } = authClient.useSession();
-  const userRole = (session?.user as { role?: string } | undefined)?.role;
-  const readOnly = userRole === 'Line 2';
+  const userRole = useCurrentRole();
+  const readOnly = !can(userRole, 'csa:execute-assessment');
 
   const visibleGroups = React.useMemo(() => {
     const query = searchTerm.trim().toLowerCase();

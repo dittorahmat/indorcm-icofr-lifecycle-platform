@@ -84,7 +84,8 @@
   "coolingOff": {
     "violation": "PELANGGARAN COOLING-OFF (BAB II)",
     "restricted": "Akses Dibatasi (Bab II poin d.2)",
-    "prohibited": "Sesuai regulasi, Auditor Internal dilarang melakukan aktivitas pengujian yang sebelumnya menjadi tanggung jawab mereka (sebagai Lini 1 atau Lini 2) sebelum masa tenggang (cooling-off) minimal 12 bulan berlalu."
+    "prohibited": "Sesuai regulasi, Auditor Internal dilarang melakukan aktivitas pengujian yang sebelumnya menjadi tanggung jawab mereka (sebagai Lini 1 atau Lini 2) sebelum masa tenggang (cooling-off) minimal 12 bulan berlalu.",
+    "contactAdmin": "Hubungi Administrator Kepatuhan"
   },
   "badges": {
     "highRisk": "RISIKO TINGGI",
@@ -96,7 +97,8 @@
   },
   "gatekeeper": {
     "csaIneffectiveTitle": "Pengujian Lini 3 Ditangguhkan (SK-5 BAB V Hal. 54)",
-    "csaIneffectiveDescription": "Berdasarkan hasil CSA Lini Pertama dan/atau validasi Lini Kedua, pengendalian ini disimpulkan Tidak Efektif. Sesuai ketentuan BAB V poin 1.2 butir 3, Lini Ketiga tidak perlu melakukan pengujian sampai pengendalian tersebut dinyatakan Efektif melalui tahap remediasi."
+    "csaIneffectiveDescription": "Berdasarkan hasil CSA Lini Pertama dan/atau validasi Lini Kedua, pengendalian ini disimpulkan Tidak Efektif. Sesuai ketentuan BAB V poin 1.2 butir 3, Lini Ketiga tidak perlu melakukan pengujian sampai pengendalian tersebut dinyatakan Efektif melalui tahap remediasi.",
+    "remediationStatus": "Status: Menunggu Remediasi Lini 1 & 2"
   },
   "sampling": {
     "title": "Grid Sampling Regulatif",

@@ -24,6 +24,7 @@ import {
   type TestingResultRow,
 } from '@/pages/reports/testing-rows';
 import { ControlTestCard } from '@/components/testing/ControlTestCard';
+import { isCoolingOffViolation } from '@shared/cooling-off';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Input } from '@/components/ui/input';
@@ -79,15 +80,8 @@ export function TestWorkbench() {
     queryFn: () => api<User>('/api/user/me'),
   });
 
-  const isCoolingOffViolation = (control: Control) => {
-    if (!userData?.processOwnershipHistory) return false;
-    const oneYearAgo = Date.now() - (365 * 24 * 60 * 60 * 1000);
-    return userData.processOwnershipHistory.some(h => 
-      h.processId === control.rcmId &&
-      (h.role === 'Line 1' || h.role === 'Line 2') &&
-      h.endDate > oneYearAgo
-    );
-  };
+  const hasCoolingOffViolation = (control: Control) =>
+    isCoolingOffViolation(userData?.processOwnershipHistory, control.rcmId, Date.now());
 
   const isLoading = controlsLoading || deficienciesLoading || testsLoading;
 
@@ -179,7 +173,7 @@ export function TestWorkbench() {
                 .filter(d => d.controlId === control.id && d.status === 'Open')
                 .sort((a, b) => ((b.identifiedDate || 0) as number) - ((a.identifiedDate || 0) as number))[0];
 
-              const violation = isCoolingOffViolation(control);
+              const violation = hasCoolingOffViolation(control);
               const isCsaIneffective = Boolean(
                 latestOpenDeficiency && (
                   latestOpenDeficiency.source?.includes('CSA') || 
@@ -245,17 +239,17 @@ export function TestWorkbench() {
                           </Badge>
                         ) : latestOpenDeficiency && (
                           <Badge className="bg-rose-500 text-white border-none text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded">
-                            Open Deficiency
+                            {t('badges.openDeficiency')}
                           </Badge>
                         )}
                         {violation && (
                           <Badge className="bg-amber-500 text-white border-none text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded">
-                            Cooling-off Violation
+                            {t('coolingOff.violation')}
                           </Badge>
                         )}
                         {controlHistory.length > 0 && (
                           <Badge variant="secondary" className="bg-slate-100 text-slate-600 border-none text-xs font-bold uppercase tracking-wider px-2 py-0.5 gap-1 rounded">
-                            <History className="h-3 w-3 shrink-0" /> {controlHistory.length} Tests
+                            <History className="h-3 w-3 shrink-0" /> {controlHistory.length} {t('badges.tests')}
                           </Badge>
                         )}
                       </div>
@@ -292,7 +286,7 @@ export function TestWorkbench() {
                                 </p>
                               </div>
                               <Button variant="outline" className="border-rose-200 text-rose-700 hover:bg-rose-100 rounded-lg font-bold text-xs uppercase tracking-wider h-10 px-5 min-h-[40px]">
-                                Contact Compliance Administrator
+                                {t('coolingOff.contactAdmin')}
                               </Button>
                             </div>
                           ) : isCsaIneffective ? (
@@ -310,7 +304,7 @@ export function TestWorkbench() {
                               </div>
                               <div className="pt-1">
                                 <Badge variant="outline" className="bg-white border-amber-300 text-amber-700 font-mono text-xs px-3 py-1 rounded">
-                                  Status: Menunggu Remediasi Lini 1 & 2
+                                  {t('gatekeeper.remediationStatus')}
                                 </Badge>
                               </div>
                             </div>

@@ -5,7 +5,8 @@ import {
 import type { DrizzleDb } from '../../db';
 import type { AuditService } from '../audit-service';
 import type { BpmHydrator } from './bpm-hydrator';
-import type { BpmSyncManager } from './bpm-sync';
+import type { BpmSyncManager, SyncEdgeLike } from './bpm-sync';
+import type { SyncNodeLike } from '@shared/control-linkage';
 import { sameSubProcess } from './bpm-match';
 
 /**
@@ -225,8 +226,10 @@ export async function updateDiagram(ctx: DiagramContext, orgId: string, userId: 
     eq(bpmNodeRcms.organizationId, orgId)
   ));
 
-  const nodes = body.nodes || [];
-  const edges = body.edges || [];
+  // boundary: the editor posts canvas payloads; the sync seam narrows them to
+  // the fields `shared/control-linkage` reads (id/type/data, source/target).
+  const nodes = (body.nodes || []) as SyncNodeLike[];
+  const edges = (body.edges || []) as SyncEdgeLike[];
 
   // 4. Sync Risks and Controls from Nodes
   const { activeRiskControlPairs, activeRiskIds, activeControlIds } =

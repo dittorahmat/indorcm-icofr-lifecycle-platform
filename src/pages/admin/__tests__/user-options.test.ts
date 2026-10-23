@@ -75,8 +75,11 @@ describe('admin user role/level option lists', () => {
     expect(PAGE_SOURCE).not.toContain('<SelectItem value="Staff">');
   });
 
-  it('gates the sidebar on the canonical Commissioner member', () => {
-    expect(SIDEBAR_SOURCE).toContain("'Commissioner'");
+  it('gates the sidebar through the canonical authority table', () => {
+    const AUTHORITY_SOURCE = readSource('../../../../shared/entity-authority.ts');
+    expect(SIDEBAR_SOURCE).toContain('@/components/layout/sidebar-nav');
     expect(SIDEBAR_SOURCE).not.toContain('Komisaris');
+    // The capability module — not the view — names the Commissioner member.
+    expect(AUTHORITY_SOURCE).toContain("'Commissioner'");
   });
 });

@@ -45,7 +45,7 @@ export function CSATabContent({
   const { t } = useTranslation(['csa_hub', 'common']);
   const [exportingId, setExportingId] = useState<string | null>(null);
   const {
-    view, setView,
+    view, openForm,
     activeCsa,
     csaList, isListLoading,
     bpmProcess,
@@ -64,10 +64,8 @@ export function CSATabContent({
     onSubmit,
     handleBackToList,
     handleDelete,
-    manualViewOverride,
-    setIsInitialized,
     activeCsaId,
-    setActiveCsaId
+    selectCsa
   } = useCSA({ 
     bpmProcessId: bpmProcessId ?? '', 
     scheduleId, 
@@ -95,10 +93,7 @@ export function CSATabContent({
   // Field mode (Lini 1 from agenda): skip History, land directly on the form.
   useEffect(() => {
     if (!fieldMode || view !== 'list' || isListLoading) return;
-    manualViewOverride.current = 'form';
-    setIsInitialized(true);
-    setView('form');
-    setActiveCsaId(null);
+    openForm(null);
     form.reset({
       period: `${workingYear}-Q1`,
       result: 'Effective',
@@ -320,16 +315,13 @@ export function CSATabContent({
             <CSAList 
               items={csaList?.items || []}
               isLoading={isListLoading}
-              onViewDetail={(id) => { manualViewOverride.current = 'form'; setActiveCsaId(id); setView('form'); }}
+              onViewDetail={(id) => { openForm(id); }}
               onDelete={handleDelete}
-              onPrint={(id, layout) => { setActiveCsaId(id); handlePrint(layout); }}
+              onPrint={(id, layout) => { selectCsa(id); handlePrint(layout); }}
               onExcel={handleExcel}
               exportingId={exportingId}
               onNewAssessment={() => {
-                manualViewOverride.current = 'form';
-                setIsInitialized(true); 
-                setView('form'); 
-                setActiveCsaId(null);
+                openForm(null);
                 form.reset({
                    period: `${workingYear}-Q1`,
                    result: 'Effective',

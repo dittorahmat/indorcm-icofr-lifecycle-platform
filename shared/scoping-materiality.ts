@@ -200,6 +200,35 @@ export function identifySignificantAccounts(params: {
   return result;
 }
 
+/**
+ * The worksheet's single significance answer. A row that carries
+ * `scopeClassification` (every row the scoping view emits) is read from that
+ * field; the arithmetic fallback exists only for rows that arrive without it.
+ *
+ * `isAccountInScope` includes qualitative significance; the quantitative form
+ * is what the "Quantitative" column and the Excel export mean. Before this
+ * pair, `GLDataGrid`, its columns and its export each re-derived one of the
+ * two from `|balance| >= PM`, so the export dropped the FSLI-total rule and a
+ * row could render in scope while exporting as not significant.
+ */
+export function isAccountInScope(
+  row: Pick<GLRow, 'scopeClassification' | 'balance' | 'fsliBalance'>,
+  pmValue: number,
+): boolean {
+  if (row.scopeClassification) return row.scopeClassification !== 'out-of-scope';
+  return isAccountQuantitativelySignificant(row, pmValue);
+}
+
+export function isAccountQuantitativelySignificant(
+  row: Pick<GLRow, 'scopeClassification' | 'balance' | 'fsliBalance'>,
+  pmValue: number,
+): boolean {
+  if (row.scopeClassification) {
+    return row.scopeClassification === 'above-pm' || row.scopeClassification === 'two-thirds';
+  }
+  return Math.abs(row.balance ?? 0) >= pmValue || Math.abs(row.fsliBalance ?? 0) >= pmValue;
+}
+
 /** Inputs the create / backfill paths share when deriving a simulation's materiality. */
 export interface SimulationMaterialityInput {
   rows: readonly GLRow[];

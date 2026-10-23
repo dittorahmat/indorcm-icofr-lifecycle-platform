@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useReducer } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
@@ -6,6 +6,7 @@ import { CSARecord, BPMDiagram, BPMProcess } from '@shared/types';
 import { promptBiometricAuth } from '@/lib/forensic-utils';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import type { FieldPath } from 'react-hook-form';
 import { useCSAForm, CSAFormValues } from './csa/use-csa-form';
 export type { CSAFormValues };
 import { useCSADiagramLink } from './csa/use-csa-diagram-link';
@@ -14,12 +15,21 @@ import { checkSignOff } from './csa/sign-off-guard';
 import { resolvePostSaveView, shouldEnterForm, shouldFetchList } from './csa/csa-view-transition';
 import { buildEvidenceFormData, compressEvidenceImage } from './csa/use-evidence-upload';
 import { csaKeysForYear, invalidateCsaYear } from './csa/csa-keys';
+import { INITIAL_CSA_SESSION, csaSessionReducer } from './csa/csa-session';
 import type { CSAEvidenceMeta } from '@shared/types';
+
+/** One row the workspace can open with; the BPM worksheet and GL grid both emit it. */
+interface CsaInitialSample {
+  id?: string;
+  glDesc?: string;
+  description?: string;
+  organizationId?: string;
+}
 
 interface UseCSAProps {
   bpmProcessId: string;
   scheduleId?: string;
-  initialSamples?: any[];
+  initialSamples?: readonly CsaInitialSample[];
   controls?: any[];
   /** Year-scoped: required so the fetch key and every invalidation share the tuple. */
   year: string;
@@ -30,12 +40,10 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const { t } = useTranslation(['csa_hub', 'common']);
-  const [view, setView] = useState<'list' | 'form'>('list');
-  const [activeCsaId, setActiveCsaId] = useState<string | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [session, dispatch] = useReducer(csaSessionReducer, INITIAL_CSA_SESSION);
+  const { view, activeCsaId, isInitialized, manualOverride } = session;
   const [activeUploadRow, setActiveUploadRow] = useState<{ sIdx: number; cId: string } | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const manualViewOverride = useRef<'list' | 'form' | null>(null);
 
   const {
     form,
@@ -45,6 +53,14 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
     watchSamples,
     anyPointFailed
   } = useCSAForm();
+
+  /** Explicit user navigation: wins over the automatic entry rules. */
+  const openForm = useCallback((csaId: string | null = null) => {
+    dispatch({ type: 'open-form', csaId });
+  }, []);
+  const selectCsa = useCallback((csaId: string | null) => {
+    dispatch({ type: 'select', csaId });
+  }, []);
 
   // 1. Queries
   const { data: bpmProcess } = useQuery({
@@ -74,7 +90,7 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
   const { data: linkedScheduleRecord, isLoading: isCheckingSchedule } = useQuery({
     queryKey: ['csa-record-by-schedule', scheduleId],
     queryFn: () => api<{ items: CSARecord[] }>(`/api/csa?scheduleId=${scheduleId}`).then(res => res.items[0]),
-    enabled: !!scheduleId && !isInitialized && manualViewOverride.current !== 'list'
+    enabled: !!scheduleId && !isInitialized && manualOverride !== 'list'
   });
 
   const { data: activeCsa } = useQuery({
@@ -92,7 +108,7 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
     return true;
   }, [activeCsaId, activeCsa]);
 
-  const initializeFromSamples = useCallback((samples: any[]) => {
+  const initializeFromSamples = useCallback((samples: readonly CsaInitialSample[]) => {
     const newSamples = samples.map(s => {
       const controlResults: Record<string, any> = {};
       if (bpmRiskControlPairs.length > 0) {
@@ -112,33 +128,28 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
         });
       }
 
-      let sampleRef = "";
-      if ("glDesc" in s) sampleRef = s.glDesc;
-      else if ("description" in s) sampleRef = (s as any).description || "N/A";
-
-      return { sampleRef, glRowId: (s as any).id, controlResults };
+      return {
+        sampleRef: s.glDesc ?? s.description ?? 'N/A',
+        glRowId: s.id,
+        controlResults,
+      };
     });
     replaceSamples(newSamples);
-    setIsInitialized(true);
-    setView('form');
+    dispatch({ type: 'start-form' });
   }, [bpmRiskControlPairs, activeControls, replaceSamples]);
 
-  // 4. Effects
+  // 2. Effects — the session reducer owns the state those effects used to chase.
   useEffect(() => {
-    setIsInitialized(false);
-    setActiveCsaId(null);
-    setView('list');
+    dispatch({ type: 'reset' });
     form.reset();
-    manualViewOverride.current = null;
   }, [bpmProcessId, scheduleId, form]);
 
   useEffect(() => {
-    if (initialSamples.length > 0 && !isInitialized && view === 'list') {
-      manualViewOverride.current = null;
-    } else if (initialSamples.length === 0 && !activeCsaId && manualViewOverride.current === null) {
-      setView('list');
+    // Nothing to show and the entry rules have had their turn: land on the list.
+    if (isInitialized && initialSamples.length === 0 && !activeCsaId && manualOverride === null) {
+      dispatch({ type: 'open-list' });
     }
-  }, [initialSamples.length, isInitialized, view, activeCsaId]);
+  }, [initialSamples.length, isInitialized, activeCsaId, manualOverride]);
 
   useEffect(() => {
     if (
@@ -146,20 +157,18 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
         scheduleId: scheduleId ?? null,
         linkedRecordId: linkedScheduleRecord?.id ?? null,
         initialSamplesCount: initialSamples.length,
-        override: manualViewOverride.current,
+        override: manualOverride,
         isInitialized,
         isCheckingSchedule,
       })
     ) {
       if (linkedScheduleRecord) {
-        setActiveCsaId(linkedScheduleRecord.id);
-        setView('form');
-        setIsInitialized(true);
+        dispatch({ type: 'start-form', csaId: linkedScheduleRecord.id });
       } else {
         initializeFromSamples(initialSamples);
       }
     }
-  }, [scheduleId, linkedScheduleRecord, isCheckingSchedule, initialSamples, isInitialized, view, initializeFromSamples]);
+  }, [scheduleId, linkedScheduleRecord, isCheckingSchedule, initialSamples, isInitialized, manualOverride, initializeFromSamples]);
 
   useEffect(() => {
     if (bpmProcess?.standardTestProcedure && !activeCsaId && !form.getValues('testProcedure')) {
@@ -168,15 +177,15 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
   }, [bpmProcess, activeCsaId, form]);
 
   useEffect(() => {
-    if (activeCsa && activeCsaId && view !== 'list' && manualViewOverride.current !== 'list') {
+    if (activeCsa && activeCsaId && view !== 'list' && manualOverride !== 'list') {
       form.reset({
         period: activeCsa.period,
         result: activeCsa.result,
         comments: activeCsa.comments || '',
-        testProcedure: (activeCsa as any).testProcedure || '',
-        archiveLocation: (activeCsa as any).archiveLocation || '',
-        samplingMethodology: (activeCsa as any).samplingMethodology || '',
-        documentList: (activeCsa as any).documentList || '',
+        testProcedure: activeCsa.testProcedure || '',
+        archiveLocation: activeCsa.archiveLocation || '',
+        samplingMethodology: activeCsa.samplingMethodology || '',
+        documentList: activeCsa.documentList || '',
         isBpmConfirmed: true,
         samples: activeCsa.samples.map(s => {
           const transformedResults: Record<string, any> = {};
@@ -192,19 +201,11 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
           };
         })
       });
-      setView('form');
+      dispatch({ type: 'start-form', csaId: activeCsaId });
     }
-  }, [activeCsa, activeCsaId, view, form]);
+  }, [activeCsa, activeCsaId, view, manualOverride, form]);
 
-  useEffect(() => {
-    if (view === 'list') {
-      setActiveCsaId(null);
-      setIsInitialized(true);
-      manualViewOverride.current = 'list';
-    }
-  }, [view]);
-
-  // 6. Mutations
+  // 3. Mutations
   const createMutation = useMutation({
     mutationFn: (data: any) => {
       const url = activeCsaId ? `/api/csa/${activeCsaId}` : '/api/csa';
@@ -216,13 +217,10 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
       void invalidateCsaYear(queryClient, bpmProcessId, year);
       
       if (resolvePostSaveView(!!variables.isDraft) === 'list') {
-        setView('list');
-        setActiveCsaId(null);
-        setIsInitialized(true);
-        manualViewOverride.current = 'list';
+        dispatch({ type: 'open-list' });
       } else {
         const id = response.id || activeCsaId;
-        setActiveCsaId(id);
+        if (id) dispatch({ type: 'select', csaId: id });
         form.reset(form.getValues(), { keepDirty: false });
       }
     },
@@ -246,14 +244,14 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
       return api<{ url: string }>('/api/upload', { method: 'POST', body: formData });
     },
     onSuccess: (data, variables) => {
-      const path = `samples.${variables.sIdx}.controlResults.${variables.cId}.evidenceUrl` as any;
+      const path = `samples.${variables.sIdx}.controlResults.${variables.cId}.evidenceUrl` as FieldPath<CSAFormValues>;
       form.setValue(path, data.url, {
         shouldDirty: true,
         shouldTouch: true,
         shouldValidate: true
       });
       if (variables.meta) {
-        const metaPath = `samples.${variables.sIdx}.controlResults.${variables.cId}.evidenceMeta` as any;
+        const metaPath = `samples.${variables.sIdx}.controlResults.${variables.cId}.evidenceMeta` as FieldPath<CSAFormValues>;
         form.setValue(metaPath, variables.meta, { shouldDirty: true, shouldTouch: true });
       }
       toast.success(t('page.evidence.uploaded'));
@@ -290,7 +288,7 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
       bpmProcessId,
       testProcedure: values.testProcedure,
       archiveLocation: values.archiveLocation,
-      organizationId: (initialSamples[0] as any)?.organizationId || searchParams.get('orgId'),
+      organizationId: initialSamples[0]?.organizationId || searchParams.get('orgId'),
     });
   };
 
@@ -324,16 +322,13 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
       bpmProcessId,
       testProcedure: values.testProcedure,
       archiveLocation: values.archiveLocation,
-      organizationId: (initialSamples[0] as any)?.organizationId || searchParams.get('orgId'),
+      organizationId: initialSamples[0]?.organizationId || searchParams.get('orgId'),
     });
   };
 
   const handleBackToList = () => {
-    manualViewOverride.current = 'list';
-    setActiveCsaId(null);
-    setView('list');
+    dispatch({ type: 'open-list' });
     form.reset();
-    setIsInitialized(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -348,8 +343,8 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
   };
 
   return {
-    view, setView,
-    activeCsaId, setActiveCsaId,
+    view,
+    activeCsaId,
     activeCsa,
     csaList, isListLoading,
     bpmProcess,
@@ -369,7 +364,7 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
     onSubmit,
     handleBackToList,
     handleDelete,
-    manualViewOverride,
-    setIsInitialized
+    openForm,
+    selectCsa,
   };
 }

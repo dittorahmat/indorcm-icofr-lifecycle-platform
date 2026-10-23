@@ -16,10 +16,11 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { UploadDocumentModal } from './UploadDocumentModal';
-import { authClient } from '@/lib/auth-client';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useTranslation } from 'react-i18next';
 import { useConfirm } from '@/hooks/use-confirm';
+import { useCurrentRole } from '@/hooks/use-current-role';
+import { can } from '@shared/entity-authority';
 
 export const DocumentsPage = () => {
   const confirm = useConfirm();
@@ -27,9 +28,8 @@ export const DocumentsPage = () => {
   const [activeTab, setActiveTab] = useState('internal');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { data: session } = authClient.useSession();
-  const userRole = (session?.user as any)?.role;
-  const canManage = userRole === 'Admin' || userRole === 'Line 2';
+  const userRole = useCurrentRole();
+  const canManage = can(userRole, 'knowledge:manage-documents');
 
   const { data: docs, isLoading } = useQuery({
     queryKey: ['documents'],
