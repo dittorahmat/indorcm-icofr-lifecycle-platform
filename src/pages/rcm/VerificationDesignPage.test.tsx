@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { VerificationDesignPage } from './VerificationDesignPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { I18nextProvider } from 'react-i18next';
@@ -9,22 +9,11 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { UnsavedChangesProvider } from '@/context/UnsavedChangesContext';
 import React from 'react';
 
-// Mock authClient
-vi.mock('@/lib/auth-client', () => ({
-  authClient: {
-    useSession: vi.fn(() => ({
-      data: {
-        user: {
-          role: 'Line 2',
-        },
-      },
-    })),
-  },
-}));
-
-// Mock api client
+// The page reads the role from the one ICOFR endpoint (`useCurrentRole`).
 vi.mock('@/lib/api-client', () => ({
-  api: vi.fn().mockResolvedValue({ items: [] }),
+  api: vi.fn((url: string) =>
+    Promise.resolve(url.includes('/api/user/me') ? { role: 'Line 2' } : { items: [] }),
+  ),
 }));
 
 // Create a wrapper with all necessary providers
@@ -72,7 +61,8 @@ describe('VerificationDesignPage Runtime Verification', () => {
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
 
     // Verify New Assessment button is displayed
-    const btn = container.querySelector('#btn-new-verification-assessment');
-    expect(btn).toBeInTheDocument();
+    await waitFor(() =>
+      expect(container.querySelector('#btn-new-verification-assessment')).toBeInTheDocument(),
+    );
   });
 });

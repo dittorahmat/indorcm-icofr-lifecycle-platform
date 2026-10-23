@@ -9,6 +9,8 @@ import { Link } from 'react-router-dom';
 import { MultiSelect, Option } from '@/components/ui/multi-select';
 import { formatIDRPlain } from '@/components/reports/dod/dod-format';
 import { TFunction } from 'i18next';
+import { can } from '@shared/entity-authority';
+import { isAccountInScope, isAccountQuantitativelySignificant } from '@shared/scoping-materiality';
 
 export const QUALITATIVE_RULES = [
   { id: 1, key: "qualitativeRules.1" },
@@ -132,13 +134,14 @@ export function buildGLDataGridColumns({
         const noGL = row.original.noGL || "";
         const assignedDeptIds = row.original.assignedDepartmentIds || [];
         
-        const classification = row.original?.scopeClassification;
-        const isInScope = classification && classification !== 'out-of-scope';
+        const isInScope = isAccountInScope(row.original, pmValue);
 
-        // Logic: Lini 1 can only access if they own the account or it's unassigned
-        const userRole = currentUser?.role?.trim();
-        const isLini1 = userRole === 'Line 1';
-        const hasAccess = !isLini1 || assignedDeptIds.length === 0 || assignedDeptIds.includes(currentUser?.departmentId || "");
+        // Line 1 sees only its own department's accounts; every other role sees the consolidated view.
+        const hasConsolidatedAccess = can(currentUser?.role, 'scoping:view-all-departments');
+        const hasAccess =
+          hasConsolidatedAccess ||
+          assignedDeptIds.length === 0 ||
+          assignedDeptIds.includes(currentUser?.departmentId || "");
 
         if (isInScope) {
           if (!hasAccess) {
@@ -190,7 +193,7 @@ export function buildGLDataGridColumns({
         return (
           <div className={cn(
             "text-right font-mono text-xs",
-            row.getIsGrouped() ? "font-bold text-slate-700" : (Math.abs(val) >= pmValue ? "text-red-600 font-bold" : "text-slate-500")
+            row.getIsGrouped() ? "font-bold text-slate-700" : (isAccountQuantitativelySignificant(row.original, pmValue) ? "text-red-600 font-bold" : "text-slate-500")
           )}>
             {formatIDRPlain(val)}
           </div>
@@ -200,24 +203,12 @@ export function buildGLDataGridColumns({
     {
       id: 'quantFlag',
       header: () => <div className="text-center bg-orange-50/50 -mx-2 py-1 text-xs">{t('grid.quantHeader')}</div>,
-      aggregationFn: (columnId, leafRows) => {
-        const groupExplicitTotal = leafRows[0]?.original.fsliBalance;
-        if (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0) {
-          return Math.abs(groupExplicitTotal) >= pmValue;
-        }
-        return leafRows.some(row => Math.abs(row.original.balance) >= pmValue);
-      },
+      aggregationFn: (_columnId, leafRows) =>
+        leafRows.some((leaf) => isAccountQuantitativelySignificant(leaf.original, pmValue)),
       cell: ({ row, getValue }) => {
         const isSignificant = row.getIsGrouped()
           ? getValue<boolean>()
-          : (() => {
-              const isRowSignificant = Math.abs(row.original.balance || 0) >= pmValue;
-              const groupExplicitTotal = row.original.fsliBalance;
-              if (groupExplicitTotal !== undefined && groupExplicitTotal !== null && groupExplicitTotal !== 0) {
-                return isRowSignificant || Math.abs(groupExplicitTotal) >= pmValue;
-              }
-              return isRowSignificant;
-            })();
+          : isAccountQuantitativelySignificant(row.original, pmValue);
         return (
           <div className="text-center">
             {isSignificant ? (
@@ -308,8 +299,7 @@ export function buildGLDataGridColumns({
         if (row.getIsGrouped()) return null;
         const noGL = row.original.noGL || "";
         
-        const classification = row.original?.scopeClassification;
-        const isInScope = classification && classification !== 'out-of-scope';
+        const isInScope = isAccountInScope(row.original, pmValue);
 
         if (!isInScope) return null;
 
@@ -343,8 +333,7 @@ export function buildGLDataGridColumns({
         if (row.getIsGrouped()) return null;
         const currentDeptIds = row.original.assignedDepartmentIds || [];
 
-        const userRole = currentUser?.role?.trim();
-        const canAssign = !currentUser || userRole === 'Line 2' || userRole === 'Admin';
+        const canAssign = can(currentUser?.role, 'scoping:allocate-departments');
         const isDisabled = isReadOnly || !canAssign;
 
         return (
@@ -372,15 +361,14 @@ export function buildGLDataGridColumns({
         const noGL = row.original.noGL;
         const assignedDeptIds = row.original.assignedDepartmentIds || [];
 
-        const userRole = currentUser?.role?.trim();
+        const userRole = currentUser?.role;
         const userLevel = currentUser?.level?.trim();
-        const isLini1Manager = userRole === 'Line 1' && userLevel === 'Manager';
-        const isAdmin = userRole === 'Admin';
-        
-        const canEdit = !isReadOnly && (
-          (isLini1Manager && assignedDeptIds.includes(currentUser?.departmentId || "")) ||
-          isAdmin
-        );
+        const canAccept = can(userRole, 'scoping:accept-ownership');
+        const canAcceptAnyDepartment = can(userRole, 'scoping:accept-ownership-any-department');
+        const ownsDepartment =
+          userLevel === 'Manager' && assignedDeptIds.includes(currentUser?.departmentId || '');
+
+        const canEdit = !isReadOnly && canAccept && (canAcceptAnyDepartment || ownsDepartment);
 
         return (
           <Select

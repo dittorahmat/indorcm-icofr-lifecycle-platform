@@ -54,6 +54,7 @@ const actionPlans = [
 
 vi.mock('@tanstack/react-query', () => ({
   useQuery: vi.fn().mockImplementation(({ queryKey }: { queryKey: string[] }) => {
+    if (queryKey[0] === 'auth-me') return { data: { role: 'Admin' }, isLoading: false };
     if (queryKey[0] === 'deficiencies') return { data: { items: deficiencies }, isLoading: false };
     if (queryKey[0] === 'actionplans') return { data: { items: actionPlans }, isLoading: false };
     return { data: { items: [] }, isLoading: false };
@@ -64,10 +65,6 @@ vi.mock('@tanstack/react-query', () => ({
 
 vi.mock('@/lib/api-client', () => ({
   api: vi.fn(),
-}));
-
-vi.mock('@/context/AuthContext', () => ({
-  useAuth: () => ({ user: { role: 'Admin' } }),
 }));
 
 import { validateI18nKey } from '@/test/mock-i18n';

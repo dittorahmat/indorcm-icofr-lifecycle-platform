@@ -4,6 +4,8 @@ import {
   basisProblemForSnapshot,
   computeSimulationMateriality,
   deriveMateriality,
+  isAccountInScope,
+  isAccountQuantitativelySignificant,
   resolveSnapshotStatus,
   type MaterialityFsliRow,
 } from './scoping-materiality';
@@ -298,5 +300,32 @@ describe('resolveSnapshotStatus', () => {
     expect(resolveSnapshotStatus([])).toBe('Draft');
     expect(resolveSnapshotStatus(null)).toBe('Draft');
     expect(resolveSnapshotStatus(undefined)).toBe('Draft');
+  });
+});
+
+describe('worksheet significance predicates', () => {
+  it('reads the classification the scoping view already computed', () => {
+    expect(isAccountInScope(glRow({ scopeClassification: 'above-pm' }), 1_000)).toBe(true);
+    expect(isAccountInScope(glRow({ scopeClassification: 'two-thirds' }), 1_000)).toBe(true);
+    expect(isAccountInScope(glRow({ scopeClassification: 'qualitative' }), 1_000)).toBe(true);
+    expect(isAccountInScope(glRow({ scopeClassification: 'out-of-scope' }), 1_000)).toBe(false);
+  });
+
+  it('keeps qualitative rows in scope but out of the quantitative column', () => {
+    const qualitative = glRow({ scopeClassification: 'qualitative', balance: 10 });
+    expect(isAccountInScope(qualitative, 1_000)).toBe(true);
+    expect(isAccountQuantitativelySignificant(qualitative, 1_000)).toBe(false);
+  });
+
+  it('treats the FSLI total as quantitative significance (the rule the export dropped)', () => {
+    const leafBelowPm = glRow({ scopeClassification: 'two-thirds', balance: 10 });
+    expect(isAccountQuantitativelySignificant(leafBelowPm, 1_000)).toBe(true);
+  });
+
+  it('falls back to the arithmetic only when classification is absent', () => {
+    expect(isAccountInScope(glRow({ balance: 1_000 }), 1_000)).toBe(true);
+    expect(isAccountInScope(glRow({ balance: 999 }), 1_000)).toBe(false);
+    expect(isAccountInScope(glRow({ balance: 10, fsliBalance: 1_000 }), 1_000)).toBe(true);
+    expect(isAccountQuantitativelySignificant(glRow({ balance: 10, fsliBalance: 1_000 }), 1_000)).toBe(true);
   });
 });
