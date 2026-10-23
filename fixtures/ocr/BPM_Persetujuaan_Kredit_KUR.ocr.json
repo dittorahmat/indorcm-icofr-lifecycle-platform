@@ -1,0 +1,913 @@
+{
+  "nodes": [
+    {
+      "id": "swimlane-1",
+      "type": "swimlane",
+      "label": "KOMITE KREDIT",
+      "position": {
+        "x": 226,
+        "y": 199
+      },
+      "width": 217
+    },
+    {
+      "id": "swimlane-2",
+      "type": "swimlane",
+      "label": "MARKETING",
+      "position": {
+        "x": 443,
+        "y": 199
+      },
+      "width": 195
+    },
+    {
+      "id": "swimlane-3",
+      "type": "swimlane",
+      "label": "CALON DEBITUR",
+      "position": {
+        "x": 638,
+        "y": 199
+      },
+      "width": 187
+    },
+    {
+      "id": "swimlane-4",
+      "type": "swimlane",
+      "label": "LEGAL",
+      "position": {
+        "x": 825,
+        "y": 199
+      },
+      "width": 176
+    },
+    {
+      "id": "start-1",
+      "type": "start",
+      "label": "MULAI",
+      "position": {
+        "x": 280,
+        "y": 257
+      },
+      "parentId": "swimlane-1",
+      "width": 118
+    },
+    {
+      "id": "activity-1",
+      "type": "activity",
+      "label": "MENERIMA USULAN KREDIT",
+      "position": {
+        "x": 257,
+        "y": 308
+      },
+      "parentId": "swimlane-1",
+      "width": 164
+    },
+    {
+      "id": "activity-2",
+      "type": "activity",
+      "label": "USULAN KREDIT (TELAH DIPERIKSA)",
+      "position": {
+        "x": 251,
+        "y": 370
+      },
+      "parentId": "swimlane-1",
+      "width": 174
+    },
+    {
+      "id": "activity-3",
+      "type": "activity",
+      "label": "KOMITE MEMERIKSA USULAN KREDIT",
+      "position": {
+        "x": 240,
+        "y": 432
+      },
+      "parentId": "swimlane-1",
+      "width": 198
+    },
+    {
+      "id": "activity-4",
+      "type": "activity",
+      "label": "MEMBUAT PERTIMBANGAN DAN PERSETUJUAN",
+      "position": {
+        "x": 238,
+        "y": 494
+      },
+      "parentId": "swimlane-1",
+      "width": 200
+    },
+    {
+      "id": "decision-1",
+      "type": "decision",
+      "label": "KEPUTUSAN",
+      "position": {
+        "x": 289,
+        "y": 560
+      },
+      "parentId": "swimlane-1",
+      "width": 102
+    },
+    {
+      "id": "activity-5",
+      "type": "activity",
+      "label": "Membuat offering letter",
+      "position": {
+        "x": 453,
+        "y": 256
+      },
+      "parentId": "swimlane-2",
+      "width": 173
+    },
+    {
+      "id": "activity-6",
+      "type": "activity",
+      "label": "MENERIMA OFFERING LETTER",
+      "position": {
+        "x": 451,
+        "y": 336
+      },
+      "parentId": "swimlane-2",
+      "width": 176
+    },
+    {
+      "id": "decision-2",
+      "type": "decision",
+      "label": "KEPUTUSAN",
+      "position": {
+        "x": 490,
+        "y": 402
+      },
+      "parentId": "swimlane-2",
+      "width": 101
+    },
+    {
+      "id": "activity-7",
+      "type": "activity",
+      "label": "Memberitahu nasabah",
+      "position": {
+        "x": 453,
+        "y": 643
+      },
+      "parentId": "swimlane-2",
+      "width": 173
+    },
+    {
+      "id": "end-1",
+      "type": "end",
+      "label": "SELESAI",
+      "position": {
+        "x": 481,
+        "y": 704
+      },
+      "parentId": "swimlane-2",
+      "width": 116
+    },
+    {
+      "id": "activity-8",
+      "type": "activity",
+      "label": "MENERIMA OFFERING LETTER",
+      "position": {
+        "x": 661,
+        "y": 255
+      },
+      "parentId": "swimlane-3",
+      "width": 140
+    },
+    {
+      "id": "archive-1",
+      "type": "archive",
+      "label": "ARSIP",
+      "position": {
+        "x": 695,
+        "y": 336
+      },
+      "parentId": "swimlane-4",
+      "width": 62
+    },
+    {
+      "id": "archive-2",
+      "type": "archive",
+      "label": "ARSIP",
+      "position": {
+        "x": 695,
+        "y": 385
+      },
+      "parentId": "swimlane-4",
+      "width": 62
+    },
+    {
+      "id": "activity-9",
+      "type": "activity",
+      "label": "KE PROSEDUR AKAD KREDIT",
+      "position": {
+        "x": 664,
+        "y": 519
+      },
+      "parentId": "swimlane-4",
+      "width": 135
+    },
+    {
+      "id": "end-2",
+      "type": "end",
+      "label": "SELESAI",
+      "position": {
+        "x": 691,
+        "y": 576
+      },
+      "parentId": "swimlane-4",
+      "width": 116
+    },
+    {
+      "id": "activity-10",
+      "type": "activity",
+      "label": "MENERIMA OFFERING LETTER",
+      "position": {
+        "x": 661,
+        "y": 308
+      },
+      "parentId": "swimlane-3",
+      "width": 140
+    },
+    {
+      "id": "decision-3",
+      "type": "decision",
+      "label": "KEPUTUSAN",
+      "position": {
+        "x": 697,
+        "y": 360
+      },
+      "parentId": "swimlane-3",
+      "width": 101
+    },
+    {
+      "id": "activity-11",
+      "type": "activity",
+      "label": "MENERIMA OFFERING LETTER",
+      "position": {
+        "x": 661,
+        "y": 422
+      },
+      "parentId": "swimlane-3",
+      "width": 140
+    },
+    {
+      "id": "activity-12",
+      "type": "activity",
+      "label": "KE PROSEDUR AKAD KREDIT",
+      "position": {
+        "x": 664,
+        "y": 455
+      },
+      "parentId": "swimlane-3",
+      "width": 135
+    },
+    {
+      "id": "end-3",
+      "type": "end",
+      "label": "SELESAI",
+      "position": {
+        "x": 691,
+        "y": 516
+      },
+      "parentId": "swimlane-3",
+      "width": 116
+    },
+    {
+      "id": "activity-13",
+      "type": "activity",
+      "label": "MENERIMA OFFERING LETTER",
+      "position": {
+        "x": 303,
+        "y": 643
+      },
+      "parentId": "swimlane-1",
+      "width": 140
+    },
+    {
+      "id": "end-4",
+      "type": "end",
+      "label": "SELESAI",
+      "position": {
+        "x": 331,
+        "y": 704
+      },
+      "parentId": "swimlane-1",
+      "width": 116
+    },
+    {
+      "id": "activity-14",
+      "type": "activity",
+      "label": "MENERIMA OFFERING LETTER",
+      "position": {
+        "x": 661,
+        "y": 277
+      },
+      "parentId": "swimlane-4",
+      "width": 140
+    },
+    {
+      "id": "decision-4",
+      "type": "decision",
+      "label": "KEPUTUSAN",
+      "position": {
+        "x": 697,
+        "y": 320
+      },
+      "parentId": "swimlane-4",
+      "width": 101
+    },
+    {
+      "id": "activity-15",
+      "type": "activity",
+      "label": "MENERIMA OFFERING LETTER",
+      "position": {
+        "x": 661,
+        "y": 403
+      },
+      "parentId": "swimlane-4",
+      "width": 140
+    },
+    {
+      "id": "activity-16",
+      "type": "activity",
+      "label": "KE PROSEDUR AKAD KREDIT",
+      "position": {
+        "x": 664,
+        "y": 436
+      },
+      "parentId": "swimlane-4",
+      "width": 135
+    },
+    {
+      "id": "end-5",
+      "type": "end",
+      "label": "SELESAI",
+      "position": {
+        "x": 691,
+        "y": 493
+      },
+      "parentId": "swimlane-4",
+      "width": 116
+    },
+    {
+      "id": "activity-17",
+      "type": "activity",
+      "label": "MENERIMA OFFERING LETTER",
+      "position": {
+        "x": 661,
+        "y": 487
+      },
+      "parentId": "swimlane-4",
+      "width": 140
+    },
+    {
+      "id": "decision-5",
+      "type": "decision",
+      "label": "KEPUTUSAN",
+      "position": {
+        "x": 697,
+        "y": 540
+      },
+      "parentId": "swimlane-4",
+      "width": 101
+    },
+    {
+      "id": "activity-18",
+      "type": "activity",
+      "label": "KE PROSEDUR AKAD KREDIT",
+      "position": {
+        "x": 664,
+        "y": 580
+      },
+      "parentId": "swimlane-4",
+      "width": 135
+    },
+    {
+      "id": "end-6",
+      "type": "end",
+      "label": "SELESAI",
+      "position": {
+        "x": 691,
+        "y": 636
+      },
+      "parentId": "swimlane-4",
+      "width": 116
+    },
+    {
+      "id": "reference-1",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 414,
+        "y": 510
+      },
+      "parentId": "swimlane-1",
+      "width": 18
+    },
+    {
+      "id": "reference-2",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 365,
+        "y": 511
+      },
+      "parentId": "swimlane-1",
+      "width": 18
+    },
+    {
+      "id": "reference-3",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 457,
+        "y": 587
+      },
+      "parentId": "swimlane-2",
+      "width": 18
+    },
+    {
+      "id": "reference-4",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 597,
+        "y": 577
+      },
+      "parentId": "swimlane-2",
+      "width": 18
+    },
+    {
+      "id": "reference-5",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 601,
+        "y": 424
+      },
+      "parentId": "swimlane-3",
+      "width": 18
+    },
+    {
+      "id": "reference-6",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 601,
+        "y": 456
+      },
+      "parentId": "swimlane-3",
+      "width": 18
+    },
+    {
+      "id": "reference-7",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 601,
+        "y": 516
+      },
+      "parentId": "swimlane-3",
+      "width": 18
+    },
+    {
+      "id": "reference-8",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 601,
+        "y": 578
+      },
+      "parentId": "swimlane-3",
+      "width": 18
+    },
+    {
+      "id": "reference-9",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 601,
+        "y": 302
+      },
+      "parentId": "swimlane-4",
+      "width": 18
+    },
+    {
+      "id": "reference-10",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 601,
+        "y": 351
+      },
+      "parentId": "swimlane-4",
+      "width": 18
+    },
+    {
+      "id": "reference-11",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 601,
+        "y": 402
+      },
+      "parentId": "swimlane-4",
+      "width": 18
+    },
+    {
+      "id": "reference-12",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 601,
+        "y": 435
+      },
+      "parentId": "swimlane-4",
+      "width": 18
+    },
+    {
+      "id": "reference-13",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 601,
+        "y": 487
+      },
+      "parentId": "swimlane-4",
+      "width": 18
+    },
+    {
+      "id": "reference-14",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 601,
+        "y": 519
+      },
+      "parentId": "swimlane-4",
+      "width": 18
+    },
+    {
+      "id": "reference-15",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 601,
+        "y": 579
+      },
+      "parentId": "swimlane-4",
+      "width": 18
+    },
+    {
+      "id": "reference-16",
+      "type": "reference",
+      "label": "k",
+      "position": {
+        "x": 601,
+        "y": 637
+      },
+      "parentId": "swimlane-4",
+      "width": 18
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "start-1",
+      "target": "activity-1",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-2",
+      "source": "activity-1",
+      "target": "activity-2",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-3",
+      "source": "activity-2",
+      "target": "activity-3",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-4",
+      "source": "activity-3",
+      "target": "activity-4",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-5",
+      "source": "activity-4",
+      "target": "decision-1",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-6",
+      "source": "decision-1",
+      "target": "activity-7",
+      "label": "NO",
+      "sourceHandle": "left",
+      "targetHandle": "right"
+    },
+    {
+      "id": "edge-7",
+      "source": "decision-1",
+      "target": "activity-13",
+      "label": "YES",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-8",
+      "source": "activity-13",
+      "target": "end-4",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-9",
+      "source": "activity-7",
+      "target": "end-1",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-10",
+      "source": "activity-5",
+      "target": "activity-6",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-11",
+      "source": "activity-6",
+      "target": "decision-2",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-12",
+      "source": "decision-2",
+      "target": "activity-7",
+      "label": "YES",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-13",
+      "source": "decision-2",
+      "target": "reference-3",
+      "label": "NO",
+      "sourceHandle": "left",
+      "targetHandle": "right"
+    },
+    {
+      "id": "edge-14",
+      "source": "activity-10",
+      "target": "decision-3",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-15",
+      "source": "activity-8",
+      "target": "activity-10",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-16",
+      "source": "decision-3",
+      "target": "activity-11",
+      "label": "YES",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-17",
+      "source": "decision-3",
+      "target": "reference-5",
+      "label": "NO",
+      "sourceHandle": "left",
+      "targetHandle": "right"
+    },
+    {
+      "id": "edge-18",
+      "source": "activity-11",
+      "target": "activity-12",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-19",
+      "source": "activity-12",
+      "target": "end-3",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-20",
+      "source": "activity-14",
+      "target": "decision-4",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-21",
+      "source": "activity-15",
+      "target": "activity-16",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-22",
+      "source": "decision-4",
+      "target": "activity-15",
+      "label": "YES",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-23",
+      "source": "decision-4",
+      "target": "reference-9",
+      "label": "NO",
+      "sourceHandle": "left",
+      "targetHandle": "right"
+    },
+    {
+      "id": "edge-24",
+      "source": "activity-16",
+      "target": "end-5",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-25",
+      "source": "activity-17",
+      "target": "decision-5",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-26",
+      "source": "decision-5",
+      "target": "activity-18",
+      "label": "YES",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-27",
+      "source": "decision-5",
+      "target": "reference-15",
+      "label": "NO",
+      "sourceHandle": "left",
+      "targetHandle": "right"
+    },
+    {
+      "id": "edge-28",
+      "source": "activity-18",
+      "target": "end-6",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-29",
+      "source": "reference-2",
+      "target": "activity-5",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-30",
+      "source": "reference-1",
+      "target": "activity-7",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-31",
+      "source": "reference-3",
+      "target": "reference-4",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-32",
+      "source": "reference-5",
+      "target": "reference-6",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-33",
+      "source": "reference-6",
+      "target": "reference-7",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-34",
+      "source": "reference-7",
+      "target": "reference-8",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-35",
+      "source": "reference-10",
+      "target": "reference-11",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-36",
+      "source": "reference-11",
+      "target": "reference-12",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-37",
+      "source": "reference-12",
+      "target": "reference-13",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-38",
+      "source": "reference-13",
+      "target": "reference-14",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-39",
+      "source": "reference-14",
+      "target": "reference-15",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-40",
+      "source": "reference-15",
+      "target": "reference-16",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-41",
+      "source": "reference-9",
+      "target": "archive-1",
+      "sourceHandle": "right",
+      "targetHandle": "left"
+    },
+    {
+      "id": "edge-42",
+      "source": "archive-1",
+      "target": "archive-2",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-43",
+      "source": "archive-2",
+      "target": "activity-9",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-44",
+      "source": "activity-9",
+      "target": "end-2",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-45",
+      "source": "activity-10",
+      "target": "end-3",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-46",
+      "source": "activity-14",
+      "target": "end-5",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    },
+    {
+      "id": "edge-47",
+      "source": "activity-17",
+      "target": "end-6",
+      "sourceHandle": "bottom",
+      "targetHandle": "top"
+    }
+  ]
+}

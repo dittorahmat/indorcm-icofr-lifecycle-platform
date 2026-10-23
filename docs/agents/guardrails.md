@@ -41,6 +41,9 @@ after the commit that passed before it.
 | Route URLs | `worker/routes/__tests__/<domain>.test.ts` (vitest) | Every barrel asserts its URLs byte-identical. A renamed route fails here instead of 404ing silently on the client. Add URLs to the list when a barrel gains a route; never loosen the list to make it pass. |
 | Frontend→backend | `npm run check:api-contract` | Every frontend `(method, path)` from `api()`/`fetch()` must match a backend Hono route (method-aware: a path served only for GET fails when called with PUT). Triaged gaps live in the script's `ALLOWLIST` — never reason-free. Correlated `cond ? A : B` url/method ternaries pair branch-wise. Skipped by design: the `api()` wrapper itself, `/api/auth/*` (Better Auth), absolute URLs. |
 | Workflows | `npm run check:workflows` | Every `.github/workflows/*.y{a,}ml` must parse and declare `on:` plus at least one job. Absolute, not delta-shaped: a workflow file is valid or it is not, and an unparseable one fails in the worst way — GitHub refuses the whole file and reports "likely failed because of a workflow file issue" with **0s, zero jobs and no log**, so nothing in this repo turns red and the PR silently stops being verified. Incident 2026-10-19: one under-indented line inside `verify.yml`'s `run: \|` block (commit `57f75cf`) left the gate that verifies everything unverified for four commits (`39200554676`, `39207065068`). Parsed with the `yaml` package rather than a hand-rolled indentation regex, because a guess at what GitHub accepts would fail honest workflows instead. |
+| Test i18n mocks | `npm run check:test-i18n` | A test that mocks `react-i18next` must use `strictT`/`validateI18nKey` from `src/test/mock-i18n.ts`. Flagged: identity `t: (key) => key`, `opts?.defaultValue ?? key` fallbacks, and `if (key === '…') return 'English text'` tables — each locks copy the `en` bundle never ships. A mock that resolves keys against the real locale objects is allowed (it already reads the bundle). |
+| Dead doc references | `npm run check:doc-refs` | Every repo-root-relative path with a file extension written in a comment under `src/` or `worker/` must exist. `src/utils/ocr-layout-audit.ts` shipped a header citing `scripts/ocr-pdf-audit.ts`, a file that never existed; type-check, lint and tests all stayed green because a false comment is syntactically fine. Extensionless citations (`worker/app`) are prose/module specifiers and stay out of scope. |
+| OCR geometry constants | `npm run check:ocr-constants` | `LANE_*`, `ROW_*`, `CONTENT_TOP`, `MIN_NODE_CLEARANCE`, `contentLaneHeight`, `boxesOverlap` may be declared only in `src/utils/ocr-layout-rows.ts` / `ocr-layout-deoverlap.ts`; consumers import them. The OCR layout shipped with `LANE_FOOTER = 80` re-declared in the rank engine and the audit re-deriving the lane height by hand — three copies that agreed only by luck. |
 
 ## Route splits keep the barrel and the mount line
 
@@ -128,7 +131,10 @@ taste. The numbers live here so the next retro does not re-derive them.
 
 `.githooks/pre-commit` runs `check:any-delta` + `check:i18n` +
 `check:worker-strings` on staged files only (seconds; full type-check/lint/test
-stay in CI). Workflow edits additionally run `check:workflows`, and they run it
+stay in CI). It also runs the three cheap whole-tree invariants
+(`check:test-i18n`, `check:doc-refs`, `check:ocr-constants`): a dead comment or a
+duplicated constant is wrong regardless of which PR introduced it. Workflow
+edits additionally run `check:workflows`, and they run it
 even when nothing else is staged, because that failure mode is invisible in CI
 (startup failure, zero jobs) rather than red. It is installed automatically: `package.json` `"prepare"` runs
 `scripts/install-hooks.mjs`, so `npm install` / `npm ci` point
@@ -157,6 +163,29 @@ against the real `en` bundles and throws on a missing key — an identity
 post-mortem). New/edited tests must use the helper, never a fresh identity
 mock. Custom translated-text assertions keep their tables and add one
 `validateI18nKey(key)` line.
+
+The rule is enforced mechanically by `npm run check:test-i18n` (pre-commit and
+CI), because it was written down here first and still two hand-rolled mocks
+shipped in `fix-bpm-ocr-coordinate-faithful-layout`. The gate flags the three
+shapes that hide a bad key (identity, `defaultValue ?? key`, hardcoded table) and
+stays quiet for a mock that reads the real bundle.
+
+## OCR layout: capture once, replay offline
+
+Verifying a layout change must not require a model call. `npm run ocr:probe --
+<file.pdf|png> [--out fixtures/ocr/<slug>.ocr.json]` renders page 1, calls the
+OCR seam once, writes the parsed response, and prints the geometry audit
+verdict. `src/test/ocr-real-snapshot.test.ts` replays those captures in
+`npm test`, so the gate is offline and free; the probe is only for producing a
+new capture or refreshing one.
+
+The live vitest probe (`OCR_LIVE=1 npx vitest run src/test/ocr-pdf-e2e.test.ts`)
+stays opt-in and exists to answer "does the model still extract a drawing from
+this PDF", not "is the layout right" — the provider can be unavailable (503
+high-demand) and slow (10-240 s), and neither says anything about our code.
+
+Geometry constants are single-source (`check:ocr-constants`); the rationale and
+the module map live in `src/components/rcm/editor/README.md`.
 
 ## Page tests use the shared query mock
 

@@ -79,6 +79,21 @@ describe('buildOcrPrompt', () => {
     }
   });
 
+  it('locks the geometry contract: top-left positions, sizes, and no reflow', () => {
+    const { systemInstruction } = buildOcrPrompt({ image: 'data:image/png;base64,AAAA' });
+
+    expect(systemInstruction).toContain('sudut KIRI-ATAS');
+    expect(systemInstruction).toContain('JANGAN merapikan (reflow)');
+    expect(systemInstruction).toContain('"width" dan "height"');
+    expect(systemInstruction).toContain('selisih maksimal 20 poin');
+  });
+
+  it('extracts at temperature 0 so one drawing yields one set of connectors', () => {
+    const prompt = buildOcrPrompt({ image: 'data:image/png;base64,AAAA' });
+
+    expect(prompt.temperature).toBe(0);
+  });
+
   it('attaches the image as a multimodal user message', () => {
     const prompt = buildOcrPrompt({ image: 'data:image/png;base64,ZZZZ' });
 
@@ -101,6 +116,15 @@ describe('BPM_OCR_RESPONSE_SCHEMA', () => {
 
   it('states the six editor-only exclusions once', () => {
     expect([...OCR_EXCLUDED_NODE_TYPES]).toEqual(EXPECTED_EXCLUSIONS);
+  });
+
+  it('requests optional source/target handles on edges', () => {
+    const edgeProps = BPM_OCR_RESPONSE_SCHEMA.properties.edges.items.properties;
+
+    expect(edgeProps.sourceHandle).toBeDefined();
+    expect(edgeProps.targetHandle).toBeDefined();
+    // Optional: a response without handles must still parse (backward compatible).
+    expect(BPM_OCR_RESPONSE_SCHEMA.properties.edges.items.required).toEqual(['id', 'source', 'target']);
   });
 });
 
@@ -183,6 +207,16 @@ describe('parseOcrResponse', () => {
 
   it('normalizes missing node/edge arrays to empty arrays', () => {
     expect(parseOcrResponse('{"nodes":"x","edges":7}')).toEqual({ nodes: [], edges: [] });
+  });
+
+  it('keeps model-supplied edge handles when present', () => {
+    const diagram = parseOcrResponse(
+      '{"nodes":[],"edges":[{"id":"e1","source":"a","target":"b","sourceHandle":"bottom","targetHandle":"top"}]}',
+    );
+
+    expect(diagram.edges).toEqual([
+      { id: 'e1', source: 'a', target: 'b', sourceHandle: 'bottom', targetHandle: 'top' },
+    ]);
   });
 
   it('throws the unparseable seam code when every repair stage fails', () => {

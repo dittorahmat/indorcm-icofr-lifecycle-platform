@@ -3,8 +3,9 @@
 # Installed automatically by `npm install` (package.json "prepare" ->
 # scripts/install-hooks.mjs). Manual fallback if the hook is missing:
 #   git config core.hooksPath .githooks
-# Runs only the deterministic delta gates (seconds). Full type-check / lint /
-# test stay in CI (verify.yml) - they take minutes on this repo.
+# Runs only the deterministic delta gates and the cheap whole-tree invariants
+# (seconds). Full type-check / lint / test stay in CI (verify.yml) - they take
+# minutes on this repo.
 #
 # check:loc is deliberately NOT here even though it is delta-shaped: its
 # grandfather rule can demand a split for a file you only bug-fixed, and a hook
@@ -30,3 +31,10 @@ node scripts/check-any-delta.mjs $STAGED || exit 1
 node scripts/check-i18n.mjs $STAGED || exit 1
 node scripts/check-worker-strings.mjs $STAGED || exit 1
 node scripts/check-rbac-delta.mjs $STAGED || exit 1
+# Whole-tree invariants (file-level facts, not delta facts). Cheap - each one
+# reads the tree and exits; they catch the "green but false" class: a comment
+# citing a deleted script, a hand-rolled i18n mock, a re-declared geometry
+# constant.
+node scripts/check-test-i18n.mjs || exit 1
+node scripts/check-doc-refs.mjs || exit 1
+node scripts/check-ocr-constants.mjs || exit 1

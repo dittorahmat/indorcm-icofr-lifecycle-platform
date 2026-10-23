@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { OcrReviewView } from '../OcrReviewView';
+import { strictT } from '@/test/mock-i18n';
 
 // Mock ReactFlow to keep the test lightweight and avoid WebGL/Canvas rendering requirements
 vi.mock('reactflow', () => ({
@@ -11,16 +12,10 @@ vi.mock('reactflow', () => ({
   Controls: () => <div data-testid="mock-controls" />,
 }));
 
+// Strict helper: unknown keys throw instead of silently rendering, so this test
+// cannot lock a string the English bundle does not ship.
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, opts?: { defaultValue?: string; count?: number }) => {
-      if (key === 'bpm:ocr.originalImage') return 'Source Reference Image';
-      if (key === 'bpm:ocr.shapeDetection') return 'Extracted Elements Preview';
-      if (key === 'bpm:ocr.staging.thumbnailHint') return 'Compare with original BPM document';
-      if (key === 'bpm:ocr.staging.canvasHint') return 'Click and drag to reposition';
-      return opts?.defaultValue ?? key;
-    },
-  }),
+  useTranslation: () => ({ t: strictT }),
 }));
 
 describe('OcrReviewView visual comparison & split-view reference', () => {
@@ -54,13 +49,14 @@ describe('OcrReviewView visual comparison & split-view reference', () => {
     );
 
     // Verify source preview image is rendered with correct attributes
-    const image = screen.getByAltText('Source Diagram');
+    const image = screen.getByAltText('bpm:ocr.sourceAlt');
     expect(image).toBeInTheDocument();
     expect(image).toHaveAttribute('src', dummyProps.ocrPreviewUrl);
 
-    // Verify side-by-side / split-view reference container exists
-    expect(screen.getByText(/Source Reference Image/i)).toBeInTheDocument();
-    expect(screen.getByText(/Extracted Elements Preview/i)).toBeInTheDocument();
+    // Verify side-by-side / split-view reference container exists (the hint also
+    // carries the active page when there is more than one).
+    expect(screen.getByText(/bpm:ocr\.originalImage/)).toBeInTheDocument();
+    expect(screen.getByText(/bpm:ocr\.shapeDetection/)).toBeInTheDocument();
 
     // Verify ReactFlow staging canvas and children elements tab are present
     expect(screen.getByTestId('mock-react-flow')).toBeInTheDocument();
@@ -74,7 +70,19 @@ describe('OcrReviewView visual comparison & split-view reference', () => {
       </OcrReviewView>
     );
 
-    expect(screen.getByText('Halaman 1')).toBeInTheDocument();
-    expect(screen.getByText('Halaman 2')).toBeInTheDocument();
+    // One button per page; the strict mock resolves every key to the key itself.
+    expect(screen.getAllByRole('button', { name: 'bpm:ocr.pageNumber' })).toHaveLength(2);
+  });
+
+  it('reserves a readable preview height instead of the old 200px strip', () => {
+    render(
+      <OcrReviewView {...dummyProps}>
+        <div>Content</div>
+      </OcrReviewView>
+    );
+
+    const canvas = screen.getByTestId('mock-react-flow').closest('div[class*="h-[320px]"]');
+    expect(canvas).not.toBeNull();
+    expect(canvas?.className).toContain('lg:h-[420px]');
   });
 });
