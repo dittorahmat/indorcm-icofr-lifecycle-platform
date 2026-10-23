@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { layoutOcrDiagram, type OcrLayoutResult } from '../ocr-layout';
-import { auditOcrLayout, auditSourceOrder } from '../ocr-layout-audit';
+import { auditOcrLayout, auditSourceOrder, auditUpwardDrift } from '../ocr-layout-audit';
 import { buildKurSourceFixture } from '../../test/fixtures/bpm-kur-source';
 
 function laneOnly(): OcrLayoutResult {
@@ -90,5 +90,27 @@ describe('auditSourceOrder', () => {
     };
 
     expect(auditSourceOrder(source.nodes, swapped).length).toBeGreaterThan(0);
+  });
+});
+
+describe('auditUpwardDrift', () => {
+  const source = buildKurSourceFixture();
+  const layout = layoutOcrDiagram(source);
+
+  it('accepts the real upward hand-offs the drawing already has', () => {
+    expect(auditUpwardDrift(source.nodes, layout)).toEqual([]);
+  });
+
+  it('flags an edge the layout pushes above its source', () => {
+    const target = layout.nodes.find((node) => node.id === 'k-recv');
+    expect(target).toBeDefined();
+    const pushed: OcrLayoutResult = {
+      ...layout,
+      nodes: layout.nodes.map((node) =>
+        node.id === 'k-recv' ? { ...node, position: { ...node.position, y: 0 } } : node,
+      ),
+    };
+
+    expect(auditUpwardDrift(source.nodes, pushed).length).toBeGreaterThan(0);
   });
 });

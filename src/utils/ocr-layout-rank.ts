@@ -6,14 +6,12 @@
 
 import { getStandardNodeDimensions, DEFAULT_SWIMLANE_DIMENSIONS } from './bpm-constants';
 import { computeLaneWidths, groupNodesByRank } from './ocr-lane-geometry';
-import { LANE_MIN_H } from './ocr-layout-rows';
+import { LANE_FOOTER, LANE_MIN_H, LANE_MIN_W } from './ocr-layout-rows';
 import type { OcrRawEdge, OcrRawNode } from './ocr-validate';
 import type { EngineResult, PlacedNode } from './ocr-layout-types';
 
 const GAP_Y = DEFAULT_SWIMLANE_DIMENSIONS.gapY;
 const HEADER_H = DEFAULT_SWIMLANE_DIMENSIONS.headerHeight;
-const LANE_MIN_W = DEFAULT_SWIMLANE_DIMENSIONS.minWidth;
-const LANE_FOOTER = 80;
 const ROW_HEIGHT = 100;
 const HEADER_OFFSET = HEADER_H + 50;
 

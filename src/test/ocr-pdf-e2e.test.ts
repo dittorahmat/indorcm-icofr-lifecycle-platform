@@ -24,7 +24,7 @@ import {
   parseOcrResponse,
 } from '../../worker/services/bpm/bpm-ocr';
 import { layoutOcrDiagram } from '../utils/ocr-layout';
-import { auditOcrLayout, auditSourceOrder } from '../utils/ocr-layout-audit';
+import { auditOcrLayout, auditSourceOrder, auditUpwardDrift } from '../utils/ocr-layout-audit';
 
 function readEnvFile(path: string): Record<string, string> {
   if (!existsSync(path)) return {};
@@ -130,6 +130,9 @@ describe.skipIf(!canRun)('OCR end-to-end — KUR drawing', () => {
       const layout = layoutOcrDiagram(diagram);
       const audit = auditOcrLayout(layout);
       const orderViolations = auditSourceOrder(diagram.nodes, layout);
+      const upwardDrift = auditUpwardDrift(diagram.nodes, layout);
+      const duplicateIds = layout.warnings.filter((warning) => warning.code === 'duplicate-id');
+      if (duplicateIds.length > 0) console.log('[OCR e2e] duplicate ids', duplicateIds.map((w) => w.nodeId).join(', '));
 
       // Surfaced so the numbers are visible on failure.
       console.log('[OCR e2e] lanes', diagram.nodes.filter((n) => n.type === 'swimlane').map((n) => `${n.label || n.department}@${Math.round(n.position.x)}`).join(' | '));
@@ -137,6 +140,7 @@ describe.skipIf(!canRun)('OCR end-to-end — KUR drawing', () => {
       console.log('[OCR e2e] stats', JSON.stringify(audit.stats));
       if (audit.violations.length > 0) console.log('[OCR e2e] violations', audit.violations.join('; '));
       if (orderViolations.length > 0) console.log('[OCR e2e] order', orderViolations.join('; '));
+      if (upwardDrift.length > 0) console.log('[OCR e2e] upward drift', upwardDrift.join('; '));
 
       const context = `lanes: ${laneLabels.join(' | ')} | missing: ${missing.join(', ') || '-'} | stats: ${JSON.stringify(audit.stats)}`;
       // A run that returns no connectors is a failed import even if the boxes
@@ -144,10 +148,11 @@ describe.skipIf(!canRun)('OCR end-to-end — KUR drawing', () => {
       expect(diagram.edges.length, `model returned ${diagram.edges.length} edges: ${context}`).toBeGreaterThanOrEqual(minimumEdges);
       expect(coverage, context).toBeGreaterThanOrEqual(0.75);
       expect(orderViolations, context).toEqual([]);
+      expect(upwardDrift, context).toEqual([]);
       expect(audit.violations, context).toEqual([]);
       expect(audit.ok).toBe(true);
       expect(audit.stats.landingZoom).toBeGreaterThanOrEqual(0.7);
     },
-    180_000,
+    240_000,
   );
 });

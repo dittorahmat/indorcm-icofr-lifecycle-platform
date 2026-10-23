@@ -1,7 +1,7 @@
 // ocr-validate.ts — OCR response validation (pure, no canvas dependencies).
 // Extracted from ocr-layout.ts so the layout orchestrator stays under the
 // 400 LOC soft limit; behavior is byte-identical, locked by ocr-layout.test.ts.
-import { DEFAULT_SWIMLANE_DIMENSIONS } from './bpm-constants';
+import { LANE_MIN_W } from './ocr-layout-rows';
 
 export interface OcrRawNode {
   id: string;
@@ -25,13 +25,11 @@ export interface OcrRawEdge {
 }
 
 export interface OcrLayoutWarning {
-  code: 'orphan-edge' | 'unlabeled-node' | 'missing-dims' | 'unknown-parent';
+  code: 'orphan-edge' | 'unlabeled-node' | 'missing-dims' | 'unknown-parent' | 'duplicate-id';
   message: string;
   nodeId?: string;
   edgeId?: string;
 }
-
-const LANE_MIN_W = DEFAULT_SWIMLANE_DIMENSIONS.minWidth;
 
 export function deriveLabelFromId(id: string): string {
   if (!id) return '';
@@ -43,6 +41,18 @@ export function validateOcrResponse(raw: { nodes: OcrRawNode[]; edges: OcrRawEdg
   const warnings: OcrLayoutWarning[] = [];
   const idSet = new Set<string>(raw.nodes.map((n) => n.id));
   const swimlaneIdSet = new Set<string>(raw.nodes.filter((n) => n.type === 'swimlane').map((n) => n.id));
+
+  const seenIds = new Set<string>();
+  for (const n of raw.nodes) {
+    if (seenIds.has(n.id)) {
+      warnings.push({
+        code: 'duplicate-id',
+        message: `Node id ${n.id} is duplicated; only the first occurrence is kept`,
+        nodeId: n.id,
+      });
+    }
+    seenIds.add(n.id);
+  }
 
   for (const e of raw.edges) {
     const missingSource = !idSet.has(e.source);

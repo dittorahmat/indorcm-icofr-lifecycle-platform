@@ -12,7 +12,9 @@ import type { EngineResult, PlacedNode } from './ocr-layout-types';
 import type { OcrRawNode } from './ocr-validate';
 
 const HEADER_H = DEFAULT_SWIMLANE_DIMENSIONS.headerHeight;
-const LANE_MIN_W = DEFAULT_SWIMLANE_DIMENSIONS.minWidth;
+
+/** Single source for the lane geometry constants (rank engine + audit import these). */
+export const LANE_MIN_W = DEFAULT_SWIMLANE_DIMENSIONS.minWidth;
 
 /** Source-space `y` values closer than this belong to the same global row (0–1000 space). */
 export const ROW_MERGE_TOLERANCE = 36;

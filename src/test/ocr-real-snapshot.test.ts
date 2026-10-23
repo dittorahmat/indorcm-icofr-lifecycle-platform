@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { layoutOcrDiagram } from '../utils/ocr-layout';
-import { auditOcrLayout, auditSourceOrder } from '../utils/ocr-layout-audit';
+import { auditOcrLayout, auditSourceOrder, auditUpwardDrift } from '../utils/ocr-layout-audit';
 import type { OcrRawEdge, OcrRawNode } from '../utils/ocr-validate';
 
 /**
@@ -43,6 +43,8 @@ describe.each(CASES)('OCR snapshot — $name', ({ file, laneLabels }) => {
 
     expect(audit.violations).toEqual([]);
     expect(auditSourceOrder(snapshot.nodes, layout)).toEqual([]);
+    // no upward edge that the source did not already have
+    expect(auditUpwardDrift(snapshot.nodes, layout)).toEqual([]);
     expect(layout.edges.length).toBeGreaterThan(0);
     expect(audit.stats.shapeCount).toBeGreaterThanOrEqual(3);
     expect(audit.stats.landingZoom).toBeGreaterThanOrEqual(0.7);

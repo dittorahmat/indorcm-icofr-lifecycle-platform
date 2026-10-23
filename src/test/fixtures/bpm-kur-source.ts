@@ -1,7 +1,10 @@
-// Reconstruction of the KUR drawing shown in `BPM_Persetujuaan_Kredit_KUR`
-// (content, lanes, labels and edges taken from the rendered diagram; the 0-1000
-// top-left coordinates are an explicit reconstruction because the raw
-// `POST /api/bpm-diagrams/ocr` payload was never captured).
+// Image-derived reconstruction of the KUR drawing shown in
+// `BPM_Persetujuaan_Kredit_KUR` (content, lanes, labels and edges read off the
+// rendered diagram; the 0-1000 top-left coordinates are a reconstruction, not a
+// model payload). It stays deliberately small so a failure points at one rule.
+//
+// The real model responses for both fixtures are captured verbatim under
+// `fixtures/ocr/` and replayed by `src/test/ocr-real-snapshot.test.ts`.
 //
 // Lane order in the drawing is KOMITE KREDIT -> MARKETING -> CALON DEBITUR ->
 // LEGAL, and two forward handoffs legitimately point *upwards* (the receiving

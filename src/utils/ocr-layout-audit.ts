@@ -1,22 +1,20 @@
-// ocr-layout-audit.ts — automatic geometry audit for an OCR layout result.
+// ocr-layout-audit.ts — geometry audit oracle for OCR layout results.
 //
-// Feeds two callers: the KUR regression test and `scripts/ocr-pdf-audit.ts`
-// (PDF → real OCR → layout → audit). Keeping the verdict logic pure means the
-// same rules apply to a fixture and to a live model response.
+// This module is a test oracle, not product code: it has no production caller.
+// `src/test/` replays captured model responses through it and `src/utils/__tests__/`
+// proves the rules themselves can fail (overlap, lane escape, lane height,
+// source order, invented upward edges). Keeping the verdict logic pure means one
+// rule set covers a hand-written fixture, a captured response, and the opt-in
+// live PDF probe.
 
-import { boxesOverlap } from './ocr-layout-deoverlap';
-import { LANE_FOOTER, LANE_MIN_H } from './ocr-layout-rows';
+import { boxesOverlap, type PlacedBox } from './ocr-layout-deoverlap';
+import { contentLaneHeight } from './ocr-layout-rows';
 import { computeLandingViewport } from './ocr-landing-viewport';
 import type { OcrLayoutNode, OcrLayoutResult } from './ocr-layout';
 import type { OcrRawNode } from './ocr-validate';
 
-export interface AuditBox {
-  id: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+/** Canvas-space box of one shape; identical shape to the de-overlap `PlacedBox`. */
+export type AuditBox = PlacedBox;
 
 export interface LayoutAuditStats {
   laneCount: number;
@@ -71,6 +69,29 @@ export function upwardEdgeIds(layout: OcrLayoutResult): string[] {
     .map((edge) => edge.id);
 }
 
+/**
+ * Edges the layout turned upward although the source had them running downward.
+ * A drawing may legitimately contain upward connectors (real hand-offs / loops);
+ * the invariant is that the layout must not invent new ones.
+ */
+export function auditUpwardDrift(source: OcrRawNode[], layout: OcrLayoutResult): string[] {
+  // First occurrence wins, matching the layout's duplicate-id rule.
+  const sourceById = new Map<string, OcrRawNode>();
+  for (const node of source) {
+    if (!sourceById.has(node.id)) sourceById.set(node.id, node);
+  }
+  const upwardInSource = new Set(
+    layout.edges
+      .filter((edge) => {
+        const from = sourceById.get(edge.source);
+        const to = sourceById.get(edge.target);
+        return from !== undefined && to !== undefined && to.position.y < from.position.y;
+      })
+      .map((edge) => edge.id),
+  );
+  return upwardEdgeIds(layout).filter((edgeId) => !upwardInSource.has(edgeId));
+}
+
 function overlaps(boxes: AuditBox[]): string[] {
   const violations: string[] = [];
   for (let i = 0; i < boxes.length; i += 1) {
@@ -107,12 +128,14 @@ function laneHeights(layout: OcrLayoutResult): string[] {
   const violations: string[] = [];
   const lanes = layout.nodes.filter((node) => node.type === 'swimlane');
   // The engine sizes every lane to the deepest *lane child* so the canvas keeps
-  // one clean band (uniform height contract). Top-level nodes sit below the
-  // lanes and must not inflate this expectation.
+  // one clean band (uniform height contract). Shapes outside lanes keep their own
+  // block (above or below) and never inflate this expectation.
   const bottom = layout.nodes
     .filter((node) => node.type !== 'swimlane' && node.parentId)
     .reduce((max, node) => Math.max(max, node.position.y + node.height), 0);
-  const expected = Math.max(LANE_MIN_H, Math.round(bottom + LANE_FOOTER));
+  // Same helper the engine uses, so the audit cannot silently agree with a
+  // changed lane-height rule.
+  const expected = contentLaneHeight(bottom);
 
   for (const lane of lanes) {
     if (Math.abs(lane.height - expected) > EPSILON) {

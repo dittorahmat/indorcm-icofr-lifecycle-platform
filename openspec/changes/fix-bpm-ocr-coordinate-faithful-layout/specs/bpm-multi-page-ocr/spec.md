@@ -9,13 +9,15 @@ The OCR layout engine SHALL preserve the vertical ordering extracted from the so
 - **WHEN** a document in one swimlane and an activity in another share the same source row
 - **THEN** both nodes are placed on the same global row and their connecting edge is horizontal
 
-#### Scenario: No backward cross-lane flow
-- **WHEN** an extracted edge connects two nodes in different swimlanes and is not a loop back to an earlier step
-- **THEN** the target node MUST be placed at the same row or a lower row than the source node
+#### Scenario: No invented backward cross-lane flow
+- **WHEN** an extracted edge runs downward or sideways in the source drawing
+- **THEN** the layout MUST NOT place its target above its source
+- **AND** an edge that is already upward in the source (a real hand-off or a loop) MUST stay upward and MUST be reported through the audit's `upwardEdgeIds`, never flipped into a downward edge
 
 #### Scenario: Lane bounds follow content
-- **WHEN** a swimlane's deepest node ends at a given vertical position
-- **THEN** the swimlane height MUST be that position plus a footer padding, and MUST NOT keep a fixed empty band below the content
+- **WHEN** the deepest lane child ends at a given vertical position
+- **THEN** every swimlane height MUST be that position plus a footer padding, shared as one uniform band so the lanes stay aligned, and MUST NOT keep a fixed empty band below the content
+- **AND** a lane with no children MUST fall back to the minimum band, not the historical 1000px
 
 ### Requirement: Coordinate Validity Fallback
 The OCR layout engine SHALL detect unusable extracted geometry and fall back to its rank-based layout instead of producing a degenerate diagram.
@@ -39,12 +41,22 @@ The OCR extraction response SHALL carry enough geometry to place each shape: `po
 - **WHEN** the model describes a shape that sits low in its column
 - **THEN** the returned `y` reflects that low position and MUST NOT be normalized to the top of the column
 
+#### Scenario: Connectors and drawing chrome
+- **WHEN** the drawing contains arrows, a page frame, header/tables, or a sign-off block
+- **THEN** every visible arrow MUST become one edge, so an empty edge list is valid only for a drawing without arrows
+- **AND** the page frame, column borders, header/tables and sign-off boxes MUST NOT be emitted as flow shapes
+- **AND** extracted `width`/`height` serve as validation inputs (missing/undersized dimensions warn); rendered box sizes come from the node registry, never from the normalized numbers
+
 ### Requirement: Legible Landing View After OCR Import
 After applying an OCR import, the canvas SHALL present the diagram at a readable zoom instead of fitting the whole drawing into the viewport.
 
 #### Scenario: Applying a four-lane imported diagram
 - **WHEN** the user applies a multi-lane OCR result
 - **THEN** the canvas lands at a zoom of at least 0.7, positioned so the first process step is visible, and remains pannable
+
+#### Scenario: Applying a multi-page import as sheets
+- **WHEN** the import becomes several sheets instead of the current canvas
+- **THEN** the canvas still lands at a zoom of at least 0.7 anchored to the sheet origin instead of fitting everything
 
 #### Scenario: User requests full overview
 - **WHEN** the user activates "Fit to Screen"

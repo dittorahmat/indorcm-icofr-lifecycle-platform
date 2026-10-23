@@ -41,10 +41,11 @@ None.
 
 ## Impact
 
-- Frontend layout: `src/utils/ocr-layout.ts` (rewritten orchestrator), new `src/utils/ocr-layout-rows.ts`, `src/utils/ocr-layout-deoverlap.ts`, `src/utils/ocr-layout-rank.ts`, `src/utils/ocr-node-box.ts`.
-- OCR staging/import: `src/components/rcm/editor/ocr/ocr-node-normalize.ts`, `useOcrStaging.ts`, `ocr/OcrReviewView.tsx`.
-- Canvas camera: `src/components/rcm/editor/hooks/useBPMCanvasHandlers.ts`.
-- Backend extraction contract: `worker/services/bpm/bpm-ocr.ts` (system prompt + response schema) and `worker/services/bpm/__tests__/bpm-ocr.test.ts`.
-- Tests: `src/test/ocr-layout.test.ts` plus new unit tests for rows, de-overlap, node box, rank fallback; `src/components/rcm/editor/ocr/__tests__/ocr-import-adapter.test.ts`.
+- Frontend layout: `src/utils/ocr-layout.ts` (rewritten orchestrator), new `src/utils/ocr-layout-rows.ts`, `src/utils/ocr-layout-deoverlap.ts`, `src/utils/ocr-layout-rank.ts`, `src/utils/ocr-layout-edges.ts`, `src/utils/ocr-node-box.ts`, `src/utils/ocr-landing-viewport.ts`, and the test oracle `src/utils/ocr-layout-audit.ts` (no production caller).
+- OCR staging/import: `src/components/rcm/editor/ocr/ocr-node-normalize.ts`, `useOcrStaging.ts`, `ocr/OcrReviewView.tsx`. Adds the i18n keys `bpm:ocr.pageLabel`, `bpm:ocr.pageNumber`, `bpm:ocr.sourceAlt` (id + en).
+- Canvas camera: `src/components/rcm/editor/hooks/useBPMCanvasHandlers.ts` (one landing path for both canvas and multi-sheet apply).
+- Backend extraction contract: `worker/services/bpm/bpm-ocr.ts` (system prompt + response schema + `temperature: 0`) and `worker/services/bpm/__tests__/bpm-ocr.test.ts`; `worker/services/ai-service.ts` gains an optional `temperature` on `generateChatResponse` (other AI features keep the provider default).
+- Tests: `src/utils/__tests__/ocr-layout*.test.ts` (unit), `src/test/ocr-real-snapshot.test.ts` (captured responses), opt-in `src/test/ocr-pdf-e2e.test.ts` (real PDF → model → audit), `src/components/rcm/editor/ocr/__tests__/ocr-import-adapter.test.ts`.
+- Fixtures: `fixtures/BPM_Persetujuaan_Kredit_KUR_20260831.pdf`, `fixtures/BPM_Penerimaan_Setoran_Tunai_20260507.pdf` (537 KB total) plus their captured responses under `fixtures/ocr/`.
 - Spec/ADR docs: `openspec/specs/bpm-multi-page-ocr/spec.md`, `docs/adr/0010-ocr-layout-coordinate-anchored.md`.
-- No database, API-contract, i18n-key, or dependency changes.
+- No database, HTTP API-contract, or dependency changes.

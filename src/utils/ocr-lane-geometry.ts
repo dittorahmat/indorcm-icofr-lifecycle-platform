@@ -1,10 +1,9 @@
 // ocr-lane-geometry.ts — swimlane sizing helpers for OCR auto-layout (pure TS).
 // Extracted from ocr-layout.ts so the layout orchestrator stays under the
 // 400 LOC soft limit; behavior is byte-identical, locked by ocr-layout.test.ts.
-import { getStandardNodeDimensions, DEFAULT_SWIMLANE_DIMENSIONS } from './bpm-constants';
+import { getStandardNodeDimensions } from './bpm-constants';
+import { LANE_MIN_W } from './ocr-layout-rows';
 import type { OcrRawNode, OcrRawEdge } from './ocr-validate';
-
-const LANE_MIN_W = DEFAULT_SWIMLANE_DIMENSIONS.minWidth;
 
 interface LaneSortMeta {
   id: string;

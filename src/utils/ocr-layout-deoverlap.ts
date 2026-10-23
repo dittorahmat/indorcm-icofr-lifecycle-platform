@@ -55,14 +55,10 @@ function spreadColumn(boxes: PlacedBox[]): PlacedBox[] {
   for (const box of ordered) {
     let candidate = { ...box };
     // Each pass can only push down over previously placed boxes; the loop is
-    // bounded by their count, so the sweep always terminates.
+    // bounded by their count, so the sweep always terminates. The predicate is
+    // the exported one, so the sweep and `countOverlaps` cannot disagree.
     for (let guard = 0; guard <= placed.length; guard += 1) {
-      const collision = placed.find(
-        (other) =>
-          horizontallyOverlapping(candidate, other) &&
-          candidate.y < other.y + other.height + MIN_NODE_CLEARANCE &&
-          other.y < candidate.y + candidate.height + MIN_NODE_CLEARANCE,
-      );
+      const collision = placed.find((other) => boxesOverlap(candidate, other));
       if (!collision) break;
       candidate = { ...candidate, y: collision.y + collision.height + MIN_NODE_CLEARANCE };
     }

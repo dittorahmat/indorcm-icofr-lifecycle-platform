@@ -42,8 +42,10 @@ const TOP_LEVEL_GAP = 80;
 interface ResolvedDiagram {
   lanes: OcrRawNode[];
   childMap: Map<string, OcrRawNode[]>;
-  children: OcrRawNode[];
-  nodes: OcrRawNode[];
+  /** Children that ended up inside a lane; the input to the geometry check. */
+  laneChildren: OcrRawNode[];
+  /** Every node after parent downgrades, lanes included. */
+  allNodes: OcrRawNode[];
 }
 
 /**
@@ -52,9 +54,16 @@ interface ResolvedDiagram {
  */
 function resolveDiagram(nodes: OcrRawNode[]): ResolvedDiagram {
   const swimlaneIdSet = new Set<string>(nodes.filter((n) => n.type === 'swimlane').map((n) => n.id));
-  const downgraded: OcrRawNode[] = nodes.map((n) =>
-    n.parentId && !swimlaneIdSet.has(n.parentId) ? { ...n, parentId: undefined } : { ...n },
-  );
+  // Duplicate ids would corrupt every id-keyed map downstream (React Flow keys,
+  // edge endpoints, the audit's id lookup), so only the first occurrence wins.
+  const seenIds = new Set<string>();
+  const downgraded: OcrRawNode[] = nodes
+    .filter((n) => {
+      if (seenIds.has(n.id)) return false;
+      seenIds.add(n.id);
+      return true;
+    })
+    .map((n) => (n.parentId && !swimlaneIdSet.has(n.parentId) ? { ...n, parentId: undefined } : { ...n }));
 
   const lanesRaw = downgraded.filter((n) => n.type === 'swimlane');
   const initialChildMap = new Map<string, OcrRawNode[]>(lanesRaw.map((lane) => [lane.id, []]));
@@ -91,7 +100,12 @@ function resolveDiagram(nodes: OcrRawNode[]): ResolvedDiagram {
     if (n.type !== 'swimlane' && n.parentId) childMap.get(n.parentId)?.push(n);
   }
 
-  return { lanes, childMap, nodes: downgraded, children: downgraded.filter((n) => n.type !== 'swimlane' && n.parentId) };
+  return {
+    lanes,
+    childMap,
+    laneChildren: downgraded.filter((n) => n.type !== 'swimlane' && n.parentId),
+    allNodes: downgraded,
+  };
 }
 
 function toLayoutNode(node: PlacedNode): OcrLayoutNode {
@@ -103,10 +117,10 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
   const warnings = validateOcrResponse(raw);
   const idSet = new Set<string>(raw.nodes.map((n) => n.id));
   const edges = raw.edges.filter((e) => idSet.has(e.source) && idSet.has(e.target));
-  const { lanes, childMap, children, nodes: resolvedNodes } = resolveDiagram(raw.nodes);
+  const { lanes, childMap, laneChildren, allNodes } = resolveDiagram(raw.nodes);
 
-  const engine: EngineResult = hasUsableGeometry(children)
-    ? layoutCoordinateLanes(children, lanes.map((lane) => lane.id))
+  const engine: EngineResult = hasUsableGeometry(laneChildren)
+    ? layoutCoordinateLanes(laneChildren, lanes.map((lane) => lane.id))
     : layoutRankLanes(lanes, childMap, edges);
 
   // Shapes without a swimlane keep the drawing's own arrangement (a flow chart
@@ -114,7 +128,7 @@ export function layoutOcrDiagram(raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[]
   // block; the block that sits higher in the source stays on top.
   const laneHeight = Math.max(0, ...engine.lanes.map((lane) => lane.height));
   const laneIds = new Set(engine.lanes.map((lane) => lane.laneId));
-  const topLevel = resolvedNodes
+  const topLevel = allNodes
     .filter((n) => n.type !== 'swimlane' && !laneIds.has(n.parentId ?? ''))
     .sort((a, b) => a.position.y - b.position.y || a.position.x - b.position.x);
   const looseSourceMinX = topLevel.length > 0 ? Math.min(...topLevel.map((node) => node.position.x)) : 0;

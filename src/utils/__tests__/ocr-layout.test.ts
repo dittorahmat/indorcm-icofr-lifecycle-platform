@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { layoutOcrDiagram, validateOcrResponse, type OcrRawNode, type OcrRawEdge } from '../utils/ocr-layout';
-import { auditOcrLayout, auditSourceOrder } from '../utils/ocr-layout-audit';
-import { countOverlaps } from '../utils/ocr-layout-deoverlap';
+import { layoutOcrDiagram, validateOcrResponse, type OcrRawNode, type OcrRawEdge } from '../ocr-layout';
+import { auditOcrLayout, auditSourceOrder, auditUpwardDrift } from '../ocr-layout-audit';
+import { countOverlaps } from '../ocr-layout-deoverlap';
 import {
   buildKurSourceFixture,
   KUR_LANE_ORDER,
   KUR_UPWARD_EDGE_IDS,
-} from './fixtures/bpm-kur-source';
+} from '../../test/fixtures/bpm-kur-source';
 
 function absoluteRect(
   node: { id: string; position: { x: number; y: number }; width: number; height: number; parentId?: string },
@@ -45,6 +45,8 @@ describe('ocr-layout — KUR drawing (image-derived fixture)', () => {
 
     // exactly the two real forward handoffs climb a lane; nothing else is inverted
     expect(audit.stats.upwardEdgeIds.sort()).toEqual([...KUR_UPWARD_EDGE_IDS].sort());
+    // the layout may keep a source upward edge, but must never invent one
+    expect(auditUpwardDrift(fixture.nodes, result)).toEqual([]);
 
     // uniform lane height, sized from the deepest content + footer
     const heights = lanes.map((lane) => lane.height);
@@ -97,6 +99,24 @@ describe('ocr-layout — KUR drawing (image-derived fixture)', () => {
     expect(laid.edges.map((e) => e.id)).toEqual(['e-ok']);
     expect(laid.warnings.some((w) => w.code === 'orphan-edge' && w.edgeId === 'e-orphan-1')).toBe(true);
     expect(laid.warnings.some((w) => w.code === 'orphan-edge' && w.edgeId === 'e-orphan-2')).toBe(true);
+  });
+
+  it('keeps one node per id and warns about duplicate ids', () => {
+    const raw: { nodes: OcrRawNode[]; edges: OcrRawEdge[] } = {
+      nodes: [
+        { id: 'lane-a', type: 'swimlane', label: 'A', position: { x: 0, y: 0 }, department: 'A', function: 'F' },
+        { id: 'dup', type: 'activity', label: 'First', position: { x: 10, y: 100 }, parentId: 'lane-a' },
+        { id: 'dup', type: 'activity', label: 'Second', position: { x: 10, y: 400 }, parentId: 'lane-a' },
+      ],
+      edges: [],
+    };
+
+    expect(validateOcrResponse(raw).filter((w) => w.code === 'duplicate-id')).toHaveLength(1);
+
+    const laid = layoutOcrDiagram(raw);
+    expect(laid.nodes.filter((node) => node.id === 'dup')).toHaveLength(1);
+    expect(laid.nodes.find((node) => node.id === 'dup')?.label).toBe('First');
+    expect(laid.warnings.some((w) => w.code === 'duplicate-id' && w.nodeId === 'dup')).toBe(true);
   });
 
   it('flags unlabeled nodes', () => {

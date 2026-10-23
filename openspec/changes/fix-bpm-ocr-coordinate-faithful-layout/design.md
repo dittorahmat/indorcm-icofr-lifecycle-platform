@@ -58,7 +58,7 @@ Lane width = `max(LANE_MIN_W=400, widest row in that lane + 2*LANE_PADDING)`; la
 
 ### 5. De-overlap sweep as a safety net, not the primary placement
 
-After rows are assigned, `ocr-layout-deoverlap.ts` sorts nodes per lane by `(row, x)` and pushes down any node whose box intersects the previous one, then spreads horizontally when two nodes in the same lane/row still collide (widening the lane if needed). The sweep is bounded by node count and has no randomness, so the same input always yields the same canvas.
+After rows are assigned, `ocr-layout-deoverlap.ts` sorts nodes per lane by `(row, x)` and pushes down any node whose box intersects the previous one, then spreads horizontally when two nodes in the same lane/row still collide. Lane width already reserves the clearance for its widest row, so the sweep never widens a lane: it only pushes vertically. The sweep is bounded by node count and has no randomness, so the same input always yields the same canvas.
 
 ### 6. Validity gate
 
@@ -72,7 +72,7 @@ Otherwise the orchestrator delegates to `ocr-layout-rank.ts`. The gate is pure a
 
 ### 7. Extraction contract follows the geometry
 
-`worker/services/bpm/bpm-ocr.ts` gains explicit prompt clauses: `position` is the shape's top-left, `width`/`height` are in the same 0–1000 space, swimlanes must include their column bounds, and the model must not reflow shapes to the top of a column. `sourceHandle`/`targetHandle` are added to `BPM_OCR_RESPONSE_SCHEMA` (they are already parsed and canonicalized downstream, so this closes an existing contract gap). All new fields stay optional, so parsing remains backward compatible.
+`worker/services/bpm/bpm-ocr.ts` gains explicit prompt clauses: `position` is the shape's top-left, `width`/`height` are in the same 0-1000 space, swimlanes must include their column bounds, and the model must not reflow shapes to the top of a column. It also demands one edge per visible arrow (an empty edge list is only valid without arrows), excludes the page frame, column borders, header/tables and sign-off boxes from the shape list, and sets a 20-point tolerance for shapes that share a row. `sourceHandle`/`targetHandle` are added to `BPM_OCR_RESPONSE_SCHEMA` (they are already parsed and canonicalized downstream, so this closes an existing contract gap). All new fields stay optional, so parsing remains backward compatible. Extracted `width`/`height` feed validation warnings (`missing-dims`, undersized boxes); placement sizes come from the node registry, because a 0-1000 normalized size has no pixel meaning before the canvas exists.
 
 ### 8. Landing camera is explicit, not fit-all
 
@@ -90,6 +90,8 @@ Otherwise the orchestrator delegates to `ocr-layout-rank.ts`. The gate is pure a
 | `src/utils/ocr-layout-rank.ts` | ≤190 | legacy rank engine (moved) |
 | `src/utils/ocr-node-box.ts` | ≤70 | label-aware box estimate |
 | `src/utils/ocr-landing-viewport.ts` | ≤50 | landing camera math |
+| `src/utils/ocr-layout-edges.ts` | ≤90 | handle selection from placed geometry |
+| `src/utils/ocr-layout-audit.ts` | ≤220 | test oracle: geometry/order/upward-drift verdicts (no production caller) |
 
 `ocr-lane-geometry.ts` keeps `orderLanes` / `groupNodesByRank` but loses `computeUniformHeight` (rank engine imports what it needs from `ocr-layout-rank.ts`).
 
@@ -99,7 +101,7 @@ Otherwise the orchestrator delegates to `ocr-layout-rank.ts`. The gate is pure a
 - **[Risk] Taller rows make the diagram larger than before** → camera now lands at 0.75 instead of 0.22, and lanes no longer reserve 1000px; the visible area still shows the first lanes, and "Fit to Screen" remains one click away.
 - **[Risk] Existing tests assume the rank grid** (staggering, per-lane rank) → those assertions move to `ocr-layout-rank.test.ts` and keep guarding the fallback; `ocr-layout.test.ts` asserts the new invariants on the KUR fixture.
 - **[Risk] Prompt changes shift extraction output for existing users** → only additive/optional schema fields and clarifications; no field is removed or renamed. `bpm-ocr.test.ts` locks parsing of old responses.
-- **[Risk] Loop edges (retry/rejection branches) legitimately point upwards** → the "no upward edge" invariant applies only to non-loop edges; the router already handles back edges via channel offsets.
+- **[Risk] Loop edges (retry/rejection branches) legitimately point upwards** → the invariant is "the layout invents no upward edge": connectors that already point up in the source are kept and reported (`upwardEdgeIds`), and the audit compares layout-upward against source-upward (`auditUpwardDrift`).
 - **[Trade-off] Rows are banded, not proportionally spaced** → some visual rhythm of the source (large gaps) is normalized. Accepted: legibility and no-overlap take priority over blank-space fidelity.
 
 ## Migration Plan
