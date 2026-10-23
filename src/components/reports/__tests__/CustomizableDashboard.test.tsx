@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CustomizableDashboard } from '../CustomizableDashboard';
 import { defaultLayouts, type Layouts } from '../dashboard-layout';
+import { strictT } from '../../../test/mock-i18n';
 
 /**
  * The dashboard's two contracts with the server preference:
@@ -37,7 +38,7 @@ vi.mock('@/hooks/use-organization-branding', () => ({
 vi.mock('@/lib/api-client', () => ({ api: vi.fn().mockResolvedValue({}) }));
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
+  useTranslation: () => ({ t: strictT }),
 }));
 
 vi.mock('@tanstack/react-query', () => ({

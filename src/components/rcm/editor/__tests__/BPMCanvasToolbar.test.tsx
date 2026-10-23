@@ -2,18 +2,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { BPMCanvasToolbar } from '../BPMCanvasToolbar';
+import { strictT } from '../../../../test/mock-i18n';
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string, opts?: { defaultValue?: string }) => {
-      if (key === 'bpm:editor.actions.save') return 'Save Workflow';
-      if (key === 'bpm:editor.actions.saving') return 'Saving...';
-      if (key === 'bpm:editor.actions.locked') return 'Locked';
-      if (key === 'bpm:editor.actions.undo') return 'Undo';
-      if (key === 'bpm:editor.actions.redo') return 'Redo';
-      return opts?.defaultValue ?? key;
-    },
-  }),
+  useTranslation: () => ({ t: strictT }),
 }));
 
 describe('BPMCanvasToolbar responsive split cluster & Save CTA visibility', () => {
@@ -39,8 +31,8 @@ describe('BPMCanvasToolbar responsive split cluster & Save CTA visibility', () =
   it('renders Save CTA inside a dedicated shrink-0 right cluster isolated from scrollable tools', () => {
     const { container } = render(<BPMCanvasToolbar {...dummyProps} />);
 
-    // Save button must exist
-    const saveButton = screen.getByRole('button', { name: /Save Workflow/i });
+    // Save button must exist (strictT renders the verified key, not a local string)
+    const saveButton = screen.getByRole('button', { name: 'bpm:editor.actions.save' });
     expect(saveButton).toBeInTheDocument();
 
     // Verify parent right-cluster container has shrink-0 and border-l styling
@@ -56,13 +48,13 @@ describe('BPMCanvasToolbar responsive split cluster & Save CTA visibility', () =
     expect(leftCluster?.className).toContain('min-w-0');
 
     // Verify Auto Arrange button is permanently gone
-    expect(screen.queryByText(/Auto Arrange/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('bpm:editor.actions.autoArrange')).not.toBeInTheDocument();
   });
 
   it('renders locked badge inside the persistent right cluster when isLocked is true', () => {
     render(<BPMCanvasToolbar {...dummyProps} isLocked={true} />);
 
-    const lockedBadge = screen.getByText('Locked');
+    const lockedBadge = screen.getByText('bpm:editor.actions.locked');
     expect(lockedBadge).toBeInTheDocument();
   });
 });

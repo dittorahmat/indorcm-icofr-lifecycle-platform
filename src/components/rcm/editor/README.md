@@ -15,6 +15,7 @@ Arsitektur modul BPM Editor terbagi secara tegas antara mesin tata letak determi
 - **`src/utils/ocr-layout-edges.ts`**: Pemilihan handle (`right/left`, `bottom/top`) dari geometri hasil layout, dipakai kedua mesin.
 - **`src/utils/ocr-layout-audit.ts`**: Oracle audit **khusus test** (tanpa pemanggil produksi): verdict overlap, containment lane, tinggi lane, urutan sumber, `upwardEdgeIds`, dan `auditUpwardDrift` (edge yang dinaikkan layout padahal sumbernya turun). Dipakai `src/utils/__tests__/` (membuktikan aturannya bisa gagal) dan `src/test/` (fixture + snapshot respons model).
 - **Konvensi test:** unit test modul murni tinggal di `src/utils/__tests__/`; integration/e2e (PDF asli, snapshot respons, oracle) di `src/test/`.
+- **Capture sekali, replay offline:** `npm run ocr:probe -- <file.pdf|png> [--out fixtures/ocr/<slug>.ocr.json]` memanggil model satu kali dan mencetak verdict audit; `src/test/ocr-real-snapshot.test.ts` me-replay capture itu di `npm test`. Probe live (`OCR_LIVE=1 src/test/ocr-pdf-e2e.test.ts`) hanya untuk memeriksa apakah model masih mengekstrak gambar, bukan untuk menguji layout — lihat `docs/agents/guardrails.md` §OCR layout.
 - **PENTING**: Dilarang menghidupkan kembali auto-layout client-side ad-hoc (`bpm-auto-layout.ts` telah dihapus permanen). Koordinat kanvas yang sudah disimpan oleh pengguna bersifat otoritatif. Keputusan arsitektur: `docs/adr/0010-ocr-layout-coordinate-anchored.md`.
 
 ## 2. Kanvas & State Management

@@ -3,11 +3,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { TodoScheduleDialog, type TodoScheduleFormData } from '../TodoScheduleDialog';
 import { TodoRescheduleDialog, type TodoRescheduleData } from '../TodoRescheduleDialog';
+import { strictT } from '../../../../test/mock-i18n';
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
+  useTranslation: () => ({ t: strictT }),
 }));
 
 vi.mock('@/hooks/use-confirm', () => ({

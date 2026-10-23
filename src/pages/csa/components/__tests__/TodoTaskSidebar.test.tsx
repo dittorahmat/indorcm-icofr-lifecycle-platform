@@ -2,10 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { TodoTaskSidebar } from '../TodoTaskSidebar';
+import { strictT } from '../../../../test/mock-i18n';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, opts?: { defaultValue?: string }) => opts?.defaultValue || key,
+    t: strictT,
     i18n: { language: 'en' },
   }),
 }));

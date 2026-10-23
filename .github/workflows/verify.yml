@@ -54,6 +54,10 @@ jobs:
         # rule is mechanical (a >400 LOC file passes only if it strictly shrank
         # against the branch point), so CI needs no human judgement to enforce
         # it - see docs/agents/guardrails.md.
+        # The whole-tree invariants (workflows / test-i18n / doc-refs /
+        # ocr-constants) are file-level facts, not delta facts: a comment that
+        # cites a deleted script or a re-declared geometry constant is wrong no
+        # matter which PR introduced it, so they scan the tree on every event.
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE="origin/${{ github.base_ref }}"
@@ -69,6 +73,9 @@ jobs:
             node scripts/check-rbac-delta.mjs --base "$BASE" $FILES
           fi
           node scripts/check-workflows.mjs
+          node scripts/check-test-i18n.mjs
+          node scripts/check-doc-refs.mjs
+          node scripts/check-ocr-constants.mjs
           node scripts/check-api-contract.mjs
 
       - name: Setup Bun (lockfile sync check)

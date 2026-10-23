@@ -11,6 +11,11 @@
 // Skipped unless `OCR_LIVE=1` (so `npm test` never calls the model) and a PDF
 // (or PNG/JPG export) plus a Gemini key are available. Run it with:
 //   $env:OCR_LIVE="1"; npx vitest run src/test/ocr-pdf-e2e.test.ts --disable-console-intercept
+//
+// This probe answers "does the model still extract this drawing", not "is the
+// layout right". For layout verification use `npm run ocr:probe -- <file>` once
+// and let `src/test/ocr-real-snapshot.test.ts` replay the capture offline - see
+// docs/agents/guardrails.md §OCR layout.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
