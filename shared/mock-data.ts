@@ -1432,9 +1432,68 @@ export const MOCK_DEFICIENCIES: Deficiency[] = [
   },
 ];
 
-export const MOCK_ACTION_PLANS: ActionPlan[] = [];
-export const MOCK_MATERIALITY: Materiality[] = [];
-export const MOCK_SCOPING: Scoping[] = [];
+export const MOCK_ACTION_PLANS: ActionPlan[] = [
+  {
+    id: 'plan-wb-001',
+    organizationId: 'org-1',
+    deficiencyId: 'def-001',
+    description: 'Pelaksanaan kalibrasi darurat jembatan timbang bersama UPTD Metrologi Legal setempat.',
+    ownerId: 'u9-mgr',
+    dueDate: Date.now() + 86400000 * 30,
+    status: 'In Progress',
+    relatedFunction: 'Logistics & Supply Chain',
+    picName: 'Yanto (Manager Logistics)',
+    planDescription: 'Sertifikasi ulang sensor beban jembatan timbang dan penerbitan SKHP.',
+    activityDetail: 'Koordinasi vendor kalibrasi dan dinas metrologi legal.',
+    remediatedControlDescription: 'Kalibrasi tera timbangan rutin bulanan berdokumen sah.',
+    targetDate: Date.now() + 86400000 * 30,
+    actualCompletionDate: null,
+    isApprovedByLine2: true,
+    isBeforeYearEnd: true,
+    workflowStatus: 'In Review',
+    workflowHistory: [],
+    severity: 'Significant Deficiency',
+    rescheduleReason: null
+  }
+];
+export const MOCK_MATERIALITY: Materiality[] = [
+  {
+    id: 'mat-2026',
+    organizationId: 'org-1',
+    year: 2026,
+    overallMateriality: 25000000000,
+    performanceMateriality: 18750000000,
+    benchmark: 'Revenue',
+    percentage: 5.0,
+    haircut: 75.0,
+  }
+];
+export const MOCK_SCOPING: Scoping[] = [
+  {
+    id: 'scoping-coal-2026',
+    year: 2026,
+    significantAccounts: [
+      {
+        name: 'Pendapatan Usaha Penjualan Batubara',
+        balance: 500000000000,
+        isQuantitative: true,
+        fsliCode: '10008-000318',
+        assignedDepartmentIds: ['dept-fin', 'dept-ops'],
+        relatedProcessIds: ['rcm-rev-02', 'rcm-rev-03']
+      },
+      {
+        name: 'Beban Pokok Penjualan - Jasa Kontraktor',
+        balance: 320000000000,
+        isQuantitative: true,
+        fsliCode: '20001-000500',
+        assignedDepartmentIds: ['dept-ops', 'dept-log'],
+        relatedProcessIds: ['rcm-proc-01']
+      }
+    ],
+    significantLocations: ['Site Blok Timur', 'Site Blok Barat', 'Pelabuhan Muara'],
+    significantProcesses: ['Revenue & Receivables', 'Procurement & Mining Operations']
+  }
+];
 export const MOCK_APPLICATIONS: Application[] = [
   {
     id: 'app-001',

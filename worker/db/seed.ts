@@ -6,6 +6,7 @@ import { MOCK_USERS, MOCK_DEPARTMENTS, MOCK_RCM, MOCK_CONTROLS } from '../../sha
 import { toMemberRole } from '@shared/member-role';
 import { eq, and, sql } from 'drizzle-orm';
 import crypto from 'node:crypto';
+import { seedE2EDemoScenarios } from './demo-e2e-seed';
 
 const getFriendlyEmail = (u: any): string => {
     if (u.role === 'Line 2') return 'line2@bumn.go.id';
@@ -180,6 +181,8 @@ export const seedDatabase = async (databaseUrl: string, authSecret: string, skip
                 await db.insert(schema.transactionDetails).values(batch);
             }
         }
+        // 5. SEED E2E DEMO SCENARIOS (PT BNS 2026)
+        await seedE2EDemoScenarios(db, orgId);
     }
 
     console.log("✨ ALL DONE! No data was deleted.");
