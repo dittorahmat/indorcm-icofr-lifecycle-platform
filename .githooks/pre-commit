@@ -27,6 +27,7 @@ fi
 if [ -z "$STAGED" ]; then
   exit 0
 fi
+node scripts/check-crlf.mjs $STAGED || exit 1
 node scripts/check-any-delta.mjs $STAGED || exit 1
 node scripts/check-i18n.mjs $STAGED || exit 1
 node scripts/check-worker-strings.mjs $STAGED || exit 1

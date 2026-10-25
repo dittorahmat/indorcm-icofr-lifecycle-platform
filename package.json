@@ -21,6 +21,8 @@
     "lint": "eslint --cache -f json --quiet .",
     "knip": "cross-env KNIP_DISABLE_RAW_TRANSFER=1 knip --cache",
     "check:loc": "node scripts/check-loc.mjs",
+    "check:crlf": "node scripts/check-crlf.mjs",
+    "fix:crlf": "node scripts/fix-crlf.mjs",
     "check:any-delta": "node scripts/check-any-delta.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:api-contract": "node scripts/check-api-contract.mjs",
