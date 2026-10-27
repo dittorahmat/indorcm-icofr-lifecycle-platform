@@ -108,3 +108,11 @@ _Avoid_: local state layout, mirror prefs
 ### Widget Layout Algebra
 Aturan murni penempatan grid dashboard (tambah/hapus/patch, `maxPrevY`, lebar per breakpoint, rekonsiliasi payload `onLayoutChange`) yang tinggal di satu modul `src/components/reports/dashboard-layout.ts`; nama yang terlihat user di sana selalu berupa **kunci i18n**, dan judul default tidak pernah ditulis ke data tersimpan sehingga bundle tetap pemilik tunggal kata-katanya.
 _Avoid_: layout helper, grid utils
+
+### Regulatory PDF Document Generator
+Modul dokumen terisolasi yang mengonversi data kepatuhan (CSA, Lampiran 6, 9, 10, 11) menjadi berkas PDF vektor resmi A4/A3 siap audit sesuai format standar Regulasi SK-5/DKU.MBU/11/2024 (dilengkapi Kop/Header BUMN, penanda Controlled Copy, tabel data berpaginasi rapi, simpulan efektivitas, serta blok tanda tangan digital berjenjang Lini 1 & Lini 2).
+_Avoid_: window.print(), browser print screen, tangkapan layar web
+
+### Lampiran 7 Kertas Kerja CSA
+Formulir evaluasi pengendalian mandiri Lini 1 standar SK-5 yang mendokumentasikan pengujian atribut kepatuhan (A/B/C/D) berbasis Information Processing Objective (IPO), daftar sampel transaksi, status defisiensi per sampel, dan pengesahan berjenjang.
+_Avoid_: form cetak generik
