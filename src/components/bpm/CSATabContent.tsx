@@ -18,6 +18,7 @@ import {
   mapCsaSummaryRows,
 } from '@/lib/csa-excel-export';
 import { formatCsaReference } from '@/lib/csa-utils';
+import { generateCsaLampiran7Pdf } from '@/lib/pdf/csa-pdf-export';
 import { requestFieldLocation } from '@/hooks/csa/use-field-location';
 
 interface CSATabContentProps {
@@ -110,11 +111,19 @@ export function CSATabContent({
   useUnsavedChanges(isDirty);
 
   const handlePrint = (layout: 'detailed' | 'summary') => {
-    setPrintLayout(layout);
-    setTimeout(() => {
-      window.print();
-      setPrintLayout(null);
-    }, 500);
+    try {
+      const doc = generateCsaLampiran7Pdf({
+        record: previewRecord,
+        mode: layout,
+        processName: subProcessName || bpmProcess?.name || 'Proses Bisnis',
+        noGL: noGL || bpmProcess?.noGL || '-',
+      });
+      doc.save(`CSA_Lampiran_7A_${layout}_${previewRecord.period || '2026'}.pdf`);
+      toast.success(t('common:notifications.exportSuccess', { defaultValue: 'PDF berhasil diunduh' }));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : t('common:notifications.exportFailed', { defaultValue: 'Gagal mengekspor PDF' });
+      toast.error(msg);
+    }
   };
 
   const handleExcel = async (id: string, layout: 'detailed' | 'summary') => {
