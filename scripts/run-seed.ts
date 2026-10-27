@@ -5,18 +5,8 @@ import { getDb } from '../worker/db';
 import * as schema from '../worker/db/schema';
 import { MOCK_USERS, MOCK_DEPARTMENTS, MOCK_RCM, MOCK_CONTROLS } from '../shared/mock-data';
 import { toMemberRole } from '@shared/member-role';
+import { getFriendlyEmail } from '../shared/demo-users';
 
-const getFriendlyEmail = (u: any): string => {
-  if (u.role === 'Line 2') return 'line2@bumn.go.id';
-  if (u.role === 'Line 3') return 'line3@bumn.go.id';
-  if (u.role === 'CFO') return 'cfo@bumn.go.id';
-  if (u.role === 'Commissioner' || u.role === 'Komisaris') return 'komisaris@bumn.go.id';
-  if (u.role === 'Admin') return 'admin@bumn.go.id';
-  if (u.role === 'External Auditor') return 'external@bumn.go.id';
-  const deptSuffix = u.departmentId?.replace('dept-', '') || 'ops';
-  const levelPrefix = u.level?.toLowerCase() || 'staff';
-  return `${levelPrefix}.${deptSuffix}@bumn.go.id`.toLowerCase();
-};
 
 export const runSeed = async () => {
   const databaseUrl = process.env.DATABASE_URL;

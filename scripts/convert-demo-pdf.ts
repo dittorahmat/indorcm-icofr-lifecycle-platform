@@ -66,7 +66,7 @@ for (const rawLine of lines) {
     doc.text(line, margin, y);
     y += 4.5;
   } else if (line.startsWith('* ') || line.startsWith('- ')) {
-    const bulletText = line.replace(/^[\*\-]\s+/, '');
+    const bulletText = line.replace(/^[*\\-]\\s+/, '');
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9.5);
     doc.setTextColor(51, 65, 85);

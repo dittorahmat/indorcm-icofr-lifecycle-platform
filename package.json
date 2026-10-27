@@ -16,6 +16,8 @@
     "type-check:scripts": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit -p tsconfig.scripts.json",
     "type-check:node": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit -p tsconfig.node.json",
     "test": "vitest run",
+    "test:e2e:demo": "vitest run src/test/demo-scenario-e2e.test.ts",
+    "seed": "npx tsx scripts/run-seed.ts",
     "build": "npm run sync-guide && npm run type-check && vite build",
     "sync-guide": "npx tsx scripts/sync-usage-guide.ts",
     "lint": "eslint --cache -f json --quiet .",

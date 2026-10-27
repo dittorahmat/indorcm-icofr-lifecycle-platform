@@ -143,9 +143,25 @@ Seluruh akun menggunakan kata sandi standar: `password`
 
 ---
 
-## 5. Pemulihan & Pengisian Ulang Data Demo
+## 5. Eksekusi Pengujian Otomatis Demo E2E & Pemulihan Data
+
+### A. Menjalankan Suite Otomatis E2E
+Seluruh 5 tahapan skenario end-to-end beserta validasi portal KAP telah diotomatisasi ke dalam test runner suite:
+```bash
+npm run test:e2e:demo
+```
+Suite pengujian ini memverifikasi integrasi regulasi secara menyeluruh:
+1. **Persona & Authorization Matrix**: Keberadaan seluruh persona demo PT BNS (Staff Ops, Manager Ops, Lini 2, Lini 3, CFO, External Auditor KAP, Administrator) dan kepatuhan kapabilitas wewenang berjenjang (`shared/entity-authority.ts`).
+2. **Kalkulasi Scoping Materialitas**: Ambang batas OM (5% = Rp 25 Miliar) dan PM Haircut 75% (Rp 18.75 Miliar), penyaringan akun FSLI kuantitatif in-scope via `shared/scoping-materiality.ts`, serta alur approval berjenjang (`shared/workflow-transitions.ts`).
+3. **RCM & BPM Linkage**: Relasi kontrol kunci batubara (`LOG-01`, `QC-01`, `BILL-01`) terhadap langkah proses operasional batubara.
+4. **Siklus CSA Lini 1 & Validasi Lini 2**: Pengujian alur pengisian kontrol efektif dan tidak efektif beserta bukti pendukung dan status validasi.
+5. **TOD 6-Pilar & TOE Defisiensi**: Evaluasi kepatuhan 6 pilar desain Lampiran 8 dan deteksi deviasi Zero-Tolerance sampel operasional tiket timbang via `shared/testing-decision.ts`.
+6. **Agregasi Defisiensi, WBS, & Digital Sign-off**: Penentuan opini efektivitas manajemen (Lampiran 11) via `shared/deficiency-summary.ts`, integrasi indikator fraud WBS, dan proteksi integritas hash SHA-256 dokumen tamper-proof.
+7. **Independensi Auditor Eksternal (KAP)**: Kepatuhan aturan Cooling-Off 12 Bulan (Bab II SK-5) via `shared/cooling-off.ts`.
+
+### B. Pemulihan & Pengisian Ulang Data Demo (Idempotent)
 Untuk mengisi atau menyinkronkan data demo kapan saja:
 ```bash
 npm run seed
 ```
-Skrip ini bersifat **non-destruktif dan idempotent** (menggunakan *onConflictDoNothing* / *onConflictDoUpdate*), sehingga data yang sudah ada tidak akan hilang atau rusak.
+Skrip ini memanggil `npx tsx scripts/run-seed.ts` secara non-destruktif dan idempotent (*onConflictDoNothing* / *onConflictDoUpdate*). Data operasional yang ada tidak akan rusak atau terhapus.
