@@ -108,14 +108,15 @@ export function generateCsaLampiran7Pdf({
           evidence: '-',
         });
       } else {
-        entries.forEach(([cId, res]: [string, any]) => {
+        entries.forEach(([cId, res]) => {
+          const r = res as { code?: string; controlName?: string; implemented?: boolean; evidenceUrl?: string } | undefined;
           rows.push({
             no: String(rowIdx++),
             sampleRef: sample.sampleRef,
-            controlCode: res?.code || cId,
-            controlName: res?.controlName || '-',
-            status: res?.implemented ? 'LOLOS (PASS)' : 'DEFISIENSI (FAIL)',
-            evidence: res?.evidenceUrl ? 'Tersedia (Terverifikasi)' : 'Tidak Ada Bukti',
+            controlCode: r?.code || cId,
+            controlName: r?.controlName || '-',
+            status: r?.implemented ? 'LOLOS (PASS)' : 'DEFISIENSI (FAIL)',
+            evidence: r?.evidenceUrl ? 'Tersedia (Terverifikasi)' : 'Tidak Ada Bukti',
           });
         });
       }

@@ -7,7 +7,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Download, Printer, CheckCircle2 } from 'lucide-react';
-import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 import { MOCK_COMPANY } from '../mock-regulatory-data';

@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   createRegulatoryPdfDoc,
   drawRegulatoryHeader,
-  drawControlledCopyWatermark,
   drawSignoffBlock,
   drawRegulatoryTable,
   finalizeRunningHeaderFooter,

@@ -281,7 +281,7 @@ export function drawRegulatoryTable(builder: RegulatoryPdfBuilder, opts: TableOp
 }
 
 export function finalizeRunningHeaderFooter(builder: RegulatoryPdfBuilder, opts: RunningOptions = {}) {
-  const { doc, margin, pageWidth, pageHeight, contentWidth } = builder;
+  const { doc, margin, pageHeight, contentWidth } = builder;
   const totalPages = doc.getNumberOfPages();
 
   for (let i = 1; i <= totalPages; i++) {
