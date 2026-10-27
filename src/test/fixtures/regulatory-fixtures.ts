@@ -1,0 +1,88 @@
+import type { Control, CSARecord, CSATestSample, Deficiency } from '@shared/types';
+
+export function makeMockCsaSample(overrides: Partial<CSATestSample> = {}): CSATestSample {
+  return {
+    id: 'samp-1',
+    organizationId: 'org-1',
+    csaRecordId: 'csa-rec-001',
+    sampleRef: 'BA-SO/02/2026',
+    glRowId: 'gl-12345678',
+    attrA: true,
+    attrB: true,
+    attrC: true,
+    attrD: true,
+    itacMatch: true,
+    itacExpectedResult: null,
+    itacActualResult: null,
+    controlResults: {},
+    ...overrides,
+  };
+}
+
+export function makeMockCsaRecord(overrides: Partial<CSARecord> = {}): CSARecord {
+  return {
+    id: 'csa-rec-001',
+    organizationId: 'org-1',
+    controlId: 'INV-MIN-005',
+    bpmProcessId: 'proc-1',
+    period: '2026-Q1',
+    scheduleId: null,
+    assessmentDate: Date.now(),
+    assessedBy: 'Budi Santoso',
+    result: 'Effective',
+    comments: 'Evaluasi lengkap',
+    isDraft: false,
+    isBpmConfirmed: true,
+    testProcedure: 'SOP sampling',
+    archiveLocation: 'Gudang Batubara',
+    samplingMethodology: 'Sampling atribut berbasis transaksi bulanan (2 sampel representatif).',
+    documentList: 'BA',
+    attrA: true,
+    attrB: true,
+    attrC: true,
+    attrD: true,
+    gpsVerified: false,
+    latitude: null,
+    longitude: null,
+    timestampVerified: false,
+    capturedAt: null,
+    hash: 'hash-mock-123',
+    biometricVerified: false,
+    itacScenario: null,
+    itacMethod: null,
+    itacSampleInfo: null,
+    line2Status: 'Validated',
+    line2Comments: null,
+    line2ValidatedBy: null,
+    line2ValidatedDate: null,
+    workflowStatus: 'Approved',
+    workflowHistory: [],
+    samples: [],
+    ...overrides,
+  };
+}
+
+export function makeMockDeficiency(overrides: Partial<Deficiency> = {}): Deficiency {
+  return {
+    id: 'def-1',
+    organizationId: 'org-1',
+    controlId: 'ctrl-1',
+    bpmProcessId: 'proc-1',
+    period: '2026-Q1',
+    description: 'Deskripsi defisiensi kontrol',
+    severity: 'Material Weakness',
+    identifiedDate: Date.now(),
+    identifiedBy: 'Auditor KAP',
+    status: 'Open',
+    rootCause: null,
+    magnitude: null,
+    exposureValue: 5000000000,
+    likelihood: null,
+    correctiveActionTaken: null,
+    remediationEvidence: null,
+    source: 'Lini 2 - TOD Review',
+    relatedAssertions: [],
+    compensatingControlIds: [],
+    ...overrides,
+  };
+}
