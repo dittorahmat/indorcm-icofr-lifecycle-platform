@@ -21,6 +21,19 @@ describe('Regulatory PDF Builder (SK-5 Standards)', () => {
     expect(builder.margin).toBe(14);
   });
 
+  it('supports A3 page format for wide regulatory matrices', () => {
+    const builderA3 = createRegulatoryPdfDoc({
+      orientation: 'landscape',
+      format: 'a3',
+    });
+    const builderA4 = createRegulatoryPdfDoc({
+      orientation: 'landscape',
+      format: 'a4',
+    });
+
+    expect(builderA3.pageWidth).toBeGreaterThan(builderA4.pageWidth);
+  });
+
   it('draws regulatory header with company name, title, and lampiran badge', () => {
     const builder = createRegulatoryPdfDoc({
       orientation: 'portrait',

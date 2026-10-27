@@ -57,8 +57,8 @@ export interface RunningOptions {
   lampiranCode?: string;
 }
 
-const DEFAULT_COMPANY = 'PT BATUBARA NUSANTARA SEJAHTERA (PERSERO)';
-const DEFAULT_REGULATION = 'STANDAR DOKUMEN REGULASI BUMN SK-5/DKU.MBU/11/2024';
+export const DEFAULT_REGULATORY_COMPANY = 'PT BATUBARA NUSANTARA SEJAHTERA (PERSERO)';
+export const DEFAULT_REGULATION_REF = 'STANDAR DOKUMEN REGULASI BUMN SK-5/DKU.MBU/11/2024';
 
 export function createRegulatoryPdfDoc(options: RegulatoryPdfOptions = {}): RegulatoryPdfBuilder {
   const orientation = options.orientation || 'portrait';
@@ -80,8 +80,8 @@ export function createRegulatoryPdfDoc(options: RegulatoryPdfOptions = {}): Regu
     pageHeight,
     margin,
     contentWidth,
-    companyName: options.companyName || DEFAULT_COMPANY,
-    regulationRef: options.regulationRef || DEFAULT_REGULATION,
+    companyName: options.companyName || DEFAULT_REGULATORY_COMPANY,
+    regulationRef: options.regulationRef || DEFAULT_REGULATION_REF,
   };
 }
 

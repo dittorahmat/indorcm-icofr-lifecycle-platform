@@ -7,6 +7,7 @@ import {
   drawSignoffBlock,
   drawRegulatoryTable,
   finalizeRunningHeaderFooter,
+  DEFAULT_REGULATORY_COMPANY,
 } from './regulatory-pdf-builder';
 
 export interface VerificationPdfParams {
@@ -18,7 +19,7 @@ export interface VerificationPdfParams {
 export function generateVerificationDesignPdf({
   items,
   fiscalYear = new Date().getFullYear(),
-  companyName = 'PT BATUBARA NUSANTARA SEJAHTERA (PERSERO)',
+  companyName = DEFAULT_REGULATORY_COMPANY,
 }: VerificationPdfParams): jsPDF {
   const builder = createRegulatoryPdfDoc({
     orientation: 'landscape',

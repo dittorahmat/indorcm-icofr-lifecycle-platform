@@ -8,6 +8,7 @@ import {
   drawSignoffBlock,
   drawRegulatoryTable,
   finalizeRunningHeaderFooter,
+  DEFAULT_REGULATORY_COMPANY,
 } from './regulatory-pdf-builder';
 
 export interface Lampiran10DoDPdfParams {
@@ -19,7 +20,7 @@ export interface Lampiran10DoDPdfParams {
 export function generateLampiran10DoDPdf({
   rows,
   fiscalYear = new Date().getFullYear(),
-  companyName = 'PT BATUBARA NUSANTARA SEJAHTERA (PERSERO)',
+  companyName = DEFAULT_REGULATORY_COMPANY,
 }: Lampiran10DoDPdfParams): jsPDF {
   const builder = createRegulatoryPdfDoc({
     orientation: 'landscape',

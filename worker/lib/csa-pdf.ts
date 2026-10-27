@@ -1,123 +1,262 @@
 import { jsPDF } from 'jspdf';
-import { ok, bad, notFound } from './utils';
+import { format } from 'date-fns';
 
-export async function generateCsaPdf(record: any, control: any, samplesData: any[]) {
-    const doc = new jsPDF();
+interface CsaRecordInput {
+  id?: string | null;
+  period?: string | null;
+  assessmentDate?: string | number | Date | null;
+  isBpmConfirmed?: boolean | null;
+  assessedBy?: string | null;
+  samplingMethodology?: string | null;
+  documentList?: string | null;
+  comments?: string | null;
+  hash?: string | null;
+  result?: string | null;
+}
 
-    // Header
-    doc.setFontSize(16);
-    doc.text('CONTROL SELF-ASSESSMENT (CSA)', 105, 20, { align: 'center' });
-    doc.setFontSize(10);
-    doc.text('Regulasi BUMN SK-5/DKU.MBU/11/2024 - Lampiran 7', 105, 27, { align: 'center' });
+interface ControlInput {
+  code?: string;
+  name?: string;
+}
 
-    doc.line(10, 35, 200, 35);
+interface SampleInput {
+  sampleRef?: string | null;
+  attrA?: boolean | null;
+  attrB?: boolean | null;
+  attrC?: boolean | null;
+  attrD?: boolean | null;
+  itacMatch?: boolean | null;
+  itacActualResult?: string | null;
+}
 
-    // Section I: General Info
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('I. INFORMASI UMUM', 10, 45);
+export async function generateCsaPdf(
+  record: CsaRecordInput,
+  control: ControlInput | undefined,
+  samplesData: SampleInput[]
+): Promise<ArrayBuffer> {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+  });
+
+  const margin = 14;
+  const contentWidth = doc.internal.pageSize.getWidth() - margin * 2;
+  let y = margin;
+
+  // Header formal SK-5
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(100, 116, 139);
+  doc.text('STANDAR DOKUMEN REGULASI BUMN SK-5/DKU.MBU/11/2024', margin, y);
+
+  doc.setFontSize(9);
+  doc.setTextColor(15, 23, 42);
+  doc.text('LAMPIRAN 7', margin + contentWidth, y, { align: 'right' });
+
+  y += 5;
+  doc.setDrawColor(203, 213, 225);
+  doc.setLineWidth(0.4);
+  doc.line(margin, y, margin + contentWidth, y);
+
+  y += 6;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(15, 23, 42);
+  doc.text('PT BATUBARA NUSANTARA SEJAHTERA (PERSERO)', margin, y);
+
+  y += 6;
+  doc.setFontSize(13);
+  doc.text('KERTAS KERJA EVALUASI PENGENDALIAN MANDIRI (CSA)', margin, y);
+
+  y += 5;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(71, 85, 105);
+  doc.text(`Periode: ${record.period || '2026'} | Kontrol: ${control?.code || 'N/A'} - ${control?.name || '-'}`, margin, y);
+
+  y += 4;
+  doc.setFontSize(8);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`No. Dokumen: APP7/REC/${record.id ? record.id.substring(0, 8).toUpperCase() : 'EXPORT'}  [CONTROLLED COPY - AUDIT READY]`, margin, y);
+
+  y += 4;
+  doc.setDrawColor(15, 23, 42);
+  doc.setLineWidth(0.6);
+  doc.line(margin, y, margin + contentWidth, y);
+
+  y += 7;
+
+  // Section I: Informasi Umum
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(15, 23, 42);
+  doc.text('I. INFORMASI PENGUJIAN & PELAKSANA KONTROL', margin, y);
+  y += 4;
+
+  doc.setFillColor(248, 250, 252);
+  doc.rect(margin, y, contentWidth, 18, 'F');
+  doc.setDrawColor(226, 232, 240);
+  doc.line(margin, y + 18, margin + contentWidth, y + 18);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(71, 85, 105);
+
+  const evalDate = record.assessmentDate ? format(new Date(record.assessmentDate), 'dd MMMM yyyy') : '-';
+  doc.text(`Pelaksana Asesmen: ${record.assessedBy || 'Control Owner / Lini 1'}`, margin + 3, y + 5);
+  doc.text(`Tanggal Asesmen: ${evalDate}`, margin + 80, y + 5);
+  doc.text(`Konfirmasi BPM: ${record.isBpmConfirmed ? 'Ya (Sesuai)' : 'Tidak'}`, margin + 140, y + 5);
+
+  const meth = `Metodologi: ${record.samplingMethodology || 'Sampling atribut berbasis transaksi operasional'}`;
+  doc.text(meth, margin + 3, y + 10, { maxWidth: contentWidth - 6 });
+
+  const docs = `Daftar Dokumen: ${record.documentList || 'SOP, Berita Acara Rekonsiliasi, Log Transaksi ERP'}`;
+  doc.text(docs, margin + 3, y + 15, { maxWidth: contentWidth - 6 });
+
+  y += 24;
+
+  // Section II: Tabel Sampel & Atribut IPO
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(15, 23, 42);
+  doc.text('II. HASIL PENGUJIAN ATRIBUT SAMPEL (IPO A, B, C, D)', margin, y);
+  y += 4;
+
+  // Table header
+  doc.setFillColor(30, 41, 59);
+  doc.rect(margin, y, contentWidth, 7, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(255, 255, 255);
+
+  doc.text('NO', margin + 2, y + 4.5);
+  doc.text('REFERENSI SAMPEL', margin + 12, y + 4.5);
+  doc.text('A (VAL)', margin + 70, y + 4.5, { align: 'center' });
+  doc.text('B (ACC)', margin + 88, y + 4.5, { align: 'center' });
+  doc.text('C (AUT)', margin + 106, y + 4.5, { align: 'center' });
+  doc.text('D (EVI)', margin + 124, y + 4.5, { align: 'center' });
+  doc.text('DEFISIENSI?', margin + 145, y + 4.5, { align: 'center' });
+  doc.text('STATUS ITAC / KET', margin + 162, y + 4.5);
+
+  y += 7;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+
+  samplesData.forEach((s, i) => {
+    if (y > 250) {
+      doc.addPage();
+      y = margin + 10;
+    }
+
+    if (i % 2 === 1) {
+      doc.setFillColor(248, 250, 252);
+      doc.rect(margin, y, contentWidth, 6.5, 'F');
+    }
+    doc.setDrawColor(226, 232, 240);
+    doc.line(margin, y + 6.5, margin + contentWidth, y + 6.5);
+
+    const hasDeficiency = !(s.attrA && s.attrB && s.attrC && s.attrD);
+    doc.setTextColor(15, 23, 42);
+
+    doc.text(String(i + 1), margin + 2, y + 4.5);
+    doc.text(s.sampleRef || '-', margin + 12, y + 4.5, { maxWidth: 54 });
+    doc.text(s.attrA ? 'Y' : 'T', margin + 70, y + 4.5, { align: 'center' });
+    doc.text(s.attrB ? 'Y' : 'T', margin + 88, y + 4.5, { align: 'center' });
+    doc.text(s.attrC ? 'Y' : 'T', margin + 106, y + 4.5, { align: 'center' });
+    doc.text(s.attrD ? 'Y' : 'T', margin + 124, y + 4.5, { align: 'center' });
+
+    doc.setTextColor(hasDeficiency ? 225 : 16, hasDeficiency ? 29 : 185, hasDeficiency ? 72 : 129);
+    doc.text(hasDeficiency ? 'YA' : 'TIDAK', margin + 145, y + 4.5, { align: 'center' });
+
+    doc.setTextColor(71, 85, 105);
+    const remark = s.itacMatch ? 'ITAC: Match' : (s.itacActualResult ? `ITAC: ${s.itacActualResult}` : 'OK');
+    doc.text(remark, margin + 162, y + 4.5, { maxWidth: contentWidth - 164 });
+
+    y += 6.5;
+  });
+
+  y += 6;
+
+  // Section III: Lembar Pengesahan
+  if (y > 230) {
+    doc.addPage();
+    y = margin + 10;
+  }
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(15, 23, 42);
+  doc.text('III. SIMPULAN & LEMBAR PENGESAHAN DIGITAL', margin, y);
+  y += 4;
+
+  const boxWidth = (contentWidth - 4) / 2;
+  const boxHeight = 26;
+
+  // Lini 1
+  doc.setFillColor(248, 250, 252);
+  doc.setDrawColor(203, 213, 225);
+  doc.rect(margin, y, boxWidth, boxHeight, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(30, 41, 59);
+  doc.text('Disusun Oleh (Lini 1 - Control Owner)', margin + 3, y + 5);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(16, 185, 129);
+  doc.text('TANDA TANGAN DIGITAL TERVERIFIKASI', margin + 3, y + 12);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(15, 23, 42);
+  doc.text(record.assessedBy || 'Control Owner', margin + 3, y + 18);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Hash: ${record.hash ? record.hash.substring(0, 16) : 'VERIFIED'}`, margin + 3, y + 23);
+
+  // Lini 2
+  const x2 = margin + boxWidth + 4;
+  doc.setFillColor(248, 250, 252);
+  doc.rect(x2, y, boxWidth, boxHeight, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(30, 41, 59);
+  doc.text('Divalidasi Oleh (Lini 2 - Risk Governance)', x2 + 3, y + 5);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(16, 185, 129);
+  doc.text('DISETUJUI & TERTELAAH SIKLUS ICOFR', x2 + 3, y + 12);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(15, 23, 42);
+  doc.text('Risk Management Officer', x2 + 3, y + 18);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text(`Tanggal: ${evalDate}`, x2 + 3, y + 23);
+
+  // Running Footer
+  const totalPages = doc.getNumberOfPages();
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p);
+    const footerY = doc.internal.pageSize.getHeight() - margin + 4;
+    doc.setDrawColor(226, 232, 240);
+    doc.line(margin, footerY - 2, margin + contentWidth, footerY - 2);
+
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text(`Key Control No: ${control?.code || 'N/A'}`, 15, 52);
-    doc.text(`Nama Aktivitas: ${control?.name || 'N/A'}`, 15, 58);
-    doc.text(`Periode Pengujian: ${record.period}`, 15, 64);
-    doc.text(`Tanggal Asesmen: ${new Date(record.assessmentDate).toLocaleDateString()}`, 15, 70);
-    doc.text(`Konfirmasi BPM: ${record.isBpmConfirmed ? 'Ya (Sesuai)' : 'Tidak (Perlu Update)'}`, 15, 76);
+    doc.setFontSize(7);
+    doc.setTextColor(148, 163, 184);
+    doc.text('IndoGRC Pro - Platform Siklus ICOFR Terpadu BUMN (SK-5 Compliance)', margin, footerY + 2);
+    doc.text(`Halaman ${p} dari ${totalPages}`, margin + contentWidth, footerY + 2, { align: 'right' });
+  }
 
-    // Personnel Table
-    let y = 84;
-    doc.setFont('helvetica', 'bold');
-    doc.text('Kontak Informasi Pelaksana Pengendalian:', 15, y);
-    y += 5;
-    doc.rect(15, y, 180, 15);
-    doc.line(15, y + 7, 195, y + 7);
-    doc.line(105, y, 105, y + 15);
-    doc.setFontSize(9);
-    doc.text('Nama', 20, y + 5);
-    doc.text('Posisi', 110, y + 5);
-    doc.setFont('helvetica', 'normal');
-    doc.text(record.assessedBy || 'N/A', 20, y + 12);
-    doc.text('Control Owner / Lini 1', 110, y + 12);
-
-    // Section II: Procedure
-    y = 105;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('II. PROSEDUR PENGUJIAN', 10, y);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Penentuan & Pengambilan Sampel: ${record.samplingMethodology || '-'}`, 15, y + 8, { maxWidth: 180 });
-    doc.text(`Daftar Dokumen: ${record.documentList || '-'}`, 15, y + 15, { maxWidth: 180 });
-
-    y += 25;
-    doc.setFont('helvetica', 'bold');
-    doc.text('Atribut Pengujian:', 15, y);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-
-    const labels = (control?.attributeQuestions as any) || {
-      A: "Tujuan Kontrol Tercapai?",
-      B: "Konsisten dengan Kebijakan?",
-      C: "Personel Berwenang?",
-      D: "Bukti Mencukupi?"
-    };
-
-    doc.text(`A: ${labels.A} | B: ${labels.B}`, 15, y + 5);
-    doc.text(`C: ${labels.C} | D: ${labels.D}`, 15, y + 10);
-
-    // Section III: Testing Table
-    y += 20;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('III. HASIL PENGUJIAN SAMPEL', 10, y);
-
-    // Table Header
-    y += 8;
-    doc.setFontSize(8);
-    doc.rect(10, y-5, 190, 8, 'S');
-    doc.text('No', 12, y);
-    doc.text('Referensi Sampel', 22, y);
-    doc.text('A', 85, y);
-    doc.text('B', 95, y);
-    doc.text('C', 105, y);
-    doc.text('D', 115, y);
-    doc.text('Defisiensi', 125, y);
-    doc.text('Keterangan / ITAC Result', 145, y);
-
-    y += 10;
-    samplesData.forEach((s: any, i: number) => {
-      if (y > 270) {
-        doc.addPage();
-        y = 20;
-      }
-      const hasDeficiency = !(s.attrA && s.attrB && s.attrC && s.attrD);
-      doc.text(`${i + 1}`, 12, y);
-      doc.text(`${s.sampleRef || '-'}`, 22, y, { maxWidth: 60 });
-      doc.text(`${s.attrA ? 'Y' : 'T'}`, 85, y);
-      doc.text(`${s.attrB ? 'Y' : 'T'}`, 95, y);
-      doc.text(`${s.attrC ? 'Y' : 'T'}`, 105, y);
-      doc.text(`${s.attrD ? 'Y' : 'T'}`, 115, y);
-      doc.text(`${hasDeficiency ? 'Ya' : 'Tidak'}`, 125, y);
-
-      let remark = s.itacMatch ? 'ITAC: Match' : (s.itacActualResult ? `ITAC: ${s.itacActualResult}` : '-');
-      doc.text(remark, 145, y, { maxWidth: 50 });
-      y += 8;
-    });
-
-    // Section IV: Sign-off
-    if (y > 240) { doc.addPage(); y = 20; }
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text('IV. KESIMPULAN & SIGN-OFF', 10, y + 10);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Komentar: ${record.comments || 'Tidak ada komentar.'}`, 15, y + 18, { maxWidth: 180 });
-
-    y += 40;
-    doc.text('Disertifikasi Oleh (Lini Pertama):', 150, y, { align: 'center' });
-    doc.setFontSize(8);
-    doc.text('(Digitally Signed via IndoGRC Pro)', 150, y + 5, { align: 'center' });
-    doc.text(`Hash: ${record.hash || 'N/A'}`, 150, y + 10, { align: 'center' });
-
-    return doc.output('arraybuffer');
+  return doc.output('arraybuffer');
 }

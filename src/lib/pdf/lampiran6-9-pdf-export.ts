@@ -10,6 +10,7 @@ import {
   drawSignoffBlock,
   drawRegulatoryTable,
   finalizeRunningHeaderFooter,
+  DEFAULT_REGULATORY_COMPANY,
 } from './regulatory-pdf-builder';
 
 export interface Lampiran6PdfParams {
@@ -28,7 +29,7 @@ export interface Lampiran9PdfParams {
 export function generateLampiran6Pdf({
   logs,
   fiscalYear = new Date().getFullYear(),
-  companyName = 'PT BATUBARA NUSANTARA SEJAHTERA (PERSERO)',
+  companyName = DEFAULT_REGULATORY_COMPANY,
   getUserName,
 }: Lampiran6PdfParams): jsPDF {
   const builder = createRegulatoryPdfDoc({
@@ -125,7 +126,7 @@ export function generateLampiran6Pdf({
 export function generateLampiran9Pdf({
   findings,
   fiscalYear = new Date().getFullYear(),
-  companyName = 'PT BATUBARA NUSANTARA SEJAHTERA (PERSERO)',
+  companyName = DEFAULT_REGULATORY_COMPANY,
 }: Lampiran9PdfParams): jsPDF {
   const builder = createRegulatoryPdfDoc({
     orientation: 'landscape',
