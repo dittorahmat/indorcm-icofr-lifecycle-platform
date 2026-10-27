@@ -13,6 +13,7 @@ import type { FindingControlRef, FindingExportRow } from '@/lib/findings-excel-e
 import { findingsColumns, findingsFilename } from '@/lib/findings-excel-export';
 import { findingRowId, formatExposureValue, resolveFindingControlName } from './findings-helpers';
 import { ReportSeverityBadge } from './severity-badge';
+import { generateLampiran9Pdf } from '@/lib/pdf/lampiran6-9-pdf-export';
 
 export type FindingRow = FindingExportRow;
 
@@ -77,7 +78,14 @@ export function FindingsReport({ deficiencies = [], controls = [] }: FindingsRep
               {isExportingExcel ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-1.5" />}
               {t('findings.exportExcel', { defaultValue: 'Ekspor Excel' })}
             </Button>
-            <Button size="sm" variant="outline" onClick={() => window.print()} className="min-h-[44px] text-xs font-bold w-full min-[420px]:w-auto justify-center">
+            <Button size="sm" variant="outline" onClick={() => {
+              const doc = generateLampiran9Pdf({
+                findings: deficiencies,
+                fiscalYear: new Date().getFullYear(),
+                companyName: MOCK_COMPANY,
+              });
+              doc.save(`Lampiran_9_Daftar_Temuan_${new Date().getFullYear()}.pdf`);
+            }} className="min-h-[44px] text-xs font-bold w-full min-[420px]:w-auto justify-center">
               <Printer className="h-3.5 w-3.5 mr-1.5" /> {t('findings.print', { defaultValue: 'Cetak' })}
             </Button>
           </div>

@@ -17,6 +17,7 @@ import {
   type ChangeLogColumnLabels,
 } from '@/lib/changelog-excel-export';
 import { changeLogRowMeta, sortChangeLogsDesc } from './changelog-helpers';
+import { generateLampiran6Pdf } from '@/lib/pdf/lampiran6-9-pdf-export';
 
 export function ChangeLogReport() {
   const { t } = useTranslation(['reports', 'common']);
@@ -103,7 +104,14 @@ export function ChangeLogReport() {
             <Button size="sm" variant="outline" onClick={handleExportExcel} disabled={isExportingExcel} className="min-h-[44px] text-xs font-bold text-slate-700 bg-white">
               {isExportingExcel ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-1.5 text-slate-500" />} {t('changeLog.exportExcel')}
             </Button>
-                        <Button size="sm" variant="outline" onClick={() => window.print()} className="min-h-[44px] text-xs font-bold text-slate-700 bg-white">
+                        <Button size="sm" variant="outline" onClick={() => {
+              const doc = generateLampiran6Pdf({
+                logs: logs || [],
+                fiscalYear: new Date().getFullYear(),
+                getUserName,
+              });
+              doc.save(`Lampiran_6_Catatan_Perubahan_${new Date().getFullYear()}.pdf`);
+            }} className="min-h-[44px] text-xs font-bold text-slate-700 bg-white">
               <Printer className="h-3.5 w-3.5 mr-1.5 text-slate-500" /> {t('changeLog.printA4')}
             </Button>
           </div>
