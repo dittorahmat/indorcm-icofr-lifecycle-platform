@@ -175,7 +175,7 @@ export function generateCsaLampiran7Pdf({
         name: 'Risk Management Officer',
         title: 'Verifikator Kepatuhan',
         date: evalDate,
-        isSigned: record.status === 'Approved',
+        isSigned: record.line2Status === 'Validated' || !record.isDraft,
       },
     ],
   });

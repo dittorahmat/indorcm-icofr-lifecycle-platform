@@ -27,6 +27,7 @@ import {
   buildVerificationDesignColumns,
   type VerificationMatrixItem,
 } from './verification-design-columns';
+import { generateVerificationDesignPdf } from '@/lib/pdf/verification-pdf-export';
 
 export interface VerificationDesignPageProps {
   embedded?: boolean;
@@ -201,7 +202,14 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['verification-design-matrix'] })}
-          onPrint={() => window.print()}
+          onPrint={() => {
+            const doc = generateVerificationDesignPdf({
+              items: filteredItems,
+              fiscalYear: new Date().getFullYear(),
+              companyName: items[0]?.companyName,
+            });
+            doc.save(`Verifikasi_Desain_Kontrol_${new Date().getFullYear()}.pdf`);
+          }}
           onExport={() => void handleExportExcel()}
           exportLabel={t('rcm:actions.export_excel', { defaultValue: 'Export Excel' })}
           metadata={[

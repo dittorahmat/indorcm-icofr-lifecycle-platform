@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import type { ChangeLog } from '@shared/types';
 import type { FindingExportRow } from '@/lib/findings-excel-export';
 import { formatExposureValue } from '@/components/reports/regulatory/findings-helpers';
+import { changeLogRowMeta } from '@/components/reports/regulatory/changelog-helpers';
 import {
   createRegulatoryPdfDoc,
   drawRegulatoryHeader,
@@ -36,7 +37,6 @@ export function generateLampiran6Pdf({
     companyName,
   });
 
-  const { doc, margin, contentWidth } = builder;
   const docNo = `DOC/SK5/LAMP6/${fiscalYear}`;
   const periodStr = `Tahun Buku ${fiscalYear} | Total Perubahan Regulasi: ${logs.length}`;
 
@@ -62,17 +62,20 @@ export function generateLampiran6Pdf({
 
   const rows = logs.length === 0
     ? [{ no: '1', process: '-', subProcess: '-', reportDate: '-', owner: '-', descBefore: 'Tidak ada perubahan pengendalian pada periode ini.', descAfter: '-', refBefore: '-', refAfter: '-' }]
-    : logs.map((log, idx) => ({
-        no: String(idx + 1),
-        process: log.processName || '-',
-        subProcess: log.subProcess || '-',
-        reportDate: log.reportDate ? format(new Date(log.reportDate), 'dd/MM/yyyy') : '-',
-        owner: getUserName ? getUserName(log.controlOwner) : log.controlOwner || '-',
-        descBefore: log.descriptionBefore || '-',
-        descAfter: log.descriptionAfter || '-',
-        refBefore: log.referenceBefore || '-',
-        refAfter: log.referenceAfter || '-',
-      }));
+    : logs.map((log, idx) => {
+        const meta = changeLogRowMeta(log);
+        return {
+          no: String(idx + 1),
+          process: meta.process,
+          subProcess: meta.subProcess,
+          reportDate: log.timestamp ? format(new Date(log.timestamp), 'dd/MM/yyyy') : '-',
+          owner: getUserName ? getUserName(meta.owner) : meta.owner,
+          descBefore: meta.descBefore,
+          descAfter: meta.descAfter,
+          refBefore: meta.refBefore,
+          refAfter: meta.refAfter,
+        };
+      });
 
   y = drawRegulatoryTable(builder, {
     startY: y,
@@ -116,7 +119,7 @@ export function generateLampiran6Pdf({
     lampiranCode: 'LAMPIRAN 6',
   });
 
-  return doc;
+  return builder.doc;
 }
 
 export function generateLampiran9Pdf({
@@ -130,7 +133,6 @@ export function generateLampiran9Pdf({
     companyName,
   });
 
-  const { doc, margin, contentWidth } = builder;
   const docNo = `DOC/SK5/LAMP9/${fiscalYear}`;
   const periodStr = `Tahun Buku ${fiscalYear} | Total Temuan Tercatat: ${findings.length}`;
 
@@ -158,13 +160,13 @@ export function generateLampiran9Pdf({
     ? [{ no: '1', ref: '-', desc: 'Tidak ada temuan defisiensi pada periode ini.', control: '-', severity: '-', exposure: '-', source: '-', status: '-', identifiedDate: '-' }]
     : findings.map((f, idx) => ({
         no: String(idx + 1),
-        ref: f.ref,
-        desc: f.description,
-        control: f.control,
-        severity: f.severity,
+        ref: f.id || `FIND-${idx + 1}`,
+        desc: f.description || '-',
+        control: f.controlName || f.controlCode || f.controlId || '-',
+        severity: f.severity || '-',
         exposure: formatExposureValue(f.exposureValue),
-        source: f.source,
-        status: f.status,
+        source: f.source || '-',
+        status: f.status || '-',
         identifiedDate: f.identifiedDate ? format(new Date(f.identifiedDate), 'dd/MM/yy') : '-',
       }));
 
@@ -203,5 +205,5 @@ export function generateLampiran9Pdf({
     lampiranCode: 'LAMPIRAN 9',
   });
 
-  return doc;
+  return builder.doc;
 }

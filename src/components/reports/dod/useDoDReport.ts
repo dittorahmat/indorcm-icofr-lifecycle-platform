@@ -8,6 +8,7 @@ import type {
   TranslateFn,
 } from './dod-types';
 import type { Control, Deficiency } from '@shared/types';
+import { generateLampiran10DoDPdf } from '@/lib/pdf/lampiran10-pdf-export';
 
 interface UseDoDReportParams {
   deficiencies: Deficiency[];
