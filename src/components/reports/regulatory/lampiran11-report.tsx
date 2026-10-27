@@ -14,6 +14,7 @@ import { MOCK_COMPANY } from '../mock-regulatory-data';
 import { useExcelExport } from '@/lib/useExcelExport';
 import { isAssessmentSigned, summarizeEffectiveness } from './lampiran11-helpers';
 import { findingRowId, formatExposureValue } from './findings-helpers';
+import { generateLampiran11Pdf } from '@/lib/pdf/lampiran11-pdf-export';
 import { ReportSeverityBadge } from './severity-badge';
 
 interface Lampiran11ReportProps {
@@ -105,7 +106,15 @@ export function Lampiran11Report({ deficiencies = [] }: Lampiran11ReportProps) {
               {isExportingExcel ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-1.5" />}
               {t('assessment.exportExcel', { defaultValue: 'Ekspor Excel' })}
             </Button>
-            <Button size="sm" variant="outline" onClick={() => window.print()} className="min-h-[44px] text-xs font-bold w-full min-[420px]:w-auto justify-center">
+            <Button size="sm" variant="outline" onClick={() => {
+              const doc = generateLampiran11Pdf({
+                deficiencies,
+                companyName: MOCK_COMPANY,
+                fiscalYear: new Date().getFullYear(),
+                isSigned,
+              });
+              doc.save(`Lampiran_11_Asesmen_Manajemen_${new Date().getFullYear()}.pdf`);
+            }} className="min-h-[44px] text-xs font-bold w-full min-[420px]:w-auto justify-center">
               <Printer className="h-3.5 w-3.5 mr-1.5" /> {t('changeLog.printA4', { defaultValue: 'Cetak' })}
             </Button>
           </div>
