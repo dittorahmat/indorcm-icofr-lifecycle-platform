@@ -181,8 +181,12 @@ export function useDoDReport({
   );
 
   const handlePrint = React.useCallback(() => {
-    window.print();
-  }, []);
+    const doc = generateLampiran10DoDPdf({
+      rows: filteredRows,
+      fiscalYear,
+    });
+    doc.save(`Lampiran_10_Kertas_Kerja_DoD_${fiscalYear}.pdf`);
+  }, [filteredRows, fiscalYear]);
 
   const handleExportExcel = React.useCallback(async () => {
     if (isExporting) return;
