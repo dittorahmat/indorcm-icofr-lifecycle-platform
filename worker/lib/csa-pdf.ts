@@ -21,11 +21,7 @@ interface ControlInput {
   description?: string | null;
 }
 
-interface ProcessControlInput {
-  code?: string;
-  name?: string;
-  description?: string | null;
-}
+type ProcessControlInput = ControlInput;
 
 interface SampleInput {
   sampleRef?: string | null;
