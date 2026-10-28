@@ -34,6 +34,7 @@ const HomePage = lazyWithRetry(() => import('@/pages/HomePage').then(module => (
 import { LoginPage } from '@/pages/LoginPage';
 import { WelcomePage } from '@/pages/WelcomePage';
 const Dashboard = lazyWithRetry(() => import('@/pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const AnalyticsPage = lazyWithRetry(() => import('@/pages/analytics/AnalyticsPage').then(module => ({ default: module.AnalyticsPage })));
 const RCMList = lazyWithRetry(() => import('@/pages/rcm/RCMList').then(module => ({ default: module.RCMList })));
 const RCMTLCPage = lazyWithRetry(() => import('@/pages/rcm/RCMTLCPage').then(module => ({ default: module.RCMTLCPage })));
 const RCMELCPage = lazyWithRetry(() => import('@/pages/rcm/RCMELCPage').then(module => ({ default: module.RCMELCPage })));
@@ -75,6 +76,7 @@ const queryClient = new QueryClient();
 
 const coreRoutes = [
   { path: "/dashboard", element: <PageSuspense><Dashboard /></PageSuspense> },
+  { path: "/analytics", element: <PageSuspense><AnalyticsPage /></PageSuspense> },
   { path: "/scoping", element: <PageSuspense><ScopingPage /></PageSuspense> },
   { path: "/scoping/approval", element: <PageSuspense><ApprovalPage /></PageSuspense> },
   { path: "/rcm", element: <PageSuspense><RCMList /></PageSuspense> },

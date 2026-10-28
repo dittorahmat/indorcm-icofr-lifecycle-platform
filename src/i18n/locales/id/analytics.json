@@ -1,0 +1,37 @@
+{
+  "title": "ICOFR Executive Visual Analytics",
+  "subtitle": "Multidimensional Dashboard: Bubble, Radar, Heatmaps & Audit Analytics",
+  "liveEngine": "Live BI Engine",
+  "printPdf": "Cetak / PDF",
+  "tabs": {
+    "overview": "Executive Visual BI",
+    "csaHeatmap": "CSA Risk & Control Heatmap",
+    "bubble": "Bubble Chart (Risk Exposure)",
+    "todToe": "TOD & TOE Multidimensional",
+    "remediation": "Remediasi & DOD Breakdown"
+  },
+  "kpi": {
+    "totalRisk": "Total Risk Universe",
+    "riskUnit": "Risiko",
+    "toePassRate": "TOE Pass Ratio",
+    "csaHealthScore": "Rata-rata Skor CSA",
+    "openDeficiencies": "Temuan Defisiensi Terbuka",
+    "materialWeakness": "Kelemahan Material",
+    "complianceRate": "Tingkat Kepatuhan",
+    "mitigationProgress": "Progres Mitigasi",
+    "noMw": "0 Temuan",
+    "passedControls": "{{count}} Kontrol Lulus",
+    "deficientFound": "{{count}} Defisiensi Ditemukan",
+    "highSeverity": "Risiko Tinggi",
+    "mediumSeverity": "Risiko Sedang",
+    "lowSeverity": "Risiko Rendah"
+  },
+  "overview": {
+    "controlEffectiveness": "Ringkasan Efektivitas Kontrol",
+    "controlEffectivenessDesc": "Distribusi kontrol operasional efektif dibandingkan defisiensi terbuka.",
+    "testingRatio": "Status Pelaksanaan Pengujian",
+    "testingRatioDesc": "Pencapaian menyeluruh pengujian rancangan dan efektivitas operasi.",
+    "effective": "Efektif",
+    "deficient": "Tidak Efektif / Defisiensi"
+  }
+}

@@ -14,6 +14,7 @@ import aiEn from '../i18n/locales/en/ai.json';
 import workflowEn from '../i18n/locales/en/workflow.json';
 import authEn from '../i18n/locales/en/auth.json';
 import adminEn from '../i18n/locales/en/admin.json';
+import analyticsEn from '../i18n/locales/en/analytics.json';
 
 /**
  * Strict i18n mock for tests (test-only, never product code).
@@ -47,6 +48,7 @@ export const BUNDLES: Record<string, unknown> = {
   workflow: workflowEn,
   auth: authEn,
   admin: adminEn,
+  analytics: analyticsEn,
 };
 
 const STATIC_KEY_PATTERN = /^[A-Za-z0-9_:.~-]+$/;

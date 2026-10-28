@@ -9,6 +9,7 @@ import {
   FileBarChart,
   FileSpreadsheet,
   FileText,
+  Gauge,
   LayoutDashboard,
   ListChecks,
   ListTodo,
@@ -61,6 +62,7 @@ export const NAV_GROUPS: readonly SidebarNavGroup[] = [
     labelKey: 'groups.mainTasks',
     items: [
       { kind: 'link', path: '/dashboard', labelKey: 'items.dashboard', icon: LayoutDashboard },
+      { kind: 'link', path: '/analytics', labelKey: 'items.analytics', icon: Gauge },
       { kind: 'link', path: '/scoping', labelKey: 'items.scoping', icon: Target },
       { kind: 'link', path: '/bpm', labelKey: 'items.bpm', icon: Workflow },
       { kind: 'link', path: '/todo', labelKey: 'items.todo', icon: ListTodo },

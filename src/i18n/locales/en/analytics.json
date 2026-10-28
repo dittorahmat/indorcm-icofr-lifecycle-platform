@@ -1,0 +1,37 @@
+{
+  "title": "ICOFR Executive Visual Analytics",
+  "subtitle": "Multidimensional Dashboard: Bubble, Radar, Heatmaps & Audit Analytics",
+  "liveEngine": "Live BI Engine",
+  "printPdf": "Print / PDF",
+  "tabs": {
+    "overview": "Executive Visual BI",
+    "csaHeatmap": "CSA Risk & Control Heatmap",
+    "bubble": "Bubble Chart (Risk Exposure)",
+    "todToe": "TOD & TOE Multidimensional",
+    "remediation": "Remediation & DOD Breakdown"
+  },
+  "kpi": {
+    "totalRisk": "Total Risk Universe",
+    "riskUnit": "Risks",
+    "toePassRate": "TOE Pass Ratio",
+    "csaHealthScore": "Avg CSA Score",
+    "openDeficiencies": "Open Deficiencies",
+    "materialWeakness": "Material Weakness",
+    "complianceRate": "Compliance Rate",
+    "mitigationProgress": "Mitigation Progress",
+    "noMw": "0 Items",
+    "passedControls": "{{count}} Controls Passed",
+    "deficientFound": "{{count}} Deficiencies Found",
+    "highSeverity": "High Risk",
+    "mediumSeverity": "Medium Risk",
+    "lowSeverity": "Low Risk"
+  },
+  "overview": {
+    "controlEffectiveness": "Control Effectiveness Overview",
+    "controlEffectivenessDesc": "Distribution of verified operational controls vs open deficiencies.",
+    "testingRatio": "Testing Execution Status",
+    "testingRatioDesc": "Overall completion of design and operating effectiveness testing.",
+    "effective": "Effective",
+    "deficient": "Ineffective / Deficient"
+  }
+}

@@ -19,6 +19,7 @@ import aiEn from './locales/en/ai.json';
 import workflowEn from './locales/en/workflow.json';
 import authEn from './locales/en/auth.json';
 import adminEn from './locales/en/admin.json';
+import analyticsEn from './locales/en/analytics.json';
 
 import commonId from './locales/id/common.json';
 import sidebarId from './locales/id/sidebar.json';
@@ -36,6 +37,7 @@ import aiId from './locales/id/ai.json';
 import workflowId from './locales/id/workflow.json';
 import authId from './locales/id/auth.json';
 import adminId from './locales/id/admin.json';
+import analyticsId from './locales/id/analytics.json';
 
 i18n
   .use(LanguageDetector)
@@ -59,6 +61,7 @@ i18n
         workflow: workflowEn,
         auth: authEn,
         admin: adminEn,
+        analytics: analyticsEn,
       },
       id: {
         common: commonId,
@@ -77,10 +80,11 @@ i18n
         workflow: workflowId,
         auth: authId,
         admin: adminId,
+        analytics: analyticsId,
       },
     },
     fallbackLng: 'en',
-    ns: ['common', 'sidebar', 'scoping', 'dashboard', 'reports', 'knowledge', 'bpm', 'deficiency', 'testing', 'risklibrary', 'rcm', 'csa_hub', 'ai', 'workflow', 'auth', 'admin'],
+    ns: ['common', 'sidebar', 'scoping', 'dashboard', 'reports', 'knowledge', 'bpm', 'deficiency', 'testing', 'risklibrary', 'rcm', 'csa_hub', 'ai', 'workflow', 'auth', 'admin', 'analytics'],
     defaultNS: 'common',
     interpolation: {
       escapeValue: false, // react already safes from xss
