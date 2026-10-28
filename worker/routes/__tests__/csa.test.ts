@@ -17,6 +17,7 @@ describe('CSA barrel routes and sub-apps', () => {
     const routePaths = csa.routes.map((r) => `${r.method} ${r.path}`);
 
     expect(routePaths).toContain('GET /csa');
+    expect(routePaths).toContain('GET /csa/:id');
     expect(routePaths).toContain('POST /csa');
     expect(routePaths).toContain('PUT /csa/:id');
     expect(routePaths).toContain('GET /csa/worklist');
