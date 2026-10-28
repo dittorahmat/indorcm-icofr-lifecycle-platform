@@ -75,4 +75,20 @@ describe('CSA Appendix 7a Excel Mapping', () => {
     expect(csaAppendixFilename('detailed', 'GL123/2025 Q1', '2025-Q1')).toBe('CSA_Appendix7a_Detailed_GL123-2025-Q1_2025-Q1.xlsx');
     expect(csaAppendixFilename('summary', 'REF', '2025-Q1')).toBe('CSA_Appendix7a_Summary_REF_2025-Q1.xlsx');
   });
+
+  it('builds record summary rows with assessor, reviewer, and verification status', async () => {
+    const { buildCsaRecordSummaryRows } = await import('../lib/csa-excel-export');
+    const summaryRows = buildCsaRecordSummaryRows({
+      processName: 'Pengadaan Batubara',
+      bpmProcessId: 'BPM-PROC-01',
+      period: '2025-Q1',
+      assessmentDate: 1700000000000,
+      result: 'Effective',
+      samples: [],
+    });
+
+    expect(summaryRows).toContainEqual({ Field: 'Assessor (Lini 1)', Value: 'Petugas CSA Lapangan' });
+    expect(summaryRows).toContainEqual({ Field: 'Reviewer (Lini 2)', Value: 'Koordinator Pengendalian Internal' });
+    expect(summaryRows).toContainEqual({ Field: 'Status Verifikasi', Value: 'TERVERIFIKASI DIGITAL' });
+  });
 });

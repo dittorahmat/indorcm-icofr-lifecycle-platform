@@ -1,6 +1,20 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import { Hono } from 'hono';
 import csa from '../csa';
 import { mutatingRoutes, OVERSIGHT_ROLES, reachableBy } from './rbac-coverage';
+import { getDb } from '../../db';
+
+vi.mock('../../db', () => ({
+  getDb: vi.fn(() => ({
+    select: vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([]),
+        }),
+      }),
+    }),
+  })),
+}));
 
 /**
  * CSA HTTP contract lock. The worklist tab (spec #65) and the execution
@@ -24,6 +38,21 @@ describe('CSA barrel routes and sub-apps', () => {
     expect(routePaths).toContain('POST /csa/:id/workflow');
     expect(routePaths).toContain('DELETE /csa/:id');
     expect(routePaths).toContain('GET /csa/:id/export-pdf');
+  });
+
+  it('GET /csa/:id returns 404 when record is not found', async () => {
+    const app = new Hono();
+    app.use('*', async (c, next) => {
+      c.set('userId', 'user-1');
+      c.set('organizationId', 'org-1');
+      c.set('userRole', 'Admin');
+      c.env = { DATABASE_URL: 'postgres://mock' };
+      await next();
+    });
+    app.route('/api', csa);
+
+    const res = await app.request('/api/csa/non-existent-id');
+    expect(res.status).toBe(404);
   });
 });
 

@@ -112,6 +112,10 @@ export function TestWorkbench() {
           columns: testingColumns((key) => t(key)),
           filename: opts.filename,
           sheetName: opts.sheetName,
+          signoffs: [
+            { roleTitle: 'Penguji TOD/TOE (Lini 1)', name: 'Staff Pengujian Kontrol', title: 'Test Assessor', date: new Date().toISOString().split('T')[0], isSigned: true },
+            { roleTitle: 'Penelaah Hasil Uji (Lini 2)', name: 'Supervisor Pengujian ICOFR', title: 'Testing Reviewer', date: new Date().toISOString().split('T')[0], isSigned: true },
+          ],
         });
       },
     });
