@@ -4,6 +4,7 @@ import { ok, bad } from '../../lib/utils';
 import { getDb } from '../../db';
 import { csaSamples, todEvaluations, testRecords } from '../../db/schema';
 import { eq, and, desc, SQL, sql, or } from 'drizzle-orm';
+import { matchesPeriodYear } from '../../lib/period-query';
 import type { TestRecord } from "@shared/types";
 import type { TestingVerdict } from "@shared/testing-decision";
 import {
@@ -145,9 +146,7 @@ csaSamplesTestingRoute.get('/tests', async (c) => {
     whereClause = and(
       whereClause,
       or(
-        eq(testRecords.period, yearParam),
-        sql`${testRecords.period} LIKE ${yearParam + '-%'}`,
-        sql`${testRecords.period} LIKE ${'%-Q%'} AND ${testRecords.period} LIKE ${'%' + yearParam + '%'}`,
+        matchesPeriodYear(testRecords.period, yearParam),
         sql`EXTRACT(YEAR FROM ${testRecords.testDate}) = ${year}`
       )
     ) as SQL;

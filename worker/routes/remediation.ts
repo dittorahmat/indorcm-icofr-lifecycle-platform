@@ -8,6 +8,7 @@ import {
   organization, controls, rcms
 } from '../db/schema';
 import { eq, and, SQL, sql, or } from 'drizzle-orm';
+import { matchesPeriodYear } from '../lib/period-query';
 import type { Deficiency, ActionPlan, AggregateDeficiency, WorkflowAction } from "@shared/types";
 import { AuditService } from "../services/audit-service";
 import { createNotificationAndSendEmail } from "../services/email";
@@ -28,9 +29,7 @@ remediation.get('/deficiencies', async (c) => {
     whereClause = and(
       whereClause,
       or(
-        eq(deficiencies.period, yearParam),
-        sql`${deficiencies.period} LIKE ${yearParam + '-%'}`,
-        sql`${deficiencies.period} LIKE ${'%-Q%'} AND ${deficiencies.period} LIKE ${'%' + yearParam + '%'}`,
+        matchesPeriodYear(deficiencies.period, yearParam),
         eq(controls.year, year),
         sql`EXTRACT(YEAR FROM ${deficiencies.identifiedDate}) = ${year}`
       )

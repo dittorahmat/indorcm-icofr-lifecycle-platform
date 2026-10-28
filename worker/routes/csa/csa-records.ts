@@ -4,6 +4,7 @@ import { ok, bad, notFound } from '../../lib/utils';
 import { getDb } from '../../db';
 import { csaRecords, csaSamples, controls, bpmProcesses } from '../../db/schema';
 import { eq, and, SQL, sql, or } from 'drizzle-orm';
+import { matchesPeriodYear } from '../../lib/period-query';
 import { CsaDomainService } from "../../services/csa-domain-service";
 import { runWorkflowTransition } from "../../services/workflow/workflow-drizzle-adapter";
 import { generateCsaPdf } from "../../lib/csa-pdf";
@@ -29,9 +30,7 @@ csaRecordsRoute.get('/csa', async (c) => {
     conditions = and(
       conditions,
       or(
-        eq(csaRecords.period, year),
-        sql`${csaRecords.period} LIKE ${year + '-%'}`,
-        sql`${csaRecords.period} LIKE ${'%-Q%'} AND ${csaRecords.period} LIKE ${'%' + year + '%'}`,
+        matchesPeriodYear(csaRecords.period, year),
         eq(controls.year, yearNum),
         sql`EXTRACT(YEAR FROM ${csaRecords.assessmentDate}) = ${yearNum}`
       )

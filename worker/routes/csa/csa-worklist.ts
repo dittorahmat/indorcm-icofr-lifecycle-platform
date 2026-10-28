@@ -6,6 +6,7 @@ import { bpmProcesses, controls, csaRecords, rcmControls, rcms } from '../../db/
 import { and, eq, inArray, sql, or } from 'drizzle-orm';
 import { unassessedControlsFrom } from '@shared/csa-worklist';
 import type { CSAWorklistItem } from '@shared/types';
+import { matchesPeriodYear } from '../../lib/period-query';
 
 export const csaWorklistRoute = new Hono<HonoEnv>();
 
@@ -52,9 +53,7 @@ csaWorklistRoute.get('/csa/worklist', async (c) => {
       and(
         eq(csaRecords.organizationId, orgId),
         or(
-          eq(csaRecords.period, yearParam),
-          sql`${csaRecords.period} LIKE ${yearParam + '-%'}`,
-          sql`${csaRecords.period} LIKE ${'%-Q%'} AND ${csaRecords.period} LIKE ${'%' + yearParam + '%'}`,
+          matchesPeriodYear(csaRecords.period, yearParam),
           sql`EXTRACT(YEAR FROM ${csaRecords.assessmentDate}) = ${year}`
         )
       ),
