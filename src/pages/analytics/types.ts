@@ -40,6 +40,18 @@ export interface RiskBubbleItem {
   z: number;
 }
 
+export interface TestingEvaluationResponse {
+  radarScores: Array<{
+    pillar: string;
+    score: number;
+    fullMark: number;
+  }>;
+  statusBreakdown: Array<{
+    name: string;
+    value: number;
+  }>;
+}
+
 export type AnalyticsTab =
   | 'analytics-overview'
   | 'csa-heatmap'

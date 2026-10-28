@@ -62,5 +62,14 @@
     "colRating": "Risk Rating",
     "colLikelihood": "Likelihood",
     "colImpact": "Impact"
+  },
+  "testing": {
+    "title": "TOD & TOE Multidimensional Testing Evaluation",
+    "subtitle": "Analysis of the 6 Design Pillars (Appendix 8) & Operating Effectiveness Deficiencies",
+    "radarCardTitle": "6-Pillar Test of Design (TOD) Compliance Radar",
+    "statusCardTitle": "Testing Result & Deficiency Classification",
+    "effectiveControls": "Effective Controls",
+    "designDeficiency": "Design Deficiency",
+    "operatingDeficiency": "Operating Deficiency"
   }
 }

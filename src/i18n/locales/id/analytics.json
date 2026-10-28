@@ -62,5 +62,14 @@
     "colRating": "Peringkat Risiko",
     "colLikelihood": "Kemungkinan",
     "colImpact": "Dampak"
+  },
+  "testing": {
+    "title": "Evaluasi Pengujian Multi-dimensi TOD & TOE",
+    "subtitle": "Analisis 6 Pilar Uji Rancangan (Lampiran 8) & Klasifikasi Defisiensi Efektivitas Operasi",
+    "radarCardTitle": "Radar Kepatuhan 6-Pilar Test of Design (TOD)",
+    "statusCardTitle": "Hasil Pengujian & Klasifikasi Temuan",
+    "effectiveControls": "Kontrol Efektif",
+    "designDeficiency": "Defisiensi Desain",
+    "operatingDeficiency": "Defisiensi Operasi"
   }
 }

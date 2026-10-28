@@ -12,6 +12,7 @@ import { ExecutiveKpiCards } from './ExecutiveKpiCards';
 import { ExecutiveCharts } from './ExecutiveCharts';
 import { CSAHeatmapTab } from './CSAHeatmapTab';
 import { RiskExposureTab } from './RiskExposureTab';
+import { TestingEvaluationTab } from './TestingEvaluationTab';
 import type { AnalyticsSummary, AnalyticsTab } from './types';
 
 const VALID_TABS: AnalyticsTab[] = [
@@ -159,9 +160,7 @@ export function AnalyticsPage() {
               <RiskExposureTab />
             )}
             {activeTab === 'tod-toe-charts' && (
-              <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-500">
-                {t('tabs.todToe')} (Tiket 04)
-              </div>
+              <TestingEvaluationTab />
             )}
             {activeTab === 'remediation-dod-charts' && (
               <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-500">

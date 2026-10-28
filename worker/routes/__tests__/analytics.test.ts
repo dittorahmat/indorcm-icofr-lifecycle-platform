@@ -20,6 +20,7 @@ describe('analytics barrel routes contract', () => {
     expect(routePaths).toContain('GET /analytics/summary');
     expect(routePaths).toContain('GET /analytics/heatmap');
     expect(routePaths).toContain('GET /analytics/risk-exposure');
+    expect(routePaths).toContain('GET /analytics/testing-evaluation');
   });
 });
 
@@ -95,5 +96,37 @@ describe('GET /analytics/summary response structure', () => {
     expect(json.data[0]).toHaveProperty('y');
     expect(json.data[0]).toHaveProperty('z');
     expect(json.data[0]).toHaveProperty('process');
+  });
+
+  it('returns 6-pillar testing evaluation scores and status counts', async () => {
+    vi.mocked(getDb).mockReturnValue(
+      stubDb([
+        [
+          {
+            testType: 'TOD',
+            result: 'Effective',
+            todPilarObjective: true,
+            todPilarTiming: true,
+            todPilarAuthority: true,
+            todPilarReliability: true,
+            todPilarCoverage: true,
+          },
+        ],
+      ])
+    );
+
+    const res = await app.request('/api/analytics/testing-evaluation?year=2026', undefined, env);
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as {
+      success: boolean;
+      data: {
+        radarScores: Array<{ pillar: string; score: number; fullMark: number }>;
+        statusBreakdown: Array<{ name: string; value: number }>;
+      };
+    };
+    expect(json.success).toBe(true);
+    expect(json.data).toHaveProperty('radarScores');
+    expect(json.data).toHaveProperty('statusBreakdown');
+    expect(json.data.radarScores.length).toBe(6);
   });
 });
