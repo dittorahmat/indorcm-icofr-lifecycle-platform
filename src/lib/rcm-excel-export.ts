@@ -10,6 +10,10 @@ export interface RCMExportOptions {
   sheetName?: string;
   matrixType?: 'TLC' | 'ELC' | 'ITGC';
   filename?: string;
+  title?: string;
+  subtitle?: string;
+  identityLines?: string[];
+  signoffs?: RegulatorySignoffItem[];
 }
 
 /**
@@ -19,8 +23,18 @@ export function exportRCMToExcel(data: any[], options: RCMExportOptions = {}) {
   const {
     matrixType = 'TLC',
     sheetName = `${matrixType} Matrix`,
-    filename = `RCM_${matrixType}_Matrix_${new Date().toISOString().split('T')[0]}.xlsx`
+    filename = `RCM_${matrixType}_Matrix_${new Date().toISOString().split('T')[0]}.xlsx`,
+    identityLines,
+    signoffs,
   } = options;
+
+  const lampiranTitle = options.title || (
+    matrixType === 'ELC'
+      ? 'LAMPIRAN 5A - ENTITY LEVEL CONTROL (ELC) MATRIX'
+      : matrixType === 'ITGC'
+      ? 'LAMPIRAN 5C - IT GENERAL CONTROL (ITGC) MATRIX'
+      : 'LAMPIRAN 5B - RISK AND CONTROL MATRIX (TLC)'
+  );
 
   const rows = data.map((item, index) => {
     const parentProcess = item.parentProcessName || item.processName || '-';
@@ -109,9 +123,27 @@ export function exportRCMToExcel(data: any[], options: RCMExportOptions = {}) {
     };
   });
 
-  const worksheet = XLSX.utils.json_to_sheet(rows);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+
+  if ((identityLines && identityLines.length > 0) || (signoffs && signoffs.length > 0)) {
+    const keys = rows.length > 0 ? Object.keys(rows[0]) : [];
+    const columns: RegulatoryExportColumn[] = keys.map((k) => ({ key: k, header: k }));
+    const aoa = buildRegulatoryAoA(rows, {
+      title: lampiranTitle,
+      subtitle: options.subtitle || 'Dokumentasi Pengendalian Internal atas Pelaporan Keuangan (ICOFR)',
+      identityLines: identityLines || [],
+      columns,
+      filename,
+      sheetName,
+      signoffs,
+    });
+    const worksheet = XLSX.utils.aoa_to_sheet(aoa);
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  } else {
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+  }
+
   XLSX.writeFile(workbook, filename);
 }
 

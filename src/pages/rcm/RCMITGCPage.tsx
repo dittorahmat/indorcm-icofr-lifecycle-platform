@@ -193,7 +193,19 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['rcm-matrix-itgc'] })}
-          onExport={() => exportRCMToExcel(filteredItems, { matrixType: 'ITGC', filename: `RCM_ITGC_Matrix_${new Date().toISOString().split('T')[0]}.xlsx` })}
+          onExport={() => exportRCMToExcel(filteredItems, {
+            matrixType: 'ITGC',
+            filename: `RCM_ITGC_Matrix_${new Date().toISOString().split('T')[0]}.xlsx`,
+            identityLines: [
+              items[0]?.companyName || 'BUMN Holding',
+              `Tahun Fiskal: ${new Date().getFullYear()}`,
+              `Tanggal Ekspor: ${new Date().toISOString().split('T')[0]}`,
+            ],
+            signoffs: [
+              { roleTitle: 'Disusun Oleh (Lini 1)', name: 'Lead IT Security / IT Controller', title: 'IT Controller', date: new Date().toISOString().split('T')[0], isSigned: true },
+              { roleTitle: 'Direviu Oleh (Lini 2)', name: 'Tim Audit TI / Kepatuhan ICOFR', title: 'IT Risk & Compliance Head', date: new Date().toISOString().split('T')[0], isSigned: true },
+            ],
+          })}
           exportLabel={t('rcm:actions.export_excel', 'Export Excel')}
           metadata={[
             { label: t('matrix.company'), value: items[0]?.companyName || "N/A" },

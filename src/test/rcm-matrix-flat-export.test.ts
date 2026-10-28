@@ -8,6 +8,7 @@ vi.mock('xlsx', () => {
   return {
     utils: {
       json_to_sheet: vi.fn(() => sheetMock),
+      aoa_to_sheet: vi.fn(() => sheetMock),
       book_new: vi.fn(() => ({ ...bookMock })),
       book_append_sheet: vi.fn(),
     },
@@ -97,5 +98,38 @@ describe('RCM Excel Export Utility', () => {
 
     exportRCMToExcel(mockITGCData, { matrixType: 'ITGC', filename: 'test_itgc.xlsx' });
     expect(XLSX.writeFile).toHaveBeenCalledWith(expect.anything(), 'test_itgc.xlsx');
+  });
+
+  it('should include title, identity, and signoff blocks when configured', () => {
+    const mockTLCData = [
+      {
+        parentProcessName: 'Pengajuan Kredit Baru',
+        subProcessName: 'Verifikasi Dokumen Debitur',
+        controlCode: 'CTL-TLC-01',
+        mappedControlName: 'Verifikasi Slip Gaji',
+      }
+    ];
+
+    exportRCMToExcel(mockTLCData, {
+      matrixType: 'TLC',
+      filename: 'test_tlc_signoff.xlsx',
+      identityLines: ['PT Bukit Asam Tbk', 'Periode 2026'],
+      signoffs: [
+        { roleTitle: 'Pembuat (Lini 1)', name: 'Staff Analis', title: 'Officer', date: '2026-02-01', isSigned: true },
+        { roleTitle: 'Pemeriksa (Lini 2)', name: 'Risk Manager', title: 'Manager', date: '2026-02-02', isSigned: true },
+      ],
+    });
+
+    expect(XLSX.utils.aoa_to_sheet).toHaveBeenCalled();
+    const calls = vi.mocked(XLSX.utils.aoa_to_sheet).mock.calls;
+    const generatedAoA = calls[0][0] as unknown[][];
+    expect(generatedAoA[0]).toEqual(['LAMPIRAN 5B - RISK AND CONTROL MATRIX (TLC)']);
+    const signoffRoleRow = generatedAoA.find((row) => Array.isArray(row) && row[0] === 'Pembuat (Lini 1)');
+    expect(signoffRoleRow).toBeDefined();
+    expect(signoffRoleRow?.[signoffRoleRow.length - 1]).toBe('Pemeriksa (Lini 2)');
+    const signoffNameRow = generatedAoA.find((row) => Array.isArray(row) && row[0] === 'Staff Analis');
+    expect(signoffNameRow).toBeDefined();
+    expect(signoffNameRow?.[signoffNameRow.length - 1]).toBe('Risk Manager');
+    expect(XLSX.writeFile).toHaveBeenCalledWith(expect.anything(), 'test_tlc_signoff.xlsx');
   });
 });

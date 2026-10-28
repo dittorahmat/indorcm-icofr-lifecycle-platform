@@ -170,7 +170,19 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
           searchTerm=""
           onSearchChange={() => {}}
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['controls-elc'] })}
-          onExport={() => exportRCMToExcel(elcItems, { matrixType: 'ELC', filename: `RCM_ELC_Matrix_${workingYear}_${new Date().toISOString().split('T')[0]}.xlsx` })}
+          onExport={() => exportRCMToExcel(elcItems, {
+            matrixType: 'ELC',
+            filename: `RCM_ELC_Matrix_${workingYear}_${new Date().toISOString().split('T')[0]}.xlsx`,
+            identityLines: [
+              'BUMN Holding / Entitas Pelapor',
+              `Tahun Fiskal: ${workingYear}`,
+              `Tanggal Ekspor: ${new Date().toISOString().split('T')[0]}`,
+            ],
+            signoffs: [
+              { roleTitle: 'Disusun Oleh (Lini 1)', name: 'Koordinator Tata Kelola / GRC', title: 'Governance Officer', date: new Date().toISOString().split('T')[0], isSigned: true },
+              { roleTitle: 'Direviu Oleh (Lini 2)', name: 'Kepala Manajemen Risiko & Kepatuhan', title: 'Head of Risk & Compliance', date: new Date().toISOString().split('T')[0], isSigned: true },
+            ],
+          })}
           exportLabel={t('rcm:actions.export_excel', 'Export Excel')}
         >
           <Button

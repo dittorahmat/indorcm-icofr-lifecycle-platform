@@ -285,7 +285,19 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           onRefresh={() => queryClient.invalidateQueries({ queryKey: ['rcm-matrix-tlc'] })}
-          onExport={() => exportRCMToExcel(filteredItems, { matrixType: 'TLC', filename: `RCM_TLC_Matrix_${workingYear}_${new Date().toISOString().split('T')[0]}.xlsx` })}
+          onExport={() => exportRCMToExcel(filteredItems, {
+            matrixType: 'TLC',
+            filename: `RCM_TLC_Matrix_${workingYear}_${new Date().toISOString().split('T')[0]}.xlsx`,
+            identityLines: [
+              items[0]?.companyName || 'BUMN Holding',
+              `Tahun Fiskal: ${workingYear}`,
+              `Tanggal Ekspor: ${new Date().toISOString().split('T')[0]}`,
+            ],
+            signoffs: [
+              { roleTitle: 'Disusun Oleh (Lini 1)', name: 'Pemilik Kontrol / PIC', title: 'Process Owner', date: new Date().toISOString().split('T')[0], isSigned: true },
+              { roleTitle: 'Direviu Oleh (Lini 2)', name: 'Tim Kepatuhan ICOFR', title: 'ICOFR Officer', date: new Date().toISOString().split('T')[0], isSigned: true },
+            ],
+          })}
           exportLabel={t('rcm:actions.export_excel', 'Export Excel')}
           metadata={[
             { label: t('matrix.company'), value: items[0]?.companyName || "N/A" },
