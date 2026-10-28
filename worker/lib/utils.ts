@@ -1,12 +1,12 @@
 import type { Context } from "hono";
-import type { StatusCode } from "hono/utils/http-status";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { ApiResponse } from "@shared/types";
 
-export const ok = <T>(c: Context, data: T, status: StatusCode = 200) =>
+export const ok = <T>(c: Context, data: T, status: ContentfulStatusCode = 200) =>
   c.json({ success: true, data } as ApiResponse<T>, status);
 /** Safe client error: `error` is a stable code, `message` is human-readable (localized by FE via i18n). */
-export const bad = (c: Context, error: string, status: StatusCode = 400, message?: string) =>
-  c.json({ success: false, error, ...(message ? { message } : {}) } as ApiResponse, status);
+export const bad = (c: Context, error: string, status: ContentfulStatusCode | number = 400, message?: string) =>
+  c.json({ success: false, error, ...(message ? { message } : {}) } as ApiResponse, status as ContentfulStatusCode);
 export const notFound = (c: Context, error = 'not found', message?: string) =>
   c.json({ success: false, error, ...(message ? { message } : {}) } as ApiResponse, 404);
 
