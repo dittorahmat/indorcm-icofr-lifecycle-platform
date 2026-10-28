@@ -137,6 +137,7 @@ export const controls = pgTable("controls", {
 }, (table) => {
 	return {
 		fsliCodesGinIdx: index("controls_fsli_codes_gin_idx").using("gin", table.fsliCodes),
+		orgYearIdx: index("controls_org_year_idx").on(table.organizationId, table.year),
 	};
 });
 

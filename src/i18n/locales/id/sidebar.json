@@ -9,6 +9,7 @@
   },
   "items": {
     "dashboard": "Dashboard",
+    "analytics": "Visual Analytics",
     "sync": "Sinkronisasi Laporan Keuangan",
     "bpm": "BPM & CSA",
     "scoping": "Penentuan Akun Signifikan",

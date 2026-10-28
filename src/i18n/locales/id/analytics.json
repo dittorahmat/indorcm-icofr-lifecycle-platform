@@ -1,0 +1,83 @@
+{
+  "title": "ICOFR Executive Visual Analytics",
+  "subtitle": "Multidimensional Dashboard: Bubble, Radar, Heatmaps & Audit Analytics",
+  "liveEngine": "Live BI Engine",
+  "printPdf": "Cetak / PDF",
+  "tabs": {
+    "overview": "Executive Visual BI",
+    "csaHeatmap": "CSA Risk & Control Heatmap",
+    "bubble": "Bubble Chart (Risk Exposure)",
+    "todToe": "TOD & TOE Multidimensional",
+    "remediation": "Remediasi & DOD Breakdown"
+  },
+  "kpi": {
+    "totalRisk": "Total Risk Universe",
+    "riskUnit": "Risiko",
+    "toePassRate": "TOE Pass Ratio",
+    "csaHealthScore": "Rata-rata Skor CSA",
+    "openDeficiencies": "Temuan Defisiensi Terbuka",
+    "materialWeakness": "Kelemahan Material",
+    "complianceRate": "Tingkat Kepatuhan",
+    "mitigationProgress": "Progres Mitigasi",
+    "noMw": "0 Temuan",
+    "passedControls": "{{count}} Kontrol Lulus",
+    "deficientFound": "{{count}} Defisiensi Ditemukan",
+    "highSeverity": "Risiko Tinggi",
+    "mediumSeverity": "Risiko Sedang",
+    "lowSeverity": "Risiko Rendah"
+  },
+  "overview": {
+    "controlEffectiveness": "Ringkasan Efektivitas Kontrol",
+    "controlEffectivenessDesc": "Distribusi kontrol operasional efektif dibandingkan defisiensi terbuka.",
+    "testingRatio": "Status Pelaksanaan Pengujian",
+    "testingRatioDesc": "Pencapaian menyeluruh pengujian rancangan dan efektivitas operasi.",
+    "effective": "Efektif",
+    "deficient": "Tidak Efektif / Defisiensi"
+  },
+  "heatmap": {
+    "title": "Matriks Risiko & Kontrol CSA (5x5)",
+    "subtitle": "Heatmap Multi-dimensi: Dampak Finansial vs Frekuensi dengan Drilldown Risiko Residual",
+    "viewMatrix": "Tampilan Matriks 5x5",
+    "viewList": "Tampilan Daftar Kuadran",
+    "impactAxis": "Dampak Finansial (1 s/d 5)",
+    "likelihoodAxis": "Tingkat Kemungkinan (1 s/d 5)",
+    "selectControl": "Pilih salah satu badge kontrol pada matriks atau daftar untuk melihat rincian drilldown.",
+    "drawerTitle": "Penilaian Kontrol & Risiko Residual",
+    "businessCycle": "Siklus Proses Bisnis",
+    "financialImpact": "Dampak Finansial (OM/PM)",
+    "csaEvaluation": "Evaluasi CSA (Desain & Operasi)",
+    "residualStatus": "Status Risiko Residual"
+  },
+  "bubble": {
+    "title": "Diagram Gelembung Eksposur Risiko (Analisis 3-Sumbu)",
+    "subtitle": "Eksposur Multi-dimensi: Kemungkinan Inheren (X), Dampak Finansial (Y), dan Bobot Kontrol (Radius)",
+    "likelihoodAxis": "Tingkat Kemungkinan (1 s/d 5)",
+    "impactAxis": "Dampak Finansial (1 s/d 5)",
+    "quadrantExtreme": "Eksposur Kritis / Ekstrem (Kanan Atas)",
+    "quadrantModerate": "Eksposur Sedang",
+    "quadrantLow": "Risiko Rendah (Kiri Bawah)",
+    "summaryTable": "Rincian Semesta Risiko",
+    "colProcess": "Proses Bisnis",
+    "colRisk": "Uraian Risiko",
+    "colRating": "Peringkat Risiko",
+    "colLikelihood": "Kemungkinan",
+    "colImpact": "Dampak"
+  },
+  "testing": {
+    "title": "Evaluasi Pengujian Multi-dimensi TOD & TOE",
+    "subtitle": "Analisis 6 Pilar Uji Rancangan (Lampiran 8) & Klasifikasi Defisiensi Efektivitas Operasi",
+    "radarCardTitle": "Radar Kepatuhan 6-Pilar Test of Design (TOD)",
+    "statusCardTitle": "Hasil Pengujian & Klasifikasi Temuan",
+    "effectiveControls": "Kontrol Efektif",
+    "designDeficiency": "Defisiensi Desain",
+    "operatingDeficiency": "Defisiensi Operasi"
+  },
+  "remediation": {
+    "title": "Remediasi & Rincian Defisiensi (Analisis DOD)",
+    "subtitle": "Pemantauan Corrective Action Plan (CAP), Kepatuhan SLA, dan Distribusi Severity",
+    "remediationCardTitle": "Progres Remediasi & Status Tindak Lanjut CAP",
+    "severityCardTitle": "Distribusi Tingkat Keparahan Defisiensi (MW, SD, CD)",
+    "slaTitle": "Tingkat Kepatuhan SLA Remediasi",
+    "slaBenchmark": "Target penyelesaian: 90% sesuai tenggat waktu siklus berjalan."
+  }
+}

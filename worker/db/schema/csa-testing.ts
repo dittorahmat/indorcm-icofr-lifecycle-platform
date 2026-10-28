@@ -69,6 +69,7 @@ export const csaRecords = pgTable("csa_records", {
 }, (table) => {
 	return {
 		orgPeriodIdx: index("csa_records_org_period_idx").on(table.organizationId, table.period),
+		orgControlIdx: index("csa_records_org_control_idx").on(table.organizationId, table.controlId),
 	};
 });
 
@@ -117,6 +118,11 @@ export const testRecords = pgTable("test_records", {
 	todPilarCoverage: boolean("tod_pilar_coverage"),
 	todPilarEvidence: boolean("tod_pilar_evidence"),
 	todPilarComments: jsonb("tod_pilar_comments").$type<Record<string, string>>(),
+}, (table) => {
+	return {
+		orgControlIdx: index("test_records_org_control_idx").on(table.organizationId, table.controlId),
+		orgPeriodIdx: index("test_records_org_period_idx").on(table.organizationId, table.period),
+	};
 });
 
 export const testSamples = pgTable("test_samples", {
@@ -178,6 +184,11 @@ export const deficiencies = pgTable("deficiencies", {
 	remediationEvidence: text("remediation_evidence"),
 	compensatingControlIds: jsonb("compensating_control_ids").$type<string[]>().default([]),
 	source: text("source").default("Lini 1 - CSA"), // Lini 1 - CSA, Lini 2 - TOD Review, Lini 3 - Audit, etc
+}, (table) => {
+	return {
+		orgControlIdx: index("deficiencies_org_control_idx").on(table.organizationId, table.controlId),
+		orgPeriodIdx: index("deficiencies_org_period_idx").on(table.organizationId, table.period),
+	};
 });
 
 export const actionPlans = pgTable("action_plans", {
