@@ -37,8 +37,7 @@ describe('CSAHeatmapTab component', () => {
             impactDesc: 'Pengakuan omset fiktif',
             csa: 'Desain: 5/5 | Operasi: 5/5',
             csaDesc: 'Kontrol otomatis ERP berhasil',
-            status: 'Safe / Low Residual Risk',
-            statusColor: 'text-emerald-700',
+            residualStatus: 'Low',
           },
         },
       },
@@ -53,9 +52,10 @@ describe('CSAHeatmapTab component', () => {
     expect(await screen.findAllByText('CTRL-REV-01')).toHaveLength(2);
     expect(await screen.findByText('Revenue to Cash')).toBeInTheDocument();
 
-    // Toggle list view
+    // Toggle list view and verify quadrant grouping header
     const listBtn = screen.getByText('heatmap.viewList');
     fireEvent.click(listBtn);
     expect(screen.getByText('heatmap.viewMatrix')).toBeInTheDocument();
+    expect(screen.getByText(/Kuadran Low/i)).toBeInTheDocument();
   });
 });

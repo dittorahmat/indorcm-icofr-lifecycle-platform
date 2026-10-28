@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import type { Context } from 'hono';
 import { getDb } from '../db';
 import { rcms, controls } from '../db/schema/rcm-bpm';
 import { csaRecords, testRecords, deficiencies } from '../db/schema/csa-testing';
@@ -8,11 +9,15 @@ import type { HonoEnv } from '../app';
 
 const analytics = new Hono<HonoEnv>();
 
+function resolveWorkingYear(c: Context<HonoEnv>): number {
+  const query = c.req.query('year');
+  return query ? parseInt(query, 10) : new Date().getFullYear();
+}
+
 analytics.get('/analytics/summary', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
-  const yearQuery = c.req.query('year');
-  const targetYear = yearQuery ? parseInt(yearQuery, 10) : new Date().getFullYear();
+  const targetYear = resolveWorkingYear(c);
 
   const [
     rcmTotalResult,
@@ -78,8 +83,7 @@ analytics.get('/analytics/summary', async (c) => {
 analytics.get('/analytics/heatmap', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
-  const yearQuery = c.req.query('year');
-  const targetYear = yearQuery ? parseInt(yearQuery, 10) : new Date().getFullYear();
+  const targetYear = resolveWorkingYear(c);
 
   const controlList = await db
     .select({
@@ -121,6 +125,7 @@ analytics.get('/analytics/heatmap', async (c) => {
   });
 
   const controlsMap = items.reduce((acc, item, idx) => {
+    const isEven = idx % 2 === 0;
     acc[item.id] = {
       id: item.id,
       code: item.code || `CTRL-${idx + 1}`,
@@ -129,8 +134,7 @@ analytics.get('/analytics/heatmap', async (c) => {
       impactDesc: item.description || 'Risiko salah saji laporan keuangan.',
       csa: 'Desain: 5/5 | Operasi: 4/5 (Efektif)',
       csaDesc: 'Kontrol otomatis tervalidasi dan dipantau berkala.',
-      status: (idx % 2 === 0) ? 'Low Residual Risk' : 'Moderate Residual Risk',
-      statusColor: (idx % 2 === 0) ? 'text-emerald-700' : 'text-amber-700',
+      residualStatus: isEven ? 'Low' : 'Moderate',
     };
     return acc;
   }, {} as Record<string, Record<string, string>>);
@@ -144,8 +148,7 @@ analytics.get('/analytics/heatmap', async (c) => {
 analytics.get('/analytics/risk-exposure', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
-  const yearQuery = c.req.query('year');
-  const targetYear = yearQuery ? parseInt(yearQuery, 10) : new Date().getFullYear();
+  const targetYear = resolveWorkingYear(c);
 
   const rcmList = await db
     .select({
@@ -205,13 +208,19 @@ analytics.get('/analytics/testing-evaluation', async (c) => {
   const passCount = records.filter((r) => r.result === 'Pass' || r.result === 'Effective').length;
   const failCount = total > 0 ? total - passCount : 2;
 
+  const countPillar = (field: 'pilarObj' | 'pilarTime' | 'pilarAuth' | 'pilarRel' | 'pilarCov') => {
+    if (total === 0) return 85;
+    const hit = records.filter((r) => r[field] === true).length;
+    return Math.round((hit / total) * 100);
+  };
+
   const radarScores = [
-    { pillar: 'Objective', score: 92, fullMark: 100 },
-    { pillar: 'Timing & Frequency', score: 85, fullMark: 100 },
-    { pillar: 'Authority & Segregation', score: 88, fullMark: 100 },
-    { pillar: 'Reliability & Evidence', score: 78, fullMark: 100 },
-    { pillar: 'Coverage & Sampling', score: 84, fullMark: 100 },
-    { pillar: 'Continuous Monitoring', score: 80, fullMark: 100 },
+    { pillar: 'Objective', score: countPillar('pilarObj'), fullMark: 100 },
+    { pillar: 'Timing & Frequency', score: countPillar('pilarTime'), fullMark: 100 },
+    { pillar: 'Authority & Segregation', score: countPillar('pilarAuth'), fullMark: 100 },
+    { pillar: 'Reliability & Evidence', score: countPillar('pilarRel'), fullMark: 100 },
+    { pillar: 'Coverage & Sampling', score: countPillar('pilarCov'), fullMark: 100 },
+    { pillar: 'Continuous Monitoring', score: total > 0 ? Math.round((passCount / total) * 100) : 80, fullMark: 100 },
   ];
 
   const statusBreakdown = [
@@ -229,8 +238,7 @@ analytics.get('/analytics/testing-evaluation', async (c) => {
 analytics.get('/analytics/remediation', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
-  const yearQuery = c.req.query('year');
-  const targetYear = yearQuery ? parseInt(yearQuery, 10) : new Date().getFullYear();
+  const targetYear = resolveWorkingYear(c);
 
   const defs = await db
     .select({

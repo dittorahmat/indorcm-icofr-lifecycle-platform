@@ -1,11 +1,17 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ShieldCheck, Info } from 'lucide-react';
-import type { ControlDetail } from './types';
+import type { ControlDetail, ResidualRiskStatus } from './types';
 
 interface ControlDetailPanelProps {
   control: ControlDetail | null;
 }
+
+const STATUS_CONFIG: Record<ResidualRiskStatus, { label: string; className: string }> = {
+  Low: { label: 'Low Residual Risk', className: 'text-emerald-700' },
+  Moderate: { label: 'Moderate Residual Risk', className: 'text-amber-700' },
+  High: { label: 'High Residual Risk', className: 'text-rose-700' },
+};
 
 export function ControlDetailPanel({ control }: ControlDetailPanelProps) {
   const { t } = useTranslation('analytics');
@@ -56,7 +62,9 @@ export function ControlDetailPanel({ control }: ControlDetailPanelProps) {
           </span>
           <div className="flex items-center space-x-1.5 font-bold">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span className={control.statusColor}>{control.status}</span>
+            <span className={STATUS_CONFIG[control.residualStatus]?.className || 'text-slate-700'}>
+              {STATUS_CONFIG[control.residualStatus]?.label || control.residualStatus}
+            </span>
           </div>
         </div>
       </div>

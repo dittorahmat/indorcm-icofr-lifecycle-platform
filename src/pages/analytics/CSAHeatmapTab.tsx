@@ -125,28 +125,65 @@ export function CSAHeatmapTab() {
               </div>
             </div>
           ) : (
-            /* Mobile Friendly Quadrant List View */
-            <div className="space-y-3">
-              {Object.values(controls).map((ctrl) => (
-                <div
-                  key={ctrl.id}
-                  onClick={() => setSelectedControlId(ctrl.id)}
-                  className={`p-3 rounded-lg border text-xs cursor-pointer transition flex items-center justify-between ${
-                    selectedControlId === ctrl.id
-                      ? 'border-sky-500 bg-sky-50'
-                      : 'border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  <div>
-                    <span className="font-bold text-sky-800">{ctrl.code}</span>
-                    <p className="font-medium text-slate-700 mt-0.5">{ctrl.cycle}</p>
-                    <p className="text-slate-500 text-[11px]">{ctrl.impact}</p>
+            /* Mobile Friendly Quadrant Partitioned List View */
+            <div className="space-y-4">
+              {(['Extreme', 'High', 'Medium', 'Low'] as const).map((quadrant) => {
+                const filtered = Object.values(controls).filter((c) => {
+                  if (quadrant === 'Extreme' || quadrant === 'High') return c.residualStatus === 'High';
+                  if (quadrant === 'Medium') return c.residualStatus === 'Moderate';
+                  return c.residualStatus === 'Low';
+                });
+                if (filtered.length === 0) return null;
+
+                return (
+                  <div key={quadrant} className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className={`w-2.5 h-2.5 rounded-full ${
+                          quadrant === 'Extreme' || quadrant === 'High'
+                            ? 'bg-rose-600'
+                            : quadrant === 'Medium'
+                            ? 'bg-amber-500'
+                            : 'bg-emerald-500'
+                        }`}
+                      ></span>
+                      <h4 className="font-bold text-xs text-slate-700">
+                        Kuadran {quadrant} ({filtered.length})
+                      </h4>
+                    </div>
+                    <div className="space-y-2">
+                      {filtered.map((ctrl) => (
+                        <div
+                          key={ctrl.id}
+                          onClick={() => setSelectedControlId(ctrl.id)}
+                          className={`p-3 rounded-lg border text-xs cursor-pointer transition flex items-center justify-between ${
+                            selectedControlId === ctrl.id
+                              ? 'border-sky-500 bg-sky-50'
+                              : 'border-slate-200 hover:bg-slate-50'
+                          }`}
+                        >
+                          <div>
+                            <span className="font-bold text-sky-800">{ctrl.code}</span>
+                            <p className="font-medium text-slate-700 mt-0.5">{ctrl.cycle}</p>
+                            <p className="text-slate-500 text-[11px]">{ctrl.impact}</p>
+                          </div>
+                          <span
+                            className={`font-semibold text-xs ${
+                              ctrl.residualStatus === 'Low'
+                                ? 'text-emerald-700'
+                                : ctrl.residualStatus === 'Moderate'
+                                ? 'text-amber-700'
+                                : 'text-rose-700'
+                            }`}
+                          >
+                            {ctrl.residualStatus} Residual
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <span className={`font-semibold text-xs ${ctrl.statusColor}`}>
-                    {ctrl.status}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

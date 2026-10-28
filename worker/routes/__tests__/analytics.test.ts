@@ -99,18 +99,18 @@ describe('GET /analytics/summary response structure', () => {
     expect(json.data[0]).toHaveProperty('process');
   });
 
-  it('returns 6-pillar testing evaluation scores and status counts', async () => {
+  it('returns 6-pillar testing evaluation scores computed dynamically from test records', async () => {
     vi.mocked(getDb).mockReturnValue(
       stubDb([
         [
           {
             testType: 'TOD',
             result: 'Effective',
-            todPilarObjective: true,
-            todPilarTiming: true,
-            todPilarAuthority: true,
-            todPilarReliability: true,
-            todPilarCoverage: true,
+            pilarObj: true,
+            pilarTime: true,
+            pilarAuth: true,
+            pilarRel: true,
+            pilarCov: true,
           },
         ],
       ])
@@ -126,8 +126,7 @@ describe('GET /analytics/summary response structure', () => {
       };
     };
     expect(json.success).toBe(true);
-    expect(json.data).toHaveProperty('radarScores');
-    expect(json.data).toHaveProperty('statusBreakdown');
+    expect(json.data.radarScores[0].score).toBe(100);
     expect(json.data.radarScores.length).toBe(6);
   });
 

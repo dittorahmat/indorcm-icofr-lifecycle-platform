@@ -13,6 +13,8 @@ export interface AnalyticsSummary {
   }>;
 }
 
+export type ResidualRiskStatus = 'Low' | 'Moderate' | 'High';
+
 export interface ControlDetail {
   id: string;
   code: string;
@@ -21,8 +23,7 @@ export interface ControlDetail {
   impactDesc: string;
   csa: string;
   csaDesc: string;
-  status: string;
-  statusColor: string;
+  residualStatus: ResidualRiskStatus;
 }
 
 export interface HeatmapResponse {

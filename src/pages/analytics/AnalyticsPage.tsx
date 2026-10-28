@@ -6,8 +6,7 @@ import { api } from '@/lib/api-client';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { Printer, LayoutGrid, Flame, CircleDot, Radar, PieChart as PieIcon } from 'lucide-react';
+import { LayoutGrid, Flame, CircleDot, Radar, PieChart as PieIcon } from 'lucide-react';
 import { ExecutiveKpiCards } from './ExecutiveKpiCards';
 import { ExecutiveCharts } from './ExecutiveCharts';
 import { CSAHeatmapTab } from './CSAHeatmapTab';
@@ -60,18 +59,6 @@ export function AnalyticsPage() {
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
               {t('subtitle')}
             </p>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled
-              className="text-xs h-9"
-            >
-              <Printer className="w-3.5 h-3.5 mr-1.5" />
-              {t('printPdf')}
-            </Button>
           </div>
         </div>
 
