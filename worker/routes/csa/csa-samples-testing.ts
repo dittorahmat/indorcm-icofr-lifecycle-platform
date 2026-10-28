@@ -141,19 +141,14 @@ csaSamplesTestingRoute.get('/tests', async (c) => {
   const year = yearParam ? parseInt(yearParam, 10) : undefined;
 
   let whereClause: SQL = eq(testRecords.organizationId, orgId);
-  if (year && !isNaN(year)) {
+  if (year && !isNaN(year) && yearParam) {
     whereClause = and(
       whereClause,
       or(
-        sql`${testRecords.period} LIKE ${'%' + yearParam + '%'}`,
-        and(
-          or(sql`${testRecords.period} IS NULL`, sql`${testRecords.period} = ''`, sql`NOT (${testRecords.period} ~ '[0-9]{4}')`),
-          sql`EXISTS (SELECT 1 FROM controls WHERE controls.id = ${testRecords.controlId} AND controls.organization_id = ${orgId} AND controls.year = ${year})`
-        ),
-        and(
-          or(sql`${testRecords.period} IS NULL`, sql`${testRecords.period} = ''`, sql`NOT (${testRecords.period} ~ '[0-9]{4}')`),
-          sql`EXTRACT(YEAR FROM ${testRecords.testDate}) = ${year}`
-        )
+        eq(testRecords.period, yearParam),
+        sql`${testRecords.period} LIKE ${yearParam + '-%'}`,
+        sql`${testRecords.period} LIKE ${'%-Q%'} AND ${testRecords.period} LIKE ${'%' + yearParam + '%'}`,
+        sql`EXTRACT(YEAR FROM ${testRecords.testDate}) = ${year}`
       )
     ) as SQL;
   }

@@ -52,15 +52,10 @@ csaWorklistRoute.get('/csa/worklist', async (c) => {
       and(
         eq(csaRecords.organizationId, orgId),
         or(
-          sql`${csaRecords.period} LIKE ${'%' + yearParam + '%'}`,
-          and(
-            or(sql`${csaRecords.period} IS NULL`, sql`${csaRecords.period} = ''`, sql`NOT (${csaRecords.period} ~ '[0-9]{4}')`),
-            sql`EXISTS (SELECT 1 FROM controls WHERE controls.id = ${csaRecords.controlId} AND controls.organization_id = ${orgId} AND controls.year = ${year})`
-          ),
-          and(
-            or(sql`${csaRecords.period} IS NULL`, sql`${csaRecords.period} = ''`, sql`NOT (${csaRecords.period} ~ '[0-9]{4}')`),
-            sql`EXTRACT(YEAR FROM ${csaRecords.assessmentDate}) = ${year}`
-          )
+          eq(csaRecords.period, yearParam),
+          sql`${csaRecords.period} LIKE ${yearParam + '-%'}`,
+          sql`${csaRecords.period} LIKE ${'%-Q%'} AND ${csaRecords.period} LIKE ${'%' + yearParam + '%'}`,
+          sql`EXTRACT(YEAR FROM ${csaRecords.assessmentDate}) = ${year}`
         )
       ),
     );
