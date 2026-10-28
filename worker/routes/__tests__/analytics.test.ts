@@ -19,6 +19,7 @@ describe('analytics barrel routes contract', () => {
     const routePaths = analytics.routes.map((r) => `${r.method} ${r.path}`);
     expect(routePaths).toContain('GET /analytics/summary');
     expect(routePaths).toContain('GET /analytics/heatmap');
+    expect(routePaths).toContain('GET /analytics/risk-exposure');
   });
 });
 
@@ -69,5 +70,30 @@ describe('GET /analytics/summary response structure', () => {
     expect(json.success).toBe(true);
     expect(json.data).toHaveProperty('matrix');
     expect(json.data).toHaveProperty('controls');
+  });
+
+  it('returns 3-axis risk exposure bubble coordinates', async () => {
+    vi.mocked(getDb).mockReturnValue(
+      stubDb([
+        [
+          {
+            id: 'rcm-1',
+            process: 'Revenue to Cash',
+            riskRating: 'High',
+            riskDescription: 'Risiko fraud cut-off omset',
+          },
+        ],
+      ])
+    );
+
+    const res = await app.request('/api/analytics/risk-exposure?year=2026', undefined, env);
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { success: boolean; data: Array<Record<string, unknown>> };
+    expect(json.success).toBe(true);
+    expect(Array.isArray(json.data)).toBe(true);
+    expect(json.data[0]).toHaveProperty('x');
+    expect(json.data[0]).toHaveProperty('y');
+    expect(json.data[0]).toHaveProperty('z');
+    expect(json.data[0]).toHaveProperty('process');
   });
 });

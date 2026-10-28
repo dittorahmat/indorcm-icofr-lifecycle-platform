@@ -30,6 +30,16 @@ export interface HeatmapResponse {
   controls: Record<string, ControlDetail>;
 }
 
+export interface RiskBubbleItem {
+  id: string;
+  process: string;
+  name: string;
+  rating: string;
+  x: number;
+  y: number;
+  z: number;
+}
+
 export type AnalyticsTab =
   | 'analytics-overview'
   | 'csa-heatmap'

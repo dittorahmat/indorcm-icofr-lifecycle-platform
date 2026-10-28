@@ -11,6 +11,7 @@ import { Printer, LayoutGrid, Flame, CircleDot, Radar, PieChart as PieIcon } fro
 import { ExecutiveKpiCards } from './ExecutiveKpiCards';
 import { ExecutiveCharts } from './ExecutiveCharts';
 import { CSAHeatmapTab } from './CSAHeatmapTab';
+import { RiskExposureTab } from './RiskExposureTab';
 import type { AnalyticsSummary, AnalyticsTab } from './types';
 
 const VALID_TABS: AnalyticsTab[] = [
@@ -155,9 +156,7 @@ export function AnalyticsPage() {
               <CSAHeatmapTab />
             )}
             {activeTab === 'bubble-analytics' && (
-              <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-500">
-                {t('tabs.bubble')} (Tiket 03)
-              </div>
+              <RiskExposureTab />
             )}
             {activeTab === 'tod-toe-charts' && (
               <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-500">

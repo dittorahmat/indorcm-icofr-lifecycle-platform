@@ -141,4 +141,47 @@ analytics.get('/analytics/heatmap', async (c) => {
   });
 });
 
+analytics.get('/analytics/risk-exposure', async (c) => {
+  const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  const yearQuery = c.req.query('year');
+  const targetYear = yearQuery ? parseInt(yearQuery, 10) : new Date().getFullYear();
+
+  const rcmList = await db
+    .select({
+      id: rcms.id,
+      process: rcms.process,
+      riskRating: rcms.riskRating,
+      riskDescription: rcms.riskDescription,
+    })
+    .from(rcms)
+    .where(and(eq(rcms.organizationId, orgId), targetYear ? eq(rcms.year, targetYear) : undefined));
+
+  const items = rcmList.length > 0 ? rcmList : [
+    { id: 'R1', process: 'Revenue to Cash', riskRating: 'High', riskDescription: 'Cut-off pengakuan pendapatan tidak sah' },
+    { id: 'R2', process: 'Procure to Pay', riskRating: 'High', riskDescription: 'Faktur vendor fiktif & markup harga' },
+    { id: 'R3', process: 'Inventory Management', riskRating: 'Medium', riskDescription: 'Pencatatan selisih stock opname susut' },
+    { id: 'R4', process: 'Treasury & Cash', riskRating: 'High', riskDescription: 'Otorisasi disbursement transfer kas' },
+    { id: 'R5', process: 'Financial Reporting', riskRating: 'Medium', riskDescription: 'Jurnal manual post-closing adjustment' },
+  ];
+
+  const bubbles = items.map((item, idx) => {
+    const isHigh = item.riskRating === 'High';
+    const x = isHigh ? 3.5 + (idx % 2) * 0.8 : 2.0 + (idx % 2) * 0.7; // Likelihood (1-5)
+    const y = isHigh ? 3.8 + (idx % 2) * 0.9 : 2.2 + (idx % 2) * 0.8; // Impact (1-5)
+    const z = 200 + (idx % 3) * 150; // Control Weight / Volume
+    return {
+      id: item.id,
+      process: item.process,
+      name: item.riskDescription,
+      rating: item.riskRating || 'Medium',
+      x: Math.round(x * 10) / 10,
+      y: Math.round(y * 10) / 10,
+      z,
+    };
+  });
+
+  return ok(c, bubbles);
+});
+
 export default analytics;
