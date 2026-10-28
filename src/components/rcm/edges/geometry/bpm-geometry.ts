@@ -70,6 +70,10 @@ export function normalizeSide(input: NormalizeSideInput): EdgeSide {
       }
       return dx >= 0 ? 'right' : 'left';
     }
+    // Target handle fallback: if target is clearly lower than source (dy > 40), plunge into 'top'
+    if (dy > 40) {
+      return 'top';
+    }
     if (Math.abs(dy) >= Math.abs(dx)) {
       return dy >= 0 ? 'top' : 'bottom';
     }

@@ -19,6 +19,14 @@ function pickHandles(source: EdgeAnchor, target: EdgeAnchor): { sourceHandle: st
   const dy = target.y - source.y;
   const isCrossLane = source.parentId !== target.parentId;
 
+  // When target sits lower down in the process flow (dy > 40), target handle should plunge from the top
+  if (dy > 40) {
+    if (isCrossLane && Math.abs(dx) > 100) {
+      return dx >= 0 ? { sourceHandle: 'right', targetHandle: 'top' } : { sourceHandle: 'left', targetHandle: 'top' };
+    }
+    return { sourceHandle: 'bottom', targetHandle: 'top' };
+  }
+
   if (isCrossLane && Math.abs(dx) > 100) {
     return dx >= 0 ? { sourceHandle: 'right', targetHandle: 'left' } : { sourceHandle: 'left', targetHandle: 'right' };
   }
