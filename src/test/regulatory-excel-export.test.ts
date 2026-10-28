@@ -61,6 +61,25 @@ describe('Regulatory Excel Export Builder', () => {
     expect(dataRow).toEqual(['DEF-002', '-', '-']);
   });
 
+  it('renders signoff blocks at the bottom when signoffs option is provided', () => {
+    const aoa = buildRegulatoryAoA(
+      [{ ref: 'DEF-001', exposure: 1000, box1: 'Ya' }],
+      {
+        ...options,
+        signoffs: [
+          { roleTitle: 'Disusun Oleh (Lini 1)', name: 'Budi Santoso', title: 'Officer ICOFR', date: '2025-10-15', isSigned: true },
+          { roleTitle: 'Direviu Oleh (Lini 2)', name: 'Siti Rahma', title: 'Risk Head', date: '2025-10-16', isSigned: true },
+        ],
+      },
+    );
+
+    expect(aoa).toContainEqual(['Disusun Oleh (Lini 1)', '', 'Direviu Oleh (Lini 2)']);
+    expect(aoa).toContainEqual(['Budi Santoso', '', 'Siti Rahma']);
+    expect(aoa).toContainEqual(['Officer ICOFR', '', 'Risk Head']);
+    expect(aoa).toContainEqual(['Tanggal: 2025-10-15', '', 'Tanggal: 2025-10-16']);
+    expect(aoa).toContainEqual(['Status: TERVERIFIKASI DIGITAL', '', 'Status: TERVERIFIKASI DIGITAL']);
+  });
+
   it('still emits headers when there are no data rows', () => {
     const aoa = buildRegulatoryAoA([], options);
     expect(aoa[aoa.length - 1]).toEqual(['Ref. Defisiensi (i)', 'Nilai Eksposur (v)', 'Kotak 1 (xviii)']);

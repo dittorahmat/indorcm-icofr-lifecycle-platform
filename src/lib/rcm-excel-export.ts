@@ -191,6 +191,36 @@ export function buildRegulatoryAoA(
     );
   }
 
+  const { signoffs = [] } = options;
+  if (signoffs.length > 0) {
+    aoa.push([]);
+    aoa.push([]);
+
+    const numCols = columns.length;
+    const colStep = signoffs.length > 1 ? Math.floor((numCols - 1) / (signoffs.length - 1)) : 0;
+
+    const roleRow: unknown[] = new Array(numCols).fill('');
+    const nameRow: unknown[] = new Array(numCols).fill('');
+    const titleRow: unknown[] = new Array(numCols).fill('');
+    const dateRow: unknown[] = new Array(numCols).fill('');
+    const statusRow: unknown[] = new Array(numCols).fill('');
+
+    signoffs.forEach((sign, idx) => {
+      const colIdx = idx === 0 ? 0 : Math.min(idx * colStep, numCols - 1);
+      roleRow[colIdx] = sign.roleTitle;
+      nameRow[colIdx] = sign.name || '-';
+      titleRow[colIdx] = sign.title || '-';
+      dateRow[colIdx] = sign.date ? `Tanggal: ${sign.date}` : 'Tanggal: -';
+      statusRow[colIdx] = sign.isSigned ? 'Status: TERVERIFIKASI DIGITAL' : 'Status: MENUNGGU VERIFIKASI';
+    });
+
+    aoa.push(roleRow);
+    aoa.push(nameRow);
+    aoa.push(titleRow);
+    aoa.push(dateRow);
+    aoa.push(statusRow);
+  }
+
   return aoa;
 }
 
