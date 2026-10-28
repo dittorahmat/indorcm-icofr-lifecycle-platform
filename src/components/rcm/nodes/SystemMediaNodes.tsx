@@ -38,7 +38,7 @@ export const AutomatedActivityNode = ({ data, selected, type }: NodeProps) => {
       <div 
         style={style}
         className={cn(
-          "px-4 py-3 shadow-md rounded-sm bg-blue-50 border-2 border-blue-800 text-center transition-all relative flex flex-col justify-between min-h-[64px]",
+          "px-4 py-3 shadow-md rounded-sm bg-blue-50 border-2 border-blue-800 text-center transition-all relative flex flex-col justify-between min-h-[64px] group",
           selected && "ring-4 ring-primary/20 border-primary shadow-lg scale-105"
         )}
       >
@@ -64,7 +64,7 @@ export const DataMediaNode = ({ data, selected, type }: NodeProps) => {
     <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
-        className={cn("h-20 relative flex items-center justify-center transition-all", selected && "scale-105")}
+        className={cn("h-20 relative flex items-center justify-center transition-all group", selected && "scale-105")}
       >
         <EightConnectionHandles isLocked={data.isLocked} selected={selected} />
         <svg width="100%" height="100%" viewBox="0 0 100 80" preserveAspectRatio="none" className="absolute inset-0">

@@ -14,12 +14,26 @@ describe('resolveEdgeHandles', () => {
       edges,
       centers({
         a: { x: 100, y: 100, parentId: 'lane-1' },
-        b: { x: 600, y: 120, parentId: 'lane-2' },
+        b: { x: 600, y: 110, parentId: 'lane-2' },
       }),
     );
 
     expect(edge.sourceHandle).toBe('right');
     expect(edge.targetHandle).toBe('left');
+  });
+
+  it('uses top target handle when cross-lane jump flows downwards into another step', () => {
+    const edges: OcrRawEdge[] = [{ id: 'e1', source: 'a', target: 'b' }];
+    const [edge] = resolveEdgeHandles(
+      edges,
+      centers({
+        a: { x: 100, y: 100, parentId: 'lane-1' },
+        b: { x: 450, y: 250, parentId: 'lane-2' },
+      }),
+    );
+
+    expect(edge.sourceHandle).toBe('right');
+    expect(edge.targetHandle).toBe('top');
   });
 
   it('uses vertical handles when the target sits below the source', () => {

@@ -5,7 +5,7 @@
 // once after both layout engines, which keeps handle routing identical between
 // coordinate mode and the rank fallback.
 
-import { canonicalizeHandleId } from './bpm-constants';
+import { canonicalizeHandleId, DOWNWARD_PLUNGE_THRESHOLD_DY } from './bpm-constants';
 import type { OcrRawEdge } from './ocr-validate';
 
 export interface EdgeAnchor {
@@ -18,6 +18,14 @@ function pickHandles(source: EdgeAnchor, target: EdgeAnchor): { sourceHandle: st
   const dx = target.x - source.x;
   const dy = target.y - source.y;
   const isCrossLane = source.parentId !== target.parentId;
+
+  // When target sits lower down in the process flow, target handle should plunge from the top
+  if (dy > DOWNWARD_PLUNGE_THRESHOLD_DY) {
+    if (isCrossLane && Math.abs(dx) > 100) {
+      return dx >= 0 ? { sourceHandle: 'right', targetHandle: 'top' } : { sourceHandle: 'left', targetHandle: 'top' };
+    }
+    return { sourceHandle: 'bottom', targetHandle: 'top' };
+  }
 
   if (isCrossLane && Math.abs(dx) > 100) {
     return dx >= 0 ? { sourceHandle: 'right', targetHandle: 'left' } : { sourceHandle: 'left', targetHandle: 'right' };

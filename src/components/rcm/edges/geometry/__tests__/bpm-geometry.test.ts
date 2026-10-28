@@ -88,6 +88,13 @@ describe('normalizeSide (plain anchors, no canvas internals)', () => {
     };
     expect(normalizeSide({ ...rightward, isSource: true })).toBe('right');
     expect(normalizeSide({ ...rightward, isSource: false })).toBe('left');
+
+    const diagonalDown = {
+      source: { pos: { x: 0, y: 0 }, dims: { width: 100, height: 50 } },
+      target: { pos: { x: 300, y: 150 }, dims: { width: 100, height: 50 } },
+    };
+    expect(normalizeSide({ ...diagonalDown, isSource: true })).toBe('right');
+    expect(normalizeSide({ ...diagonalDown, isSource: false })).toBe('top');
   });
 
   it('uses the source/target default when no geometry is available', () => {

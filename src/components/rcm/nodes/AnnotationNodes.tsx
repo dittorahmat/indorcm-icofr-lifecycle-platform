@@ -71,7 +71,7 @@ export const ArchiveNode = ({ data, selected, type }: NodeProps) => {
     <NodeTooltip data={data} type={type} selected={selected}>
       <div 
         style={style}
-        className={cn("h-16 relative flex items-center justify-center transition-all", selected && "scale-105")}
+        className={cn("h-16 relative flex items-center justify-center transition-all group", selected && "scale-105")}
       >
         <EightConnectionHandles isLocked={data.isLocked} selected={selected} />
         <svg width="100%" height="100%" viewBox="0 0 64 64" preserveAspectRatio="none" className="absolute inset-0">

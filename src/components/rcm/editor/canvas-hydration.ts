@@ -63,8 +63,8 @@ export function canvasNodeHandlers(node: Node, deps: CanvasHydrationDeps): Recor
 /** The bridge edge options every canvas renders (shared by the diagram view). */
 export const bridgeEdgeOptions = {
   type: 'bridge',
-  markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20, color: EDGE_COLOR },
-  style: { strokeWidth: 2, stroke: EDGE_COLOR },
+  markerEnd: { type: MarkerType.ArrowClosed, width: 12, height: 12, color: EDGE_COLOR },
+  style: { strokeWidth: 2, stroke: EDGE_COLOR, fill: 'none' },
 } as const;
 
 /**

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import ReactFlow, { addEdge, Background, ConnectionMode, Controls, MarkerType, MiniMap } from 'reactflow';
+import ReactFlow, { addEdge, Background, ConnectionMode, Controls, MiniMap } from 'reactflow';
 import type { Connection, Edge, EdgeTypes, Node, NodeTypes } from 'reactflow';
 import { useTranslation } from 'react-i18next';
 import { Eye } from 'lucide-react';
@@ -8,6 +8,7 @@ import { BPMSelectionHUD } from './BPMSelectionHUD';
 import { BPMShapePalette } from './BPMShapePalette';
 import { canonicalizeHandleId } from '../edges/edge-routing-utils';
 import { isBadgeNodeType } from './bpm-editor-constants';
+import { bridgeEdgeOptions } from './canvas-hydration';
 
 interface BPMCanvasProps {
   nodes: Node[];
@@ -102,6 +103,7 @@ export function BPMCanvas(props: BPMCanvasProps) {
           maxZoom={2.5}
           connectionRadius={32}
           connectionMode={ConnectionMode.Loose}
+          defaultEdgeOptions={bridgeEdgeOptions}
           connectionLineStyle={{ stroke: '#2563eb', strokeWidth: 2, strokeDasharray: '6 4' }}
           style={
             {
@@ -139,17 +141,10 @@ export function BPMCanvas(props: BPMCanvasProps) {
                   props.setEdges((eds) =>
                     addEdge(
                       {
+                        ...bridgeEdgeOptions,
                         ...params,
                         sourceHandle: repairedSource,
                         targetHandle: repairedTarget,
-                        type: 'bridge',
-                        markerEnd: {
-                          type: MarkerType.ArrowClosed,
-                          width: 20,
-                          height: 20,
-                          color: '#0f172a',
-                        },
-                        style: { strokeWidth: 2, stroke: '#0f172a' },
                       },
                       eds,
                     ),

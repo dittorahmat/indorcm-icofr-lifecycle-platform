@@ -76,12 +76,16 @@ export function BridgeEdge({
 
   const selectedEdgeStyle: React.CSSProperties = selected
     ? {
+        fill: 'none',
         ...style,
         stroke: '#2563eb',
         strokeWidth: 3.5,
         filter: 'drop-shadow(0 0 4px rgba(37, 99, 235, 0.5))',
       }
-    : style;
+    : {
+        fill: 'none',
+        ...style,
+      };
 
   // Waypoint Handle element rendered when selected
   const waypointHandleElement = selected && primaryHandle ? (
@@ -122,7 +126,7 @@ export function BridgeEdge({
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <path id={id} style={selectedEdgeStyle} className="react-flow__edge-path" d={basePath} markerEnd={markerEnd} />
+        <path id={id} fill="none" style={selectedEdgeStyle} className="react-flow__edge-path" d={basePath} markerEnd={markerEnd} />
         {waypointHandleElement}
       </>
     );
@@ -177,6 +181,7 @@ export function BridgeEdge({
       />
       <path
         id={id}
+        fill="none"
         style={selectedEdgeStyle}
         className="react-flow__edge-path"
         d={finalPath}

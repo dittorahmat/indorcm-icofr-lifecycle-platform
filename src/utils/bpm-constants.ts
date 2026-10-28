@@ -48,6 +48,9 @@ export const DEFAULT_NODE_SPACING = {
 // swimlane headers. Single locality shared by the canvas router and OCR layout.
 export const SAFE_HEADER_CEILING = 100;
 
+// Minimum vertical descent required to automatically orient edge target into the top handle
+export const DOWNWARD_PLUNGE_THRESHOLD_DY = 40;
+
 export type BpmEdgeSide =
   | 'top'
   | 'bottom'

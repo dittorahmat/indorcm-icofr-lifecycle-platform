@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { toast } from 'sonner';
-import { addEdge, MarkerType, useEdgesState, useNodesState } from 'reactflow';
+import { addEdge, useEdgesState, useNodesState } from 'reactflow';
 import type { Connection, Edge, Node } from 'reactflow';
 import { api } from '@/lib/api-client';
 import { useConfirm } from '@/hooks/use-confirm';
 import { stageRawDiagram } from './ocr-node-normalize';
+import { bridgeEdgeOptions } from '../canvas-hydration';
 import type { OcrLayoutWarning, OcrRawEdge, OcrRawNode } from '@/utils/ocr-layout';
 import type { OcrAppendDirection, OcrApplyRequest, OcrImportMode, TranslateFn } from './ocr-types';
 
@@ -271,10 +272,8 @@ export function useOcrStaging({ isOpen, isDirty, hasExistingNodes = false, t, on
       setStagingEdges((eds) =>
         addEdge(
           {
+            ...bridgeEdgeOptions,
             ...params,
-            type: 'bridge',
-            markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#0f172a' },
-            style: { strokeWidth: 2, stroke: '#0f172a' },
           },
           eds,
         ),

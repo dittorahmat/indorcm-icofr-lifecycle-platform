@@ -42,7 +42,7 @@ export const ActivityNode = ({ data, selected, type }: NodeProps) => {
       <div 
         style={style}
         className={cn(
-          "px-4 py-3 shadow-md rounded-sm bg-white border-2 border-slate-800 text-center transition-all relative flex flex-col justify-between min-h-[56px]",
+          "px-4 py-3 shadow-md rounded-sm bg-white border-2 border-slate-800 text-center transition-all relative flex flex-col justify-between min-h-[56px] group",
           selected && "ring-4 ring-primary/20 border-primary shadow-lg scale-105"
         )}
       >
@@ -68,7 +68,7 @@ export const ExternalProcessNode = ({ data, selected, type }: NodeProps) => {
       <div 
         style={style}
         className={cn(
-          "px-4 py-3 shadow-md rounded-sm bg-white border-2 border-slate-800 text-center transition-all relative flex flex-col justify-between min-h-[56px]",
+          "px-4 py-3 shadow-md rounded-sm bg-white border-2 border-slate-800 text-center transition-all relative flex flex-col justify-between min-h-[56px] group",
           selected && "ring-4 ring-primary/20 border-primary shadow-lg scale-105"
         )}
       >
@@ -227,7 +227,7 @@ export const ReferenceNode = ({ data, selected, type }: NodeProps) => {
       <div 
         style={{ ...style, height: style.width }}
         className={cn(
-          "rounded-full border-2 bg-white flex items-center justify-center shadow-md transition-all",
+          "rounded-full border-2 bg-white flex items-center justify-center shadow-md transition-all group relative",
           selected ? "border-primary ring-4 ring-primary/20" : "border-slate-800"
         )}
       >
