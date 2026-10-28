@@ -32,6 +32,12 @@ const RULES = [
     re: /\b(?:bad|notFound)\(\s*[A-Za-z_$][\w$.]*\s*,\s*(['"`])(.*?)\1/g,
     hint: 'first arg is the stable code; pass prose as the message arg',
   },
+  {
+    // Presentation styling classes leaked into backend responses: statusColor: 'text-emerald-700'
+    re: /(['"`])((?:text|bg|border|ring)-[a-z]+-[0-9]+)\1/g,
+    hint: 'backend must not emit UI styling classes; return semantic enum',
+    isStyleToken: true,
+  },
 ];
 
 const isTest = (path) =>
@@ -57,8 +63,12 @@ function findings(text) {
       rule.re.lastIndex = 0;
       let hit;
       while ((hit = rule.re.exec(line)) !== null) {
-        const prose = proseLiteral(hit[2]);
-        if (prose) out.push({ line: index + 1, prose, hint: rule.hint });
+        if (rule.isStyleToken) {
+          out.push({ line: index + 1, prose: hit[2], hint: rule.hint });
+        } else {
+          const prose = proseLiteral(hit[2]);
+          if (prose) out.push({ line: index + 1, prose, hint: rule.hint });
+        }
       }
     }
   });
