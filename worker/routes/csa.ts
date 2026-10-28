@@ -8,8 +8,8 @@ import { csaSamplesTestingRoute } from './csa/csa-samples-testing';
 const csa = new Hono<HonoEnv>();
 
 csa.route('/', csaSchedulesRoute);
-csa.route('/', csaRecordsRoute);
 csa.route('/', csaWorklistRoute);
+csa.route('/', csaRecordsRoute);
 csa.route('/', csaSamplesTestingRoute);
 
 export default csa;

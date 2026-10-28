@@ -40,3 +40,4 @@ node scripts/check-test-i18n.mjs || exit 1
 node scripts/check-doc-refs.mjs || exit 1
 node scripts/check-ocr-constants.mjs || exit 1
 node scripts/check-no-window-print.mjs || exit 1
+node scripts/check-period-queries.mjs || exit 1

@@ -35,6 +35,7 @@
     "check:doc-refs": "node scripts/check-doc-refs.mjs",
     "check:ocr-constants": "node scripts/check-ocr-constants.mjs",
     "check:no-window-print": "node scripts/check-no-window-print.mjs",
+    "check:period-queries": "node scripts/check-period-queries.mjs",
     "ocr:probe": "tsx scripts/ocr-probe.ts",
     "preview": "bun run build && vite preview --host 0.0.0.0 --port 4173",
     "deploy": "bun run build && wrangler deploy",

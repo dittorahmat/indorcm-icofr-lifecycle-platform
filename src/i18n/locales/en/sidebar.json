@@ -9,6 +9,7 @@
   },
   "items": {
     "dashboard": "Dashboard",
+    "analytics": "Visual Analytics",
     "sync": "Sync Financial Statement",
     "bpm": "BPM & CSA",
     "scoping": "Significant Account Identification",

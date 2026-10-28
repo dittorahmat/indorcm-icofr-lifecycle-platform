@@ -19,6 +19,7 @@ import reporting from './routes/reporting';
 import transactions from './routes/transactions';
 import csa from './routes/csa';
 import migration from './routes/migration';
+import analytics from './routes/analytics';
 import { getAuth } from './auth';
 import { getDb, dbLocalStorage, createDbAndPool } from './db';
 import * as schema from './db/schema';
@@ -372,6 +373,7 @@ export const createApp = () => {
   app.route('/api', transactions);
   app.route('/api', csa);
   app.route('/api', migration);
+  app.route('/api', analytics);
   app.route('/api', aiDocs);
   app.route('/api', aiSuggest);
     

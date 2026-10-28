@@ -9,12 +9,20 @@ vi.mock('../../db', () => ({
   getDb: vi.fn(),
 }));
 
-/** boundary: drizzle stub — handler reads via select→from→where with optional limit. */
+/** boundary: drizzle stub — handler reads via select→from→where/leftJoin with optional limit. */
 const stubDb = (resolver: (queryIndex: number) => unknown[]): DrizzleDb => {
   const db: DrizzleDb = Object.create(null);
   let queryIndex = 0;
   const select = vi.fn(() => ({
     from: vi.fn(() => ({
+      leftJoin: vi.fn(() => ({
+        where: vi.fn(() => {
+          const rows = resolver(queryIndex++);
+          return Object.assign(Promise.resolve(rows), {
+            limit: vi.fn(() => Promise.resolve(rows)),
+          });
+        }),
+      })),
       where: vi.fn(() => {
         const rows = resolver(queryIndex++);
         return Object.assign(Promise.resolve(rows), {
@@ -139,6 +147,32 @@ describe('CSA Record Detail API (GET /csa/:id)', () => {
       expect(json.success).toBe(false);
       expect(json.error).toBe('INVALID_CSA_SCOPE');
       expect(json.message).toBe('CSA Record has no associated control or process');
+    });
+  });
+
+  describe('CSA Record List API (GET /csa)', () => {
+    it('returns 200 with summary projection for year filter', async () => {
+      const mockItems = [
+        {
+          id: 'csa-rec-1',
+          organizationId: mockOrgId,
+          controlId: 'ctrl-1',
+          bpmProcessId: 'proc-1',
+          period: '2025',
+          result: 'Effective',
+          assessmentDate: '2025-06-01T00:00:00.000Z',
+          workflowStatus: 'Draft',
+        },
+      ];
+
+      vi.mocked(getDb).mockReturnValue(stubDb(() => mockItems));
+
+      const res = await app.request('/api/csa?year=2025', undefined, env);
+
+      expect(res.status).toBe(200);
+      const json = await res.json<{ success: boolean; data: { items: typeof mockItems } }>();
+      expect(json.success).toBe(true);
+      expect(json.data.items).toEqual(mockItems);
     });
   });
 });

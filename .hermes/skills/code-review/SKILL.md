@@ -58,6 +58,7 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 ### 4. Spawn both sub-agents in parallel
 
 Issue both sub-agent calls together, in the foreground, and aggregate the reports they return.
+Always invoke the sub-agents with `TypeName: "self"` (or `"research"`), setting descriptive `Role` strings such as `"Standards Reviewer"` and `"Spec Reviewer"`.
 
 **Standards sub-agent prompt** should include:
 

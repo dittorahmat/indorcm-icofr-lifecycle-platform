@@ -4,6 +4,7 @@ import { ok, bad } from '../../lib/utils';
 import { getDb } from '../../db';
 import { csaSamples, todEvaluations, testRecords } from '../../db/schema';
 import { eq, and, desc, SQL, sql, or } from 'drizzle-orm';
+import { matchesPeriodYear } from '../../lib/period-query';
 import type { TestRecord } from "@shared/types";
 import type { TestingVerdict } from "@shared/testing-decision";
 import {
@@ -141,19 +142,12 @@ csaSamplesTestingRoute.get('/tests', async (c) => {
   const year = yearParam ? parseInt(yearParam, 10) : undefined;
 
   let whereClause: SQL = eq(testRecords.organizationId, orgId);
-  if (year && !isNaN(year)) {
+  if (year && !isNaN(year) && yearParam) {
     whereClause = and(
       whereClause,
       or(
-        sql`${testRecords.period} LIKE ${'%' + yearParam + '%'}`,
-        and(
-          or(sql`${testRecords.period} IS NULL`, sql`${testRecords.period} = ''`, sql`NOT (${testRecords.period} ~ '[0-9]{4}')`),
-          sql`EXISTS (SELECT 1 FROM controls WHERE controls.id = ${testRecords.controlId} AND controls.organization_id = ${orgId} AND controls.year = ${year})`
-        ),
-        and(
-          or(sql`${testRecords.period} IS NULL`, sql`${testRecords.period} = ''`, sql`NOT (${testRecords.period} ~ '[0-9]{4}')`),
-          sql`EXTRACT(YEAR FROM ${testRecords.testDate}) = ${year}`
-        )
+        matchesPeriodYear(testRecords.period, yearParam),
+        sql`EXTRACT(YEAR FROM ${testRecords.testDate}) = ${year}`
       )
     ) as SQL;
   }
