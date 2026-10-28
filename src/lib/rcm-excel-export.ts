@@ -6,6 +6,14 @@ import {
   IPO_FIELDS,
 } from '@shared/assertion-fields';
 
+export interface RegulatorySignoffItem {
+  roleTitle: string;
+  name: string;
+  title: string;
+  date?: string;
+  isSigned?: boolean;
+}
+
 export interface RCMExportOptions {
   sheetName?: string;
   matrixType?: 'TLC' | 'ELC' | 'ITGC';
@@ -181,6 +189,7 @@ export interface RegulatoryExportOptions {
   columns: RegulatoryExportColumn[];
   filename: string;
   sheetName?: string;
+  signoffs?: RegulatorySignoffItem[];
 }
 
 export const REGULATORY_EMPTY_CELL = '-';

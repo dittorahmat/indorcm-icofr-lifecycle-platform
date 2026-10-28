@@ -173,8 +173,8 @@ export function VerificationDesignPage({ embedded, filterBpmId, workingYear, noG
         filename: `Lampiran_8_Verifikasi_Rancangan_${yearLabel}.xlsx`,
         sheetName: t('rcm:verification.excelTitle', { defaultValue: 'Lampiran 8' }),
         signoffs: [
-          { roleTitle: 'Evaluator TOD (Lini 1)', name: 'Penguji Rancangan Kontrol', title: 'Design Assessor', date: format(new Date(), 'yyyy-MM-dd'), isSigned: true },
-          { roleTitle: 'Validator (Lini 2)', name: 'Manajer Kepatuhan & Risiko', title: 'Compliance Manager', date: format(new Date(), 'yyyy-MM-dd'), isSigned: true },
+          { roleTitle: 'Evaluator TOD (Lini 1)', name: 'Penguji Rancangan Kontrol', title: 'Design Assessor', date: new Date().toISOString().split('T')[0], isSigned: true },
+          { roleTitle: 'Validator (Lini 2)', name: 'Manajer Kepatuhan & Risiko', title: 'Compliance Manager', date: new Date().toISOString().split('T')[0], isSigned: true },
         ],
       });
       toast.success(t('common:notifications.exportSuccess', { defaultValue: 'Excel berhasil diunduh' }));
