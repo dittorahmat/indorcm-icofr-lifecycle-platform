@@ -72,6 +72,11 @@ export function Lampiran11Report({ deficiencies = [] }: Lampiran11ReportProps) {
           ],
           filename,
           sheetName,
+          signoffs: [
+            { roleTitle: 'Direktur Utama', name: 'Direksi / CEO', title: 'President Director', date: new Date().toISOString().split('T')[0], isSigned: isSigned },
+            { roleTitle: 'Direktur Keuangan & Manajemen Risiko', name: 'CFO / Finance Director', title: 'Chief Financial Officer', date: new Date().toISOString().split('T')[0], isSigned: isSigned },
+            { roleTitle: 'Komite Audit', name: 'Ketua Komite Audit', title: 'Audit Committee Chair', date: new Date().toISOString().split('T')[0], isSigned: isSigned },
+          ],
         });
       },
     });

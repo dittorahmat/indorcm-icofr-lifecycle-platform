@@ -241,6 +241,10 @@ export function useDoDReport({
         columns: DATA_KEYS.map((key, index) => ({ key, header: headers[index], numeric: key === 'exposure' })),
         filename: `Lampiran_10_Kertas_Kerja_DoD_${fiscalYear}.xlsx`,
         sheetName: t('dodReport.title', { defaultValue: 'LAMPIRAN 10' }),
+        signoffs: [
+          { roleTitle: 'Penilai Keparahan Defisiensi (Lini 1)', name: 'Koordinator Remediasi Defisiensi', title: 'Deficiency Assessor', date: new Date().toISOString().split('T')[0], isSigned: true },
+          { roleTitle: 'Penelaah Agregasi (Lini 2)', name: 'Kepala Divisi Manajemen Risiko', title: 'Risk Division Head', date: new Date().toISOString().split('T')[0], isSigned: true },
+        ],
       });
     } finally {
       setIsExporting(false);

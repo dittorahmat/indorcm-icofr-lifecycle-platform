@@ -9,6 +9,12 @@ vi.mock('@/lib/rcm-excel-export', () => ({
   exportRegulatoryTableToExcel: vi.fn(),
 }));
 
+vi.mock('@/lib/pdf/lampiran10-pdf-export', () => ({
+  generateLampiran10DoDPdf: vi.fn(() => ({
+    save: vi.fn(),
+  })),
+}));
+
 import { validateI18nKey } from '@/test/mock-i18n';
 
 vi.mock('react-i18next', () => ({
@@ -286,15 +292,14 @@ describe('DoDLampiran10Report Component', () => {
     expect(options.filename.endsWith('.xlsx')).toBe(true);
   });
 
-  it('triggers print when Print button is clicked', () => {
-    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
+  it('triggers PDF export when Print button is clicked', async () => {
+    const { generateLampiran10DoDPdf } = await import('@/lib/pdf/lampiran10-pdf-export');
     render(<DoDLampiran10Report deficiencies={mockDeficiencies} controls={mockControls} />);
 
     const printBtn = screen.getByText('Cetak Laporan');
     fireEvent.click(printBtn);
 
-    expect(printSpy).toHaveBeenCalled();
-    printSpy.mockRestore();
+    expect(generateLampiran10DoDPdf).toHaveBeenCalled();
   });
 
   it('renders tooltips for assertions and decision tree box headers', () => {

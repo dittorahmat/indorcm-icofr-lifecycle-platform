@@ -59,6 +59,10 @@ export function WBSPage() {
         }),
         filename: wbsFilename(),
         sheetName: t('wbs.title', { defaultValue: 'WBS Recap' }),
+        signoffs: [
+          { roleTitle: 'Pengelola WBS (Lini 1)', name: 'Petugas Hotline / Investigasi Fraud', title: 'WBS Officer', date: new Date().toISOString().split('T')[0], isSigned: true },
+          { roleTitle: 'Penelaah Kepatuhan (Lini 2)', name: 'Kepala Divisi Kepatuhan & GRC', title: 'Compliance & GRC Head', date: new Date().toISOString().split('T')[0], isSigned: true },
+        ],
       });
     } finally {
       setIsExportingExcel(false);
