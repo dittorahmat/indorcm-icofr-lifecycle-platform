@@ -85,4 +85,12 @@ describe('node connection handles (canonical DOM coverage)', () => {
     );
     expect(handleIds(container)).toHaveLength(0);
   });
+
+  it('nodes with EightConnectionHandles wrap in a group class to hide handles when idle', () => {
+    const { container } = renderNode(
+      <ActivityNode id="a" type="activity" data={activityData} selected={false} {...wrapperProps} />,
+    );
+    const groupElement = container.querySelector('.group');
+    expect(groupElement).not.toBeNull();
+  });
 });

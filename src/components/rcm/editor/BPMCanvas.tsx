@@ -1,5 +1,5 @@
 import * as React from 'react';
-import ReactFlow, { addEdge, Background, ConnectionMode, Controls, MarkerType, MiniMap } from 'reactflow';
+import ReactFlow, { addEdge, Background, ConnectionMode, Controls, MiniMap } from 'reactflow';
 import type { Connection, Edge, EdgeTypes, Node, NodeTypes } from 'reactflow';
 import { useTranslation } from 'react-i18next';
 import { Eye } from 'lucide-react';
@@ -141,17 +141,10 @@ export function BPMCanvas(props: BPMCanvasProps) {
                   props.setEdges((eds) =>
                     addEdge(
                       {
+                        ...bridgeEdgeOptions,
                         ...params,
                         sourceHandle: repairedSource,
                         targetHandle: repairedTarget,
-                        type: 'bridge',
-                        markerEnd: {
-                          type: MarkerType.ArrowClosed,
-                          width: 12,
-                          height: 12,
-                          color: '#0f172a',
-                        },
-                        style: { strokeWidth: 2, stroke: '#0f172a', fill: 'none' },
                       },
                       eds,
                     ),

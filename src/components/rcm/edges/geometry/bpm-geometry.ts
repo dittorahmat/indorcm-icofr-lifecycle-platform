@@ -2,10 +2,11 @@ import {
   getStandardNodeDimensions,
   sideFromHandleAlias,
   SAFE_HEADER_CEILING,
+  DOWNWARD_PLUNGE_THRESHOLD_DY,
   type BpmEdgeSide,
 } from '../../../../utils/bpm-constants';
 
-export { SAFE_HEADER_CEILING };
+export { SAFE_HEADER_CEILING, DOWNWARD_PLUNGE_THRESHOLD_DY };
 
 // Canonical handle ids live in bpm-constants (importable by utils and
 // components alike); re-exported here so the geometry seam stays single.
@@ -70,8 +71,8 @@ export function normalizeSide(input: NormalizeSideInput): EdgeSide {
       }
       return dx >= 0 ? 'right' : 'left';
     }
-    // Target handle fallback: if target is clearly lower than source (dy > 40), plunge into 'top'
-    if (dy > 40) {
+    // Target handle fallback: if target is clearly lower than source, plunge into 'top'
+    if (dy > DOWNWARD_PLUNGE_THRESHOLD_DY) {
       return 'top';
     }
     if (Math.abs(dy) >= Math.abs(dx)) {

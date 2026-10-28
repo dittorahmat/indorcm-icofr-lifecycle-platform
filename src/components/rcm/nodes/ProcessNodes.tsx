@@ -227,7 +227,7 @@ export const ReferenceNode = ({ data, selected, type }: NodeProps) => {
       <div 
         style={{ ...style, height: style.width }}
         className={cn(
-          "rounded-full border-2 bg-white flex items-center justify-center shadow-md transition-all",
+          "rounded-full border-2 bg-white flex items-center justify-center shadow-md transition-all group relative",
           selected ? "border-primary ring-4 ring-primary/20" : "border-slate-800"
         )}
       >
