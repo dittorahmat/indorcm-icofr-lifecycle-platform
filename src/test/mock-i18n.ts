@@ -91,7 +91,7 @@ export function validateI18nKey(key: string): void {
   }
 }
 
-export function strictT(key: string, opts?: { defaultValue?: string } | string): string {
+export function strictT(key: string, opts?: { defaultValue?: string; count?: number } | string): string {
   if (typeof opts === 'string') return opts;
   if (typeof opts?.defaultValue === 'string') return opts.defaultValue;
   validateI18nKey(key);

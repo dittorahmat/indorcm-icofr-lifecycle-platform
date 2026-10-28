@@ -13,6 +13,7 @@ import { ExecutiveCharts } from './ExecutiveCharts';
 import { CSAHeatmapTab } from './CSAHeatmapTab';
 import { RiskExposureTab } from './RiskExposureTab';
 import { TestingEvaluationTab } from './TestingEvaluationTab';
+import { RemediationDODTab } from './RemediationDODTab';
 import type { AnalyticsSummary, AnalyticsTab } from './types';
 
 const VALID_TABS: AnalyticsTab[] = [
@@ -163,9 +164,7 @@ export function AnalyticsPage() {
               <TestingEvaluationTab />
             )}
             {activeTab === 'remediation-dod-charts' && (
-              <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-500">
-                {t('tabs.remediation')} (Tiket 05)
-              </div>
+              <RemediationDODTab />
             )}
           </div>
         ) : null}

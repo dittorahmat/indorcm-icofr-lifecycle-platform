@@ -21,6 +21,7 @@ describe('analytics barrel routes contract', () => {
     expect(routePaths).toContain('GET /analytics/heatmap');
     expect(routePaths).toContain('GET /analytics/risk-exposure');
     expect(routePaths).toContain('GET /analytics/testing-evaluation');
+    expect(routePaths).toContain('GET /analytics/remediation');
   });
 });
 
@@ -128,5 +129,37 @@ describe('GET /analytics/summary response structure', () => {
     expect(json.data).toHaveProperty('radarScores');
     expect(json.data).toHaveProperty('statusBreakdown');
     expect(json.data.radarScores.length).toBe(6);
+  });
+
+  it('returns remediation and deficiency breakdown data', async () => {
+    vi.mocked(getDb).mockReturnValue(
+      stubDb([
+        [
+          {
+            severity: 'Material Weakness',
+            status: 'Open',
+          },
+          {
+            severity: 'Control Deficiency',
+            status: 'Resolved',
+          },
+        ],
+      ])
+    );
+
+    const res = await app.request('/api/analytics/remediation?year=2026', undefined, env);
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as {
+      success: boolean;
+      data: {
+        remediationStatus: Array<{ name: string; value: number }>;
+        severityBreakdown: Array<{ name: string; value: number }>;
+        slaComplianceRate: number;
+      };
+    };
+    expect(json.success).toBe(true);
+    expect(json.data).toHaveProperty('remediationStatus');
+    expect(json.data).toHaveProperty('severityBreakdown');
+    expect(json.data).toHaveProperty('slaComplianceRate');
   });
 });

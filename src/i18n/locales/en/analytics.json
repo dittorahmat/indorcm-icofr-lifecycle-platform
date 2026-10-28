@@ -71,5 +71,13 @@
     "effectiveControls": "Effective Controls",
     "designDeficiency": "Design Deficiency",
     "operatingDeficiency": "Operating Deficiency"
+  },
+  "remediation": {
+    "title": "Remediation & Deficiency Breakdown (DOD Analysis)",
+    "subtitle": "Corrective Action Plan (CAP) Tracking, SLA Compliance, and Severity Tally",
+    "remediationCardTitle": "Remediation Progress & Action Plan Status",
+    "severityCardTitle": "Deficiency Severity Distribution (MW, SD, CD)",
+    "slaTitle": "Remediation SLA Compliance Ratio",
+    "slaBenchmark": "Target completion: 90% within planned cycle SLA."
   }
 }

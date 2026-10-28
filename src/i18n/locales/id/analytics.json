@@ -71,5 +71,13 @@
     "effectiveControls": "Kontrol Efektif",
     "designDeficiency": "Defisiensi Desain",
     "operatingDeficiency": "Defisiensi Operasi"
+  },
+  "remediation": {
+    "title": "Remediasi & Rincian Defisiensi (Analisis DOD)",
+    "subtitle": "Pemantauan Corrective Action Plan (CAP), Kepatuhan SLA, dan Distribusi Severity",
+    "remediationCardTitle": "Progres Remediasi & Status Tindak Lanjut CAP",
+    "severityCardTitle": "Distribusi Tingkat Keparahan Defisiensi (MW, SD, CD)",
+    "slaTitle": "Tingkat Kepatuhan SLA Remediasi",
+    "slaBenchmark": "Target penyelesaian: 90% sesuai tenggat waktu siklus berjalan."
   }
 }

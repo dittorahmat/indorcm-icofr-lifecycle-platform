@@ -52,6 +52,18 @@ export interface TestingEvaluationResponse {
   }>;
 }
 
+export interface RemediationDODResponse {
+  remediationStatus: Array<{
+    name: string;
+    value: number;
+  }>;
+  severityBreakdown: Array<{
+    name: string;
+    value: number;
+  }>;
+  slaComplianceRate: number;
+}
+
 export type AnalyticsTab =
   | 'analytics-overview'
   | 'csa-heatmap'
