@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 
 interface CsaRecordInput {
   id?: string | null;
+  controlId?: string | null;
   period?: string | null;
   assessmentDate?: string | number | Date | null;
   isBpmConfirmed?: boolean | null;
@@ -17,6 +18,13 @@ interface CsaRecordInput {
 interface ControlInput {
   code?: string;
   name?: string;
+  description?: string | null;
+}
+
+interface ProcessControlInput {
+  code?: string;
+  name?: string;
+  description?: string | null;
 }
 
 interface SampleInput {
@@ -32,7 +40,8 @@ interface SampleInput {
 export async function generateCsaPdf(
   record: CsaRecordInput,
   control: ControlInput | undefined,
-  samplesData: SampleInput[]
+  samplesData: SampleInput[],
+  processControls?: ProcessControlInput[]
 ): Promise<ArrayBuffer> {
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -73,7 +82,8 @@ export async function generateCsaPdf(
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.setTextColor(71, 85, 105);
-  doc.text(`Periode: ${record.period || '2026'} | Kontrol: ${control?.code || 'N/A'} - ${control?.name || '-'}`, margin, y);
+  const scopeLabel = record.controlId ? 'Kontrol' : 'Proses';
+  doc.text(`Periode: ${record.period || '2026'} | ${scopeLabel}: ${control?.code || 'N/A'} - ${control?.name || '-'}`, margin, y);
 
   y += 4;
   doc.setFontSize(8);
