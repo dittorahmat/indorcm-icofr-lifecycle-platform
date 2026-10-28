@@ -33,5 +33,19 @@
     "testingRatioDesc": "Overall completion of design and operating effectiveness testing.",
     "effective": "Effective",
     "deficient": "Ineffective / Deficient"
+  },
+  "heatmap": {
+    "title": "CSA Risk & Control Matrix (5x5)",
+    "subtitle": "Multi-dimensional Heatmap: Financial Impact vs Likelihood with Residual Risk Drilldown",
+    "viewMatrix": "Matrix 5x5 View",
+    "viewList": "Quadrant List View",
+    "impactAxis": "Financial Impact (1 to 5)",
+    "likelihoodAxis": "Likelihood (1 to 5)",
+    "selectControl": "Select a control badge from the matrix or list to view drilldown details.",
+    "drawerTitle": "Control Assessment & Residual Risk",
+    "businessCycle": "Business Process Cycle",
+    "financialImpact": "Financial Impact (OM/PM)",
+    "csaEvaluation": "CSA Evaluation (Design & Operation)",
+    "residualStatus": "Residual Risk Status"
   }
 }

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Printer, LayoutGrid, Flame, CircleDot, Radar, PieChart as PieIcon } from 'lucide-react';
 import { ExecutiveKpiCards } from './ExecutiveKpiCards';
 import { ExecutiveCharts } from './ExecutiveCharts';
+import { CSAHeatmapTab } from './CSAHeatmapTab';
 import type { AnalyticsSummary, AnalyticsTab } from './types';
 
 const VALID_TABS: AnalyticsTab[] = [
@@ -151,9 +152,7 @@ export function AnalyticsPage() {
               </div>
             )}
             {activeTab === 'csa-heatmap' && (
-              <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-500">
-                {t('tabs.csaHeatmap')} (Tiket 02)
-              </div>
+              <CSAHeatmapTab />
             )}
             {activeTab === 'bubble-analytics' && (
               <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-sm text-slate-500">

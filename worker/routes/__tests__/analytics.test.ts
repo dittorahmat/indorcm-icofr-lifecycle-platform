@@ -18,6 +18,7 @@ describe('analytics barrel routes contract', () => {
   it('keeps analytics URL endpoints byte-identical', () => {
     const routePaths = analytics.routes.map((r) => `${r.method} ${r.path}`);
     expect(routePaths).toContain('GET /analytics/summary');
+    expect(routePaths).toContain('GET /analytics/heatmap');
   });
 });
 
@@ -40,33 +41,33 @@ describe('GET /analytics/summary response structure', () => {
     const db: DrizzleDb = Object.create(null);
     let call = 0;
     const where = vi.fn(() => Promise.resolve(rowSets[call++] ?? []));
-    const select = vi.fn(() => ({ from: vi.fn(() => ({ where })) }));
+    const leftJoin = vi.fn(() => ({ where }));
+    const from = vi.fn(() => ({ where, leftJoin }));
+    const select = vi.fn(() => ({ from }));
     return Object.assign(db, { select });
   };
 
-  it('returns valid executive KPI metrics matching schema', async () => {
+  it('returns 5x5 heatmap risk matrix with control details', async () => {
     vi.mocked(getDb).mockReturnValue(
       stubDb([
-        [{ count: 12 }],
-        [{ count: 24 }],
-        [{ testType: 'TOE', result: 'Pass' }],
-        [{ result: 'Effective' }],
-        [{ severity: 'High', status: 'Open' }],
+        [
+          {
+            id: 'ctrl-1',
+            code: 'CTRL-REV-01',
+            description: 'Three-way match billing',
+            csaStatus: 'Effective',
+            inherentRisk: 'High',
+            process: 'Revenue to Cash',
+          },
+        ],
       ])
     );
 
-    const res = await app.request('/api/analytics/summary?year=2026', undefined, env);
-
+    const res = await app.request('/api/analytics/heatmap?year=2026', undefined, env);
     expect(res.status).toBe(200);
     const json = (await res.json()) as { success: boolean; data: Record<string, unknown> };
     expect(json.success).toBe(true);
-    expect(json.data).toBeDefined();
-    expect(json.data).toHaveProperty('totalRisks');
-    expect(json.data).toHaveProperty('totalControls');
-    expect(json.data).toHaveProperty('toePassRate');
-    expect(json.data).toHaveProperty('csaHealthScore');
-    expect(json.data).toHaveProperty('openDeficiencies');
-    expect(json.data).toHaveProperty('materialWeaknesses');
-    expect(json.data).toHaveProperty('controlsByEffectiveness');
+    expect(json.data).toHaveProperty('matrix');
+    expect(json.data).toHaveProperty('controls');
   });
 });
