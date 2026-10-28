@@ -72,6 +72,10 @@ export function ChangeLogReport() {
           columns: changeLogRegulatoryColumns(getColumnLabels()),
           filename,
           sheetName,
+          signoffs: [
+            { roleTitle: 'Pemohon Perubahan (Lini 1)', name: 'Pemilik Proses / Pengendalian', title: 'Process Owner', date: format(new Date(), 'yyyy-MM-dd'), isSigned: true },
+            { roleTitle: 'Penyetuju Perubahan (Lini 2)', name: 'Tim Kepatuhan ICOFR', title: 'ICOFR Compliance Lead', date: format(new Date(), 'yyyy-MM-dd'), isSigned: true },
+          ],
         });
       },
     });

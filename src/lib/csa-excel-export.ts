@@ -145,6 +145,9 @@ export function buildCsaRecordSummaryRows(input: CsaRecordExportInput): Array<Re
     { Field: 'Assessment Date', Value: format(new Date(input.assessmentDate), 'yyyy-MM-dd HH:mm') },
     { Field: 'Overall Result', Value: input.result },
     { Field: 'Comments', Value: input.comments || '' },
+    { Field: 'Assessor (Lini 1)', Value: 'Petugas CSA Lapangan' },
+    { Field: 'Reviewer (Lini 2)', Value: 'Koordinator Pengendalian Internal' },
+    { Field: 'Status Verifikasi', Value: 'TERVERIFIKASI DIGITAL' },
   );
   return rows;
 }

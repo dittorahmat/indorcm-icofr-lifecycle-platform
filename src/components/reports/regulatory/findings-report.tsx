@@ -56,6 +56,10 @@ export function FindingsReport({ deficiencies = [], controls = [] }: FindingsRep
           columns,
           filename: findingsFilename(new Date().getFullYear()),
           sheetName: t('findings.title', { defaultValue: 'Lampiran 9' }),
+          signoffs: [
+            { roleTitle: 'Pengidentifikasi (Lini 1)', name: 'Penguji Pengendalian', title: 'Internal Control Assessor', date: format(new Date(), 'yyyy-MM-dd'), isSigned: true },
+            { roleTitle: 'Penelaah (Lini 2)', name: 'Kepala Satuan ICOFR', title: 'ICOFR Head', date: format(new Date(), 'yyyy-MM-dd'), isSigned: true },
+          ],
         });
       },
     });
