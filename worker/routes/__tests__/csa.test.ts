@@ -41,7 +41,7 @@ describe('CSA barrel routes and sub-apps', () => {
   });
 
   it('GET /csa/:id returns 404 when record is not found', async () => {
-    const app = new Hono();
+    const app = new Hono<any>();
     app.use('*', async (c, next) => {
       c.set('userId', 'user-1');
       c.set('organizationId', 'org-1');

@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
 import { RolloverCard } from '@/components/layout/RolloverCard';
-import { exportRCMToExcel } from '@/lib/rcm-excel-export';
+import { exportRCMToExcel, getDefaultRcmSignoffs } from '@/lib/rcm-excel-export';
 
 const COSO_PRINCIPLES = Array.from({ length: 17 }, (_, i) => i + 1);
 
@@ -178,10 +178,7 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
               `Tahun Fiskal: ${workingYear}`,
               `Tanggal Ekspor: ${new Date().toISOString().split('T')[0]}`,
             ],
-            signoffs: [
-              { roleTitle: 'Disusun Oleh (Lini 1)', name: 'Koordinator Tata Kelola / GRC', title: 'Governance Officer', date: new Date().toISOString().split('T')[0], isSigned: true },
-              { roleTitle: 'Direviu Oleh (Lini 2)', name: 'Kepala Manajemen Risiko & Kepatuhan', title: 'Head of Risk & Compliance', date: new Date().toISOString().split('T')[0], isSigned: true },
-            ],
+            signoffs: getDefaultRcmSignoffs('ELC'),
           })}
           exportLabel={t('rcm:actions.export_excel', 'Export Excel')}
         >

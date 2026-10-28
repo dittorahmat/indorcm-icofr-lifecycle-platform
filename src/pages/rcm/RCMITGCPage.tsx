@@ -13,7 +13,7 @@ import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
 import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
 import { RCMImportWizardModal } from '@/components/rcm/import/RCMImportWizardModal';
-import { exportRCMToExcel } from '@/lib/rcm-excel-export';
+import { exportRCMToExcel, getDefaultRcmSignoffs } from '@/lib/rcm-excel-export';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { ASSERTION_FIELDS, IPO_FIELDS } from '@shared/assertion-fields';
 
@@ -201,10 +201,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
               `Tahun Fiskal: ${new Date().getFullYear()}`,
               `Tanggal Ekspor: ${new Date().toISOString().split('T')[0]}`,
             ],
-            signoffs: [
-              { roleTitle: 'Disusun Oleh (Lini 1)', name: 'Lead IT Security / IT Controller', title: 'IT Controller', date: new Date().toISOString().split('T')[0], isSigned: true },
-              { roleTitle: 'Direviu Oleh (Lini 2)', name: 'Tim Audit TI / Kepatuhan ICOFR', title: 'IT Risk & Compliance Head', date: new Date().toISOString().split('T')[0], isSigned: true },
-            ],
+            signoffs: getDefaultRcmSignoffs('ITGC'),
           })}
           exportLabel={t('rcm:actions.export_excel', 'Export Excel')}
           metadata={[

@@ -20,7 +20,7 @@ import { RCMImportWizardModal } from '@/components/rcm/import/RCMImportWizardMod
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
 import { RolloverCard } from '@/components/layout/RolloverCard';
-import { exportRCMToExcel } from '@/lib/rcm-excel-export';
+import { exportRCMToExcel, getDefaultRcmSignoffs } from '@/lib/rcm-excel-export';
 import {
   ASSERTION_CODE,
   ASSERTION_FIELDS,
@@ -293,10 +293,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
               `Tahun Fiskal: ${workingYear}`,
               `Tanggal Ekspor: ${new Date().toISOString().split('T')[0]}`,
             ],
-            signoffs: [
-              { roleTitle: 'Disusun Oleh (Lini 1)', name: 'Pemilik Kontrol / PIC', title: 'Process Owner', date: new Date().toISOString().split('T')[0], isSigned: true },
-              { roleTitle: 'Direviu Oleh (Lini 2)', name: 'Tim Kepatuhan ICOFR', title: 'ICOFR Officer', date: new Date().toISOString().split('T')[0], isSigned: true },
-            ],
+            signoffs: getDefaultRcmSignoffs('TLC'),
           })}
           exportLabel={t('rcm:actions.export_excel', 'Export Excel')}
           metadata={[

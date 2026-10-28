@@ -14,6 +14,27 @@ export interface RegulatorySignoffItem {
   isSigned?: boolean;
 }
 
+/** Standard signoff pairs for RCM matrices (Lini 1 Maker & Lini 2 Reviewer). */
+export function getDefaultRcmSignoffs(matrixType: 'TLC' | 'ELC' | 'ITGC'): RegulatorySignoffItem[] {
+  const today = new Date().toISOString().split('T')[0];
+  if (matrixType === 'ELC') {
+    return [
+      { roleTitle: 'Disusun Oleh (Lini 1)', name: 'Koordinator Tata Kelola / GRC', title: 'Governance Officer', date: today, isSigned: true },
+      { roleTitle: 'Direviu Oleh (Lini 2)', name: 'Kepala Manajemen Risiko & Kepatuhan', title: 'Head of Risk & Compliance', date: today, isSigned: true },
+    ];
+  }
+  if (matrixType === 'ITGC') {
+    return [
+      { roleTitle: 'Disusun Oleh (Lini 1)', name: 'Lead IT Security / IT Controller', title: 'IT Controller', date: today, isSigned: true },
+      { roleTitle: 'Direviu Oleh (Lini 2)', name: 'Tim Audit TI / Kepatuhan ICOFR', title: 'IT Risk & Compliance Head', date: today, isSigned: true },
+    ];
+  }
+  return [
+    { roleTitle: 'Disusun Oleh (Lini 1)', name: 'Pemilik Kontrol / PIC', title: 'Process Owner', date: today, isSigned: true },
+    { roleTitle: 'Direviu Oleh (Lini 2)', name: 'Tim Kepatuhan ICOFR', title: 'ICOFR Officer', date: today, isSigned: true },
+  ];
+}
+
 export interface RCMExportOptions {
   sheetName?: string;
   matrixType?: 'TLC' | 'ELC' | 'ITGC';
