@@ -38,7 +38,7 @@ export const AutomatedActivityNode = ({ data, selected, type }: NodeProps) => {
       <div 
         style={style}
         className={cn(
-          "px-4 py-3 shadow-md rounded-sm bg-blue-50 border-2 border-blue-800 text-center transition-all relative flex flex-col justify-between min-h-[64px]",
+          "px-4 py-3 shadow-md rounded-sm bg-blue-50 border-2 border-blue-800 text-center transition-all relative flex flex-col justify-between min-h-[64px] group",
           selected && "ring-4 ring-primary/20 border-primary shadow-lg scale-105"
         )}
       >
