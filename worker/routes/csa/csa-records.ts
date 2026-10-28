@@ -29,22 +29,43 @@ csaRecordsRoute.get('/csa', async (c) => {
     conditions = and(
       conditions,
       or(
-        sql`${csaRecords.period} LIKE ${'%' + year + '%'}`,
-        and(
-          or(sql`${csaRecords.period} IS NULL`, sql`${csaRecords.period} = ''`, sql`NOT (${csaRecords.period} ~ '[0-9]{4}')`),
-          sql`EXISTS (SELECT 1 FROM controls WHERE controls.id = ${csaRecords.controlId} AND controls.organization_id = ${orgId} AND controls.year = ${yearNum})`
-        ),
-        and(
-          or(sql`${csaRecords.period} IS NULL`, sql`${csaRecords.period} = ''`, sql`NOT (${csaRecords.period} ~ '[0-9]{4}')`),
-          sql`EXTRACT(YEAR FROM ${csaRecords.assessmentDate}) = ${yearNum}`
-        )
+        eq(csaRecords.period, year),
+        sql`${csaRecords.period} LIKE ${year + '-%'}`,
+        sql`${csaRecords.period} LIKE ${'%-Q%'} AND ${csaRecords.period} LIKE ${'%' + year + '%'}`,
+        eq(controls.year, yearNum),
+        sql`EXTRACT(YEAR FROM ${csaRecords.assessmentDate}) = ${yearNum}`
       )
     ) as SQL;
   }
   if (bpmProcessId) conditions = and(conditions, eq(csaRecords.bpmProcessId, bpmProcessId)) as SQL;
   if (scheduleId) conditions = and(conditions, eq(csaRecords.scheduleId, scheduleId)) as SQL;
 
-  const items = await db.select().from(csaRecords).where(conditions);
+  const baseQuery = db
+    .select({
+      id: csaRecords.id,
+      organizationId: csaRecords.organizationId,
+      controlId: csaRecords.controlId,
+      bpmProcessId: csaRecords.bpmProcessId,
+      period: csaRecords.period,
+      scheduleId: csaRecords.scheduleId,
+      assessmentDate: csaRecords.assessmentDate,
+      assessedBy: csaRecords.assessedBy,
+      result: csaRecords.result,
+      comments: csaRecords.comments,
+      isDraft: csaRecords.isDraft,
+      isBpmConfirmed: csaRecords.isBpmConfirmed,
+      line2Status: csaRecords.line2Status,
+      line2Comments: csaRecords.line2Comments,
+      line2ValidatedBy: csaRecords.line2ValidatedBy,
+      line2ValidatedDate: csaRecords.line2ValidatedDate,
+      workflowStatus: csaRecords.workflowStatus,
+    })
+    .from(csaRecords);
+
+  const items = year
+    ? await baseQuery.leftJoin(controls, eq(csaRecords.controlId, controls.id)).where(conditions)
+    : await baseQuery.where(conditions);
+
   return ok(c, { items });
 });
 
