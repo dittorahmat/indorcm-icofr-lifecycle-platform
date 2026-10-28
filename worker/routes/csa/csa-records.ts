@@ -159,7 +159,7 @@ csaRecordsRoute.get('/csa/:id/export-pdf', async (c) => {
       description: rc.description,
     }));
   } else {
-    return bad(c, 'INVALID_CSA_SCOPE', 'CSA Record has no associated control or process');
+    return bad(c, 'INVALID_CSA_SCOPE', 400, 'CSA Record has no associated control or process');
   }
 
   const samplesData = await db.select().from(csaSamples).where(eq(csaSamples.csaRecordId, id));

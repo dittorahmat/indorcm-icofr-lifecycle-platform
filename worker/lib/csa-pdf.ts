@@ -21,11 +21,7 @@ interface ControlInput {
   description?: string | null;
 }
 
-interface ProcessControlInput {
-  code?: string;
-  name?: string;
-  description?: string | null;
-}
+type ProcessControlInput = ControlInput;
 
 interface SampleInput {
   sampleRef?: string | null;
@@ -124,7 +120,12 @@ export async function generateCsaPdf(
   const docs = `Daftar Dokumen: ${record.documentList || 'SOP, Berita Acara Rekonsiliasi, Log Transaksi ERP'}`;
   doc.text(docs, margin + 3, y + 15, { maxWidth: contentWidth - 6 });
 
-  y += 24;
+  if (processControls && processControls.length > 0) {
+    const ctrlList = `Lingkup Kontrol Terkait: ${processControls.map((pc) => pc.code ? `${pc.code} (${pc.name || '-'})` : (pc.name || '-')).join(', ')}`;
+    doc.text(ctrlList, margin + 3, y + 19, { maxWidth: contentWidth - 6 });
+  }
+
+  y += processControls && processControls.length > 0 ? 28 : 24;
 
   // Section II: Tabel Sampel & Atribut IPO
   doc.setFont('helvetica', 'bold');
