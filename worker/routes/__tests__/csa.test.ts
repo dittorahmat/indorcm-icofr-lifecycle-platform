@@ -8,6 +8,9 @@ vi.mock('../../db', () => ({
   getDb: vi.fn(() => ({
     select: vi.fn().mockReturnValue({
       from: vi.fn().mockReturnValue({
+        leftJoin: vi.fn().mockReturnValue({
+          where: vi.fn().mockResolvedValue([]),
+        }),
         where: vi.fn().mockReturnValue({
           limit: vi.fn().mockResolvedValue([]),
         }),
@@ -53,6 +56,24 @@ describe('CSA barrel routes and sub-apps', () => {
 
     const res = await app.request('/api/csa/non-existent-id');
     expect(res.status).toBe(404);
+  });
+
+  it('GET /csa/worklist accepts valid year parameter', async () => {
+    const app = new Hono<any>();
+    app.use('*', async (c, next) => {
+      c.set('userId', 'user-1');
+      c.set('organizationId', 'org-1');
+      c.set('userRole', 'Admin');
+      c.env = { DATABASE_URL: 'postgres://mock' };
+      await next();
+    });
+    app.route('/api', csa);
+
+    const res = await app.request('/api/csa/worklist?year=2025');
+    expect(res.status).toBe(200);
+    const json = await res.json<{ success: boolean; data: { items: unknown[] } }>();
+    expect(json.success).toBe(true);
+    expect(json.data.items).toEqual([]);
   });
 });
 

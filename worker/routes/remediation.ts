@@ -8,6 +8,7 @@ import {
   organization, controls, rcms
 } from '../db/schema';
 import { eq, and, SQL, sql, or } from 'drizzle-orm';
+import { matchesPeriodYear } from '../lib/period-query';
 import type { Deficiency, ActionPlan, AggregateDeficiency, WorkflowAction } from "@shared/types";
 import { AuditService } from "../services/audit-service";
 import { createNotificationAndSendEmail } from "../services/email";
@@ -24,20 +25,13 @@ remediation.get('/deficiencies', async (c) => {
   const year = yearParam ? parseInt(yearParam, 10) : undefined;
 
   let whereClause: SQL = eq(deficiencies.organizationId, orgId);
-  if (year && !isNaN(year)) {
+  if (year && !isNaN(year) && yearParam) {
     whereClause = and(
       whereClause,
       or(
-        sql`${deficiencies.period} LIKE ${'%' + yearParam + '%'}`,
-        and(
-          or(sql`${deficiencies.period} IS NULL`, sql`${deficiencies.period} = ''`, sql`NOT (${deficiencies.period} ~ '[0-9]{4}')`),
-          eq(controls.year, year)
-        ),
-        and(
-          or(sql`${deficiencies.period} IS NULL`, sql`${deficiencies.period} = ''`, sql`NOT (${deficiencies.period} ~ '[0-9]{4}')`),
-          sql`${controls.year} IS NULL`,
-          sql`EXTRACT(YEAR FROM ${deficiencies.identifiedDate}) = ${year}`
-        )
+        matchesPeriodYear(deficiencies.period, yearParam),
+        eq(controls.year, year),
+        sql`EXTRACT(YEAR FROM ${deficiencies.identifiedDate}) = ${year}`
       )
     ) as SQL;
   }
@@ -85,9 +79,11 @@ remediation.get('/actionplans', async (c) => {
           WHERE deficiencies.id = ${actionPlans.deficiencyId}
           AND deficiencies.organization_id = ${orgId}
           AND (
-            deficiencies.period LIKE ${'%' + yearParam + '%'}
-            OR ((deficiencies.period IS NULL OR deficiencies.period = '' OR NOT (deficiencies.period ~ '[0-9]{4}')) AND controls.year = ${year})
-            OR ((deficiencies.period IS NULL OR deficiencies.period = '' OR NOT (deficiencies.period ~ '[0-9]{4}')) AND controls.year IS NULL AND EXTRACT(YEAR FROM deficiencies.identified_date) = ${year})
+            deficiencies.period = ${yearParam}
+            OR deficiencies.period LIKE ${yearParam + '-%'}
+            OR (deficiencies.period LIKE '%-Q%' AND deficiencies.period LIKE ${'%' + yearParam + '%'})
+            OR controls.year = ${year}
+            OR EXTRACT(YEAR FROM deficiencies.identified_date) = ${year}
           )
         )`
       )
