@@ -273,8 +273,8 @@ export function useOcrStaging({ isOpen, isDirty, hasExistingNodes = false, t, on
           {
             ...params,
             type: 'bridge',
-            markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20, color: '#0f172a' },
-            style: { strokeWidth: 2, stroke: '#0f172a' },
+            markerEnd: { type: MarkerType.ArrowClosed, width: 12, height: 12, color: '#0f172a' },
+            style: { strokeWidth: 2, stroke: '#0f172a', fill: 'none' },
           },
           eds,
         ),
