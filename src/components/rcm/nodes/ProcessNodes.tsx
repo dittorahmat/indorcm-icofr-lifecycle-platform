@@ -52,7 +52,7 @@ export const ActivityNode = ({ data, selected, type }: NodeProps) => {
             <Activity className="h-2.5 w-2.5 shrink-0" /> <span className="truncate">{data.role || "Role"}</span>
           </div>
           {data.stepRef && (
-            <span className="font-mono text-[10px] font-bold px-1 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
+            <span className="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
               {data.stepRef}
             </span>
           )}
