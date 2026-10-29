@@ -43,6 +43,7 @@ export interface BPMNodeOption {
   id: string;
   label: string;
   type: string;
+  stepRef?: string;
 }
 
 export interface RCMImportWizardModalProps {

@@ -26,6 +26,26 @@ describe('reconcileRcmWithBpmNodes', () => {
     expect(result[0].targetBpmNodeId).toBe('node-2');
   });
 
+  it('matches exactly by explicit stepRef property on BPM node', () => {
+    const nodesWithStepRef: BPMNodeOption[] = [
+      { id: 'node-x', label: 'Verifikasi Berkas Tagihan', type: 'activity', stepRef: 'ACT-09' },
+    ];
+    const rows: RCMImportParsedRow[] = [
+      {
+        id: 'row-x',
+        processName: 'Finance',
+        subProcessName: 'AP',
+        bpmNodeRef: 'ACT-09',
+        riskDescription: 'Risiko double payment',
+        controlName: 'Three way matching',
+      },
+    ];
+
+    const result = reconcileRcmWithBpmNodes(rows, nodesWithStepRef);
+    expect(result[0].matchStatus).toBe('matched');
+    expect(result[0].targetBpmNodeId).toBe('node-x');
+  });
+
   it('matches matched via high token similarity when bpmNodeRef is missing', () => {
     const rows: RCMImportParsedRow[] = [
       {

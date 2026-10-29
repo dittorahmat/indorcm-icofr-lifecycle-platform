@@ -188,6 +188,7 @@ export function BPMEditor({ diagramId, subProcess, workingYear, currentGL, bpmPr
           id: n.id,
           label: n.data?.label || n.id,
           type: n.type || 'activity',
+          stepRef: n.data?.stepRef,
         }))}
         onSuccess={() => {
           persistence.handleSave();

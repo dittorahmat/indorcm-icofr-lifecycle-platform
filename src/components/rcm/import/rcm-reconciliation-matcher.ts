@@ -22,11 +22,12 @@ export function reconcileRcmWithBpmNodes(
   }
 
   return rows.map((row) => {
-    // 1. Direct Ref match (e.g., bpmNodeRef = '1.2' matches node with label '1.2' or id '1.2')
+    // 1. Direct Ref match (e.g., bpmNodeRef = '1.2' matches node with stepRef '1.2', label '1.2', or id '1.2')
     if (row.bpmNodeRef) {
       const cleanRef = row.bpmNodeRef.trim().toLowerCase();
       const exactMatch = bpmNodes.find(
         (n) =>
+          (n.stepRef && n.stepRef.trim().toLowerCase() === cleanRef) ||
           n.id.toLowerCase() === cleanRef ||
           n.label.toLowerCase().startsWith(cleanRef) ||
           n.label.toLowerCase().includes(`(${cleanRef})`) ||
