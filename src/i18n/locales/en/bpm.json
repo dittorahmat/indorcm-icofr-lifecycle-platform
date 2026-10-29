@@ -412,7 +412,8 @@
       "undo": "Changes undone (Undo)",
       "redo": "Changes redone (Redo)",
       "autoArrangeSuccess": "Canvas layout auto-arranged successfully",
-      "deletedCount": "Deleted {{count}} item(s)"
+      "deletedCount": "Deleted {{count}} item(s)",
+      "nodeNotFound": "Target BPM step node was not found on this diagram"
     },
     "signatures": {
       "lini1NamePlaceholder": "Preparer Name",

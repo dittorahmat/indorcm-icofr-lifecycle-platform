@@ -196,6 +196,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
             if (!hasLink) {
               return <span className="text-slate-400 font-mono text-xs">-</span>;
             }
+            const displayLabel = row.nodeId ? (row.nodeId.length > 15 ? 'BPM Step' : row.nodeId) : 'BPM';
             const targetUrl = `/rcm/bpm?diagramId=${encodeURIComponent(row.diagramId || '')}${row.nodeId ? `&nodeId=${encodeURIComponent(row.nodeId)}` : ''}`;
             return (
               <Link
@@ -203,7 +204,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
                 className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 hover:text-indigo-900 px-2 py-0.5 rounded transition-colors"
                 title={t('matrix.open_bpm_step', { defaultValue: 'Buka Simpul BPM' })}
               >
-                <span>{row.nodeId || 'BPM'}</span>
+                <span>{displayLabel}</span>
                 <ExternalLink className="h-3 w-3 shrink-0" />
               </Link>
             );

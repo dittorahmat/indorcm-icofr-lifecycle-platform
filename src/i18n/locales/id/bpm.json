@@ -412,7 +412,8 @@
       "undo": "Perubahan dibatalkan (Undo)",
       "redo": "Perubahan diulang (Redo)",
       "autoArrangeSuccess": "Tata letak kanvas berhasil dirapikan otomatis",
-      "deletedCount": "Berhasil menghapus {{count}} item"
+      "deletedCount": "Berhasil menghapus {{count}} item",
+      "nodeNotFound": "Simpul langkah BPM yang dituju tidak ditemukan pada diagram ini"
     },
     "signatures": {
       "lini1NamePlaceholder": "Nama Penyusun",

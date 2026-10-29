@@ -1,6 +1,8 @@
 import * as React from 'react';
 import type { Edge, Node, ReactFlowInstance } from 'reactflow';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { isBadgeNodeType } from '../bpm-editor-constants';
 import { matchesStepRef } from '../utils/step-ref-utils';
@@ -26,6 +28,7 @@ export function useBPMEditorSelection({
   isLocked,
   rfInstance,
 }: UseBPMEditorSelectionParams) {
+  const { t } = useTranslation('bpm');
   const [searchParams] = useSearchParams();
   const [selectedNodeId, setSelectedNodeId] = React.useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = React.useState<string | null>(null);
@@ -46,6 +49,8 @@ export function useBPMEditorSelection({
   }, [isMobileView]);
 
   // Deep-link node highlight: check search params for nodeId / stepRef to auto-select and center
+  const notifiedMissingRef = React.useRef<string | null>(null);
+
   React.useEffect(() => {
     if (nodes.length === 0) return;
     const targetNodeId = searchParams.get('nodeId');
@@ -60,10 +65,18 @@ export function useBPMEditorSelection({
     if (match) {
       setSelectedNodeId(match.id);
       if (rfInstance && match.position) {
-        rfInstance.setCenter(match.position.x + 80, match.position.y + 30, { zoom: 1.1, duration: 400 });
+        const nodeWidth = typeof match.width === 'number' ? match.width : 160;
+        const nodeHeight = typeof match.height === 'number' ? match.height : 60;
+        rfInstance.setCenter(match.position.x + nodeWidth / 2, match.position.y + nodeHeight / 2, { zoom: 1.1, duration: 400 });
+      }
+    } else {
+      const searchKey = `${targetNodeId || ''}:${targetStepRef || ''}`;
+      if (notifiedMissingRef.current !== searchKey) {
+        notifiedMissingRef.current = searchKey;
+        toast.info(t('bpm:editor.toast.nodeNotFound'));
       }
     }
-  }, [nodes, searchParams, rfInstance]);
+  }, [nodes, searchParams, rfInstance, t]);
 
   // Explicit edit intent: resolves the node, skips badge helpers, then marks it
   // as both selected (HUD) and editing (worksheet open).
