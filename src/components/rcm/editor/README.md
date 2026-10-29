@@ -27,6 +27,10 @@ Arsitektur modul BPM Editor terbagi secara tegas antara mesin tata letak determi
   - `useBPMEditor.ts`: Seam orkestrasi tunggal hook editor.
   - `useBPMEditorHistory.ts`: Pengendali Undo, Redo, dan shortcut keyboard (`Ctrl+Z`, `Ctrl+Y`).
   - `useBPMDiagram.ts`: Graph state (nodes & edges) dan mutasi React Flow.
+  - `useBPMEditorSelection.ts`: Pengendali seleksi simpul/edge aktif, HUD toolbar, pembukaan Regulatory Property Sheet via Enter, serta deep-link URL search params (`?diagramId=...&nodeId=...&stepRef=...`) dengan auto-center viewport (`rfInstance.setCenter`).
+  - `useBPMDiagramLoader.ts`: Hidrasi state simpul dan koneksi dari database saat pertama kali diagram dibuka.
+  - `useBPMCanvasHandlers.ts`: Penanganan event drag-drop, koneksi panah, dan penerapan hasil OCR diagram.
+- **`src/components/rcm/editor/utils/step-ref-utils.ts`**: Utilitas murni ekstraksi prefiks langkah (`extractStepRefFromLabel`) dan pencocokan langkah (`matchesStepRef`) yang dipakai bersama oleh OCR normalizer, RCM reconciliation matcher, dan editor selection.
 
 ## 3. Penelaahan OCR (Staging & Review)
 - **`src/components/rcm/editor/BPMOcrModal.tsx`**: Modal dialog upload dan penelaahan OCR.

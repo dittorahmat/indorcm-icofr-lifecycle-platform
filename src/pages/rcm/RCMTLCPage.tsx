@@ -194,7 +194,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
           render: (row) => {
             const hasLink = row.diagramId || row.nodeId;
             if (!hasLink) {
-              return <span className="text-slate-400 font-mono text-[11px]">-</span>;
+              return <span className="text-slate-400 font-mono text-xs">-</span>;
             }
             const targetUrl = `/rcm/bpm?diagramId=${encodeURIComponent(row.diagramId || '')}${row.nodeId ? `&nodeId=${encodeURIComponent(row.nodeId)}` : ''}`;
             return (

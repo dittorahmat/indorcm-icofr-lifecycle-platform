@@ -90,6 +90,16 @@ const HEADER_SQUEEZE = [
   },
 ];
 
+// SPA In-App Navigation Guard (anti-refresh invariant).
+// Disallows raw HTML `<a href="/...">` for internal routes: use `<Link to="...">`
+// from react-router-dom so React Query in-memory cache and app state are preserved.
+const SPA_INTERNAL_LINK = [
+  {
+    "selector": "JSXOpeningElement[name.name='a'] > JSXAttribute[name.name='href'] > Literal[value=/^\\/[^\\/]/]",
+    "message": "Do not use raw `<a href=\"/...\">` for internal SPA navigation: use `<Link to=\"...\">` from `react-router-dom` to preserve in-memory state and avoid full page reloads."
+  },
+];
+
 export default tseslint.config(
   { ignores: ['dist', 'dist-whitelabel'] },
   {
@@ -167,6 +177,7 @@ export default tseslint.config(
         CONSTANT_BOOLEAN,
         ...ANTISLOP,
         ...HEADER_SQUEEZE,
+        ...SPA_INTERNAL_LINK,
       ],
     },
   },
