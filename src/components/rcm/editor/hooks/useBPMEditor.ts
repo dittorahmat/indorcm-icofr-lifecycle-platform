@@ -70,6 +70,7 @@ export function useBPMEditor({ diagramId, subProcess, workingYear, currentGL, bp
     pushState: graph.pushState,
     setDirty,
     isLocked: state.isLocked,
+    rfInstance: view.rfInstance,
   });
 
   const ops = useBPMNodeOperations({

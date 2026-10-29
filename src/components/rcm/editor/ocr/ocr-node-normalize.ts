@@ -1,4 +1,5 @@
 import type { Edge, Node } from 'reactflow';
+import { extractStepRefFromLabel } from '../utils/step-ref-utils';
 import { canonicalizeHandleId } from '@/utils/bpm-constants';
 import {
   SWIMLANE_DRAG_HANDLE,
@@ -40,10 +41,7 @@ export function normalizeLaidOutNodes(laidOut: OcrLayoutResult): Node[] {
     const resolvedDept = n.department?.trim() || n.label?.trim() || deriveLabelFromId(n.id);
     const rawLabel = n.label?.trim() || '';
     const resolvedLabel = rawLabel || resolvedDept;
-    
-    // Automatically extract stepRef if label starts with pattern like "1.2", "[1.2]", "(1.2)", "ACT-01"
-    const stepRefMatch = !isSwimlane ? rawLabel.match(/^(?:\[([A-Za-z0-9_.-]+)\]|\(([A-Za-z0-9_.-]+)\)|([0-9]+(?:\.[0-9]+)+|[A-Za-z]+-[0-9]+))(?:\s*[:.-]?\s*|$)/) : null;
-    const extractedStepRef = stepRefMatch ? (stepRefMatch[1] || stepRefMatch[2] || stepRefMatch[3]) : undefined;
+    const extractedStepRef = !isSwimlane ? extractStepRefFromLabel(rawLabel) : undefined;
 
     return {
       id: n.id,

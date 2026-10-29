@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
@@ -197,14 +198,14 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
             }
             const targetUrl = `/rcm/bpm?diagramId=${encodeURIComponent(row.diagramId || '')}${row.nodeId ? `&nodeId=${encodeURIComponent(row.nodeId)}` : ''}`;
             return (
-              <a
-                href={targetUrl}
+              <Link
+                to={targetUrl}
                 className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 hover:text-indigo-900 px-2 py-0.5 rounded transition-colors"
                 title={t('matrix.open_bpm_step', { defaultValue: 'Buka Simpul BPM' })}
               >
                 <span>{row.nodeId || 'BPM'}</span>
                 <ExternalLink className="h-3 w-3 shrink-0" />
-              </a>
+              </Link>
             );
           }
         },

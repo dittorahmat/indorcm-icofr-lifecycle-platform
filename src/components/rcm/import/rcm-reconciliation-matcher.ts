@@ -1,3 +1,4 @@
+import { matchesStepRef } from '../editor/utils/step-ref-utils';
 import type { BPMNodeOption, RCMImportParsedRow } from './rcm-import-types';
 
 /**
@@ -24,14 +25,9 @@ export function reconcileRcmWithBpmNodes(
   return rows.map((row) => {
     // 1. Direct Ref match (e.g., bpmNodeRef = '1.2' matches node with stepRef '1.2', label '1.2', or id '1.2')
     if (row.bpmNodeRef) {
-      const cleanRef = row.bpmNodeRef.trim().toLowerCase();
+      const cleanRef = row.bpmNodeRef.trim();
       const exactMatch = bpmNodes.find(
-        (n) =>
-          (n.stepRef && n.stepRef.trim().toLowerCase() === cleanRef) ||
-          n.id.toLowerCase() === cleanRef ||
-          n.label.toLowerCase().startsWith(cleanRef) ||
-          n.label.toLowerCase().includes(`(${cleanRef})`) ||
-          n.label.toLowerCase().includes(`[${cleanRef}]`)
+        (n) => matchesStepRef(n.stepRef, n.label, cleanRef) || n.id.toLowerCase() === cleanRef.toLowerCase()
       );
 
       if (exactMatch) {

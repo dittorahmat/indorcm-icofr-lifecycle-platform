@@ -1,7 +1,9 @@
 import * as React from 'react';
-import type { Edge, Node } from 'reactflow';
+import type { Edge, Node, ReactFlowInstance } from 'reactflow';
+import { useSearchParams } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { isBadgeNodeType } from '../bpm-editor-constants';
+import { matchesStepRef } from '../utils/step-ref-utils';
 
 interface UseBPMEditorSelectionParams {
   nodes: Node[];
@@ -11,6 +13,7 @@ interface UseBPMEditorSelectionParams {
   pushState: (nodes: Node[], edges: Edge[]) => void;
   setDirty: (dirty: boolean) => void;
   isLocked: boolean;
+  rfInstance?: ReactFlowInstance | null;
 }
 
 export function useBPMEditorSelection({
@@ -21,7 +24,9 @@ export function useBPMEditorSelection({
   pushState,
   setDirty,
   isLocked,
+  rfInstance,
 }: UseBPMEditorSelectionParams) {
+  const [searchParams] = useSearchParams();
   const [selectedNodeId, setSelectedNodeId] = React.useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = React.useState<string | null>(null);
   // Explicit edit intent: the node whose Regulatory Property Worksheet is open.
@@ -40,33 +45,25 @@ export function useBPMEditorSelection({
     if (!isMobileView) setMobileInspectId(null);
   }, [isMobileView]);
 
-  // Deep-link node highlight: check URL search params for nodeId / stepRef to auto-select and center
+  // Deep-link node highlight: check search params for nodeId / stepRef to auto-select and center
   React.useEffect(() => {
     if (nodes.length === 0) return;
-    const params = new URLSearchParams(window.location.search);
-    const targetNodeId = params.get('nodeId');
-    const targetStepRef = params.get('stepRef');
+    const targetNodeId = searchParams.get('nodeId');
+    const targetStepRef = searchParams.get('stepRef');
+    if (!targetNodeId && !targetStepRef) return;
 
-    if (targetNodeId) {
-      const match = nodes.find((n) => n.id === targetNodeId);
-      if (match) {
-        setSelectedNodeId(match.id);
-        return;
-      }
+    let match = targetNodeId ? nodes.find((n) => n.id === targetNodeId) : undefined;
+    if (!match && targetStepRef) {
+      match = nodes.find((n) => matchesStepRef(n.data?.stepRef, n.data?.label, targetStepRef));
     }
 
-    if (targetStepRef) {
-      const cleanStep = targetStepRef.trim().toLowerCase();
-      const match = nodes.find(
-        (n) =>
-          (n.data?.stepRef && String(n.data.stepRef).toLowerCase() === cleanStep) ||
-          (n.data?.label && String(n.data.label).toLowerCase().includes(cleanStep))
-      );
-      if (match) {
-        setSelectedNodeId(match.id);
+    if (match) {
+      setSelectedNodeId(match.id);
+      if (rfInstance && match.position) {
+        rfInstance.setCenter(match.position.x + 80, match.position.y + 30, { zoom: 1.1, duration: 400 });
       }
     }
-  }, [nodes]);
+  }, [nodes, searchParams, rfInstance]);
 
   // Explicit edit intent: resolves the node, skips badge helpers, then marks it
   // as both selected (HUD) and editing (worksheet open).

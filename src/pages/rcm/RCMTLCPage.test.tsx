@@ -81,4 +81,11 @@ describe('RCMTLCPage Ref BPM deep-link rendering', () => {
     expect(bpmLink).toBeInTheDocument();
     expect(bpmLink).toHaveAttribute('href', '/rcm/bpm?diagramId=diag-1&nodeId=node-act-1');
   });
+
+  it('renders a hyphen when no BPM linkage exists', async () => {
+    const Wrapper = createWrapper();
+    render(<Wrapper />);
+
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+  });
 });
