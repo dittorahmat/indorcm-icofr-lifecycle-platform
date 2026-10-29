@@ -154,6 +154,8 @@ function selectColumns(input: MatrixReadInput) {
     rcmId: rcms.id,
     controlId: controls.id,
     bpmProcessId: bpmProcesses.id,
+    diagramId: bpmDiagrams.id,
+    nodeId: bpmNodeRcms.nodeId,
     parentId: bpmProcesses.parentId,
     level: bpmProcesses.level,
     parentProcessName: PROCESS_NAME,

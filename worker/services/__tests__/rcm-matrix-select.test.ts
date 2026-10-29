@@ -55,16 +55,15 @@ describe('rcm-matrix-select: one builder for TLC / ELC / ITGC', () => {
 
   it('keeps the shared columns identical across the three kinds', () => {
     const shared = keysOf('ITGC').filter((key) => !['itgcDomain', 'itgcAssertions'].includes(key));
-    expect(shared).toHaveLength(30);
+    expect(shared).toHaveLength(32);
     for (const kind of KINDS) expect(keysOf(kind)).toEqual(expect.arrayContaining(shared));
   });
 
   it('carries only the column groups its kind declares', () => {
-    // Column counts transcribed from the pre-builder selects (TLC 50 / ELC 42 / ITGC 32):
-    // a column added to one kind without review fails here.
-    expect(keysOf('TLC')).toHaveLength(50);
-    expect(keysOf('ELC')).toHaveLength(42);
-    expect(keysOf('ITGC')).toHaveLength(32);
+    // Column counts with diagramId and nodeId included (TLC 52 / ELC 44 / ITGC 34):
+    expect(keysOf('TLC')).toHaveLength(52);
+    expect(keysOf('ELC')).toHaveLength(44);
+    expect(keysOf('ITGC')).toHaveLength(34);
 
     expect(keysOf('TLC')).toEqual(expect.arrayContaining(['fsliName', 'noGL', 'ipoC', 'assertionPd', 'defE', 'defPd']));
     expect(keysOf('ELC')).toEqual(expect.arrayContaining(['ipoC', 'assertionPd', 'cosoPrinciples']));

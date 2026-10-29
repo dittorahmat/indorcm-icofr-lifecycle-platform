@@ -4,7 +4,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { RCMControlMapping } from '@shared/types';
 import { 
-  Search, RefreshCw, Edit3, AlertTriangle, Check, Shield
+  Search, RefreshCw, Edit3, AlertTriangle, Check, Shield, ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -184,6 +184,29 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
               {row.subProcessName || '-'}
             </span>
           )
+        },
+        {
+          id: 'ref_bpm',
+          header: t('matrix.ref_bpm', 'Ref Langkah BPM'),
+          width: '130px',
+          className: 'text-xs text-slate-800',
+          render: (row) => {
+            const hasLink = row.diagramId || row.nodeId;
+            if (!hasLink) {
+              return <span className="text-slate-400 font-mono text-[11px]">-</span>;
+            }
+            const targetUrl = `/rcm/bpm?diagramId=${encodeURIComponent(row.diagramId || '')}${row.nodeId ? `&nodeId=${encodeURIComponent(row.nodeId)}` : ''}`;
+            return (
+              <a
+                href={targetUrl}
+                className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 hover:text-indigo-900 px-2 py-0.5 rounded transition-colors"
+                title={t('matrix.open_bpm_step', { defaultValue: 'Buka Simpul BPM' })}
+              >
+                <span>{row.nodeId || 'BPM'}</span>
+                <ExternalLink className="h-3 w-3 shrink-0" />
+              </a>
+            );
+          }
         },
       ]
     },

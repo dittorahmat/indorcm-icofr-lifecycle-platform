@@ -40,6 +40,34 @@ export function useBPMEditorSelection({
     if (!isMobileView) setMobileInspectId(null);
   }, [isMobileView]);
 
+  // Deep-link node highlight: check URL search params for nodeId / stepRef to auto-select and center
+  React.useEffect(() => {
+    if (nodes.length === 0) return;
+    const params = new URLSearchParams(window.location.search);
+    const targetNodeId = params.get('nodeId');
+    const targetStepRef = params.get('stepRef');
+
+    if (targetNodeId) {
+      const match = nodes.find((n) => n.id === targetNodeId);
+      if (match) {
+        setSelectedNodeId(match.id);
+        return;
+      }
+    }
+
+    if (targetStepRef) {
+      const cleanStep = targetStepRef.trim().toLowerCase();
+      const match = nodes.find(
+        (n) =>
+          (n.data?.stepRef && String(n.data.stepRef).toLowerCase() === cleanStep) ||
+          (n.data?.label && String(n.data.label).toLowerCase().includes(cleanStep))
+      );
+      if (match) {
+        setSelectedNodeId(match.id);
+      }
+    }
+  }, [nodes]);
+
   // Explicit edit intent: resolves the node, skips badge helpers, then marks it
   // as both selected (HUD) and editing (worksheet open).
   const openPropertiesForNode = React.useCallback(
