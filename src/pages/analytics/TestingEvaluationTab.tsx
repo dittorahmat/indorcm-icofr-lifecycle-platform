@@ -26,13 +26,13 @@ export function TestingEvaluationTab() {
   const { t } = useTranslation('analytics');
   const { workingYear } = useFiscalYearStore();
 
-  const { data: testResponse, isLoading } = useQuery<{ success: boolean; data: TestingEvaluationResponse }>({
+  const { data: testData, isLoading } = useQuery<TestingEvaluationResponse>({
     queryKey: ['analytics-testing-evaluation', workingYear],
-    queryFn: () => api<{ success: boolean; data: TestingEvaluationResponse }>(`/api/analytics/testing-evaluation?year=${workingYear}`),
+    queryFn: () => api<TestingEvaluationResponse>(`/api/analytics/testing-evaluation?year=${workingYear}`),
   });
 
-  const radarScores = testResponse?.data?.radarScores || [];
-  const statusBreakdown = testResponse?.data?.statusBreakdown || [];
+  const radarScores = testData?.radarScores || [];
+  const statusBreakdown = testData?.statusBreakdown || [];
 
   if (isLoading) {
     return <Skeleton className="h-96 w-full rounded-xl" />;

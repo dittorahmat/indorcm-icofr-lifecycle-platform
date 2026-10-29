@@ -22,20 +22,17 @@ describe('RiskExposureTab component', () => {
   });
 
   it('renders bubble chart and risk summary table', async () => {
-    vi.mocked(api).mockResolvedValue({
-      success: true,
-      data: [
-        {
-          id: 'R1',
-          process: 'Revenue to Cash',
-          name: 'Cut-off revenue fiktif',
-          rating: 'High',
-          x: 4.2,
-          y: 4.5,
-          z: 350,
-        },
-      ],
-    });
+    vi.mocked(api).mockResolvedValue([
+      {
+        id: 'R1',
+        process: 'Revenue to Cash',
+        name: 'Cut-off revenue fiktif',
+        rating: 'High',
+        x: 4.2,
+        y: 4.5,
+        z: 350,
+      },
+    ]);
 
     render(
       <QueryClientProvider client={queryClient}>

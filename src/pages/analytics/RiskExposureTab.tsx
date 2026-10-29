@@ -21,12 +21,12 @@ export function RiskExposureTab() {
   const { t } = useTranslation('analytics');
   const { workingYear } = useFiscalYearStore();
 
-  const { data: bubbleResponse, isLoading } = useQuery<{ success: boolean; data: RiskBubbleItem[] }>({
+  const { data: bubbleItems, isLoading } = useQuery<RiskBubbleItem[]>({
     queryKey: ['analytics-risk-exposure', workingYear],
-    queryFn: () => api<{ success: boolean; data: RiskBubbleItem[] }>(`/api/analytics/risk-exposure?year=${workingYear}`),
+    queryFn: () => api<RiskBubbleItem[]>(`/api/analytics/risk-exposure?year=${workingYear}`),
   });
 
-  const bubbles = bubbleResponse?.data || [];
+  const bubbles = bubbleItems || [];
 
   if (isLoading) {
     return <Skeleton className="h-96 w-full rounded-xl" />;

@@ -23,22 +23,19 @@ describe('TestingEvaluationTab component', () => {
 
   it('renders radar chart and testing classification breakdown', async () => {
     vi.mocked(api).mockResolvedValue({
-      success: true,
-      data: {
-        radarScores: [
-          { pillar: 'Objective', score: 90, fullMark: 100 },
-          { pillar: 'Timing & Frequency', score: 85, fullMark: 100 },
-          { pillar: 'Authority & Segregation', score: 88, fullMark: 100 },
-          { pillar: 'Reliability & Evidence', score: 75, fullMark: 100 },
-          { pillar: 'Coverage & Sampling', score: 82, fullMark: 100 },
-          { pillar: 'Continuous Monitoring', score: 80, fullMark: 100 },
-        ],
-        statusBreakdown: [
-          { name: 'Effective (Pass)', value: 15 },
-          { name: 'Design Deficiency', value: 2 },
-          { name: 'Operating Deficiency', value: 3 },
-        ],
-      },
+      radarScores: [
+        { pillar: 'Objective', score: 90, fullMark: 100 },
+        { pillar: 'Timing & Frequency', score: 85, fullMark: 100 },
+        { pillar: 'Authority & Segregation', score: 88, fullMark: 100 },
+        { pillar: 'Reliability & Evidence', score: 75, fullMark: 100 },
+        { pillar: 'Coverage & Sampling', score: 82, fullMark: 100 },
+        { pillar: 'Continuous Monitoring', score: 80, fullMark: 100 },
+      ],
+      statusBreakdown: [
+        { name: 'Effective (Pass)', value: 15 },
+        { name: 'Design Deficiency', value: 2 },
+        { name: 'Operating Deficiency', value: 3 },
+      ],
     });
 
     render(
