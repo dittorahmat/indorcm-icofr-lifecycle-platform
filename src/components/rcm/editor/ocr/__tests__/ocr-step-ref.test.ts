@@ -11,9 +11,12 @@ describe('ocr-node-normalize stepRef extraction', () => {
           type: 'activity',
           label: '[1.2] Verifikasi Kelayakan Tagihan',
           position: { x: 100, y: 100 },
+          width: 160,
+          height: 60,
         },
       ],
       edges: [],
+      warnings: [],
     };
 
     const normalized = normalizeLaidOutNodes(layout);
@@ -29,9 +32,12 @@ describe('ocr-node-normalize stepRef extraction', () => {
           type: 'activity',
           label: '2.1.4 Review Rekonsiliasi Bank',
           position: { x: 100, y: 150 },
+          width: 160,
+          height: 60,
         },
       ],
       edges: [],
+      warnings: [],
     };
 
     const normalized = normalizeLaidOutNodes(layout);
@@ -46,9 +52,12 @@ describe('ocr-node-normalize stepRef extraction', () => {
           type: 'activity',
           label: 'ACT-01: Approval VP Keuangan',
           position: { x: 100, y: 200 },
+          width: 160,
+          height: 60,
         },
       ],
       edges: [],
+      warnings: [],
     };
 
     const normalized = normalizeLaidOutNodes(layout);
@@ -63,9 +72,12 @@ describe('ocr-node-normalize stepRef extraction', () => {
           type: 'activity',
           label: 'Verifikasi Tanpa Nomor',
           position: { x: 100, y: 250 },
+          width: 160,
+          height: 60,
         },
       ],
       edges: [],
+      warnings: [],
     };
 
     const normalized = normalizeLaidOutNodes(layout);
