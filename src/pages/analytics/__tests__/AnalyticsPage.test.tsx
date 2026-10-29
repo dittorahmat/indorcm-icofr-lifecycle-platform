@@ -15,6 +15,12 @@ vi.mock('@/components/layout/AppLayout', () => ({
   AppLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="app-layout">{children}</div>,
 }));
 
+vi.mock('@/components/ui/sidebar', () => ({
+  SidebarTrigger: ({ className }: { className?: string }) => (
+    <button type="button" aria-label="Toggle sidebar" className={className} />
+  ),
+}));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, opts?: { count?: number }) => strictT(key, opts),
@@ -51,6 +57,7 @@ describe('AnalyticsPage component', () => {
     );
 
     expect(await screen.findByText('title')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Toggle sidebar' })).toBeInTheDocument();
     expect(await screen.findByText('kpi.totalRisk')).toBeInTheDocument();
     expect(await screen.findByText('kpi.toePassRate')).toBeInTheDocument();
     expect(await screen.findByText('85.5%')).toBeInTheDocument();

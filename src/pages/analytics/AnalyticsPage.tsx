@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LayoutGrid, Flame, CircleDot, Radar, PieChart as PieIcon } from 'lucide-react';
 import { ExecutiveKpiCards } from './ExecutiveKpiCards';
@@ -43,22 +44,17 @@ export function AnalyticsPage() {
   return (
     <AppLayout>
       <div className="space-y-6 min-w-0 max-w-full w-full">
-        {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200">
-          <div>
-            <div className="flex items-center space-x-2">
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
-                {t('title')}
-              </h1>
-              <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                {t('liveEngine')}
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              {t('subtitle')}
-            </p>
-          </div>
-        </div>
+        {/* Top Header with Responsive Sidebar Trigger */}
+        <PageHeader
+          title={t('title')}
+          description={t('subtitle')}
+          badge={
+            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+              {t('liveEngine')}
+            </span>
+          }
+          className="pb-2 border-b border-slate-200"
+        />
 
         {/* Tab Navigation */}
         <div className="border-b border-slate-200 pb-2 overflow-x-auto max-w-full touch-pan-x">
