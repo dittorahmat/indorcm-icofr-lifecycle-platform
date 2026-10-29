@@ -24,14 +24,14 @@ export function RemediationDODTab() {
   const { t } = useTranslation('analytics');
   const { workingYear } = useFiscalYearStore();
 
-  const { data: dodResponse, isLoading } = useQuery<{ success: boolean; data: RemediationDODResponse }>({
+  const { data: dodData, isLoading } = useQuery<RemediationDODResponse>({
     queryKey: ['analytics-remediation', workingYear],
-    queryFn: () => api<{ success: boolean; data: RemediationDODResponse }>(`/api/analytics/remediation?year=${workingYear}`),
+    queryFn: () => api<RemediationDODResponse>(`/api/analytics/remediation?year=${workingYear}`),
   });
 
-  const remediationStatus = dodResponse?.data?.remediationStatus || [];
-  const severityBreakdown = dodResponse?.data?.severityBreakdown || [];
-  const slaCompliance = dodResponse?.data?.slaComplianceRate || 85.0;
+  const remediationStatus = dodData?.remediationStatus || [];
+  const severityBreakdown = dodData?.severityBreakdown || [];
+  const slaCompliance = dodData?.slaComplianceRate || 85.0;
 
   if (isLoading) {
     return <Skeleton className="h-96 w-full rounded-xl" />;
@@ -120,7 +120,7 @@ export function RemediationDODTab() {
                 style={{ width: `${slaCompliance}%` }}
               ></div>
             </div>
-            <p className="text-[11px] text-slate-400">{t('remediation.slaBenchmark')}</p>
+            <p className="text-xs text-slate-400">{t('remediation.slaBenchmark')}</p>
           </div>
         </div>
       </div>

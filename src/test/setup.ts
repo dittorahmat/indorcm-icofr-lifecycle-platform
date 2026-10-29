@@ -35,7 +35,10 @@ console.error = (...args: any[]) => {
 console.warn = (...args: any[]) => {
   const message = args[0]?.toString() || '';
   
-  // You can add warnings to catch here too if needed
+  // Suppress harmless Recharts width(0)/height(0) warning in jsdom (no layout engine)
+  if (message.includes('The width(0) and height(0) of chart should be greater than 0')) {
+    return;
+  }
   
   originalWarn.apply(console, args);
 };

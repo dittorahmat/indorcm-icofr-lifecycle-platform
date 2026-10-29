@@ -23,19 +23,16 @@ describe('RemediationDODTab component', () => {
 
   it('renders remediation donut chart and severity breakdown bar chart', async () => {
     vi.mocked(api).mockResolvedValue({
-      success: true,
-      data: {
-        remediationStatus: [
-          { name: 'In Progress (CAP)', value: 5 },
-          { name: 'Implemented & Verified', value: 8 },
-        ],
-        severityBreakdown: [
-          { name: 'Material Weakness (MW)', value: 0 },
-          { name: 'Significant Deficiency (SD)', value: 2 },
-          { name: 'Control Deficiency (CD)', value: 4 },
-        ],
-        slaComplianceRate: 88.0,
-      },
+      remediationStatus: [
+        { name: 'In Progress (CAP)', value: 5 },
+        { name: 'Implemented & Verified', value: 8 },
+      ],
+      severityBreakdown: [
+        { name: 'Material Weakness (MW)', value: 0 },
+        { name: 'Significant Deficiency (SD)', value: 2 },
+        { name: 'Control Deficiency (CD)', value: 4 },
+      ],
+      slaComplianceRate: 88.0,
     });
 
     render(

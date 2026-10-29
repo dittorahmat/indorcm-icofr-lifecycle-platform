@@ -12,17 +12,19 @@ import type { HeatmapResponse, ControlDetail } from './types';
 export function CSAHeatmapTab() {
   const { t } = useTranslation('analytics');
   const { workingYear } = useFiscalYearStore();
-  const [selectedControlId, setSelectedControlId] = useState<string | null>('REV-01');
+  const [selectedControlId, setSelectedControlId] = useState<string | null>(null);
   const [isListView, setIsListView] = useState<boolean>(false);
 
-  const { data: heatmapResponse, isLoading } = useQuery<{ success: boolean; data: HeatmapResponse }>({
+  const { data: heatmapData, isLoading } = useQuery<HeatmapResponse>({
     queryKey: ['analytics-heatmap', workingYear],
-    queryFn: () => api<{ success: boolean; data: HeatmapResponse }>(`/api/analytics/heatmap?year=${workingYear}`),
+    queryFn: () => api<HeatmapResponse>(`/api/analytics/heatmap?year=${workingYear}`),
   });
 
-  const matrix = heatmapResponse?.data?.matrix ?? {};
-  const controls = heatmapResponse?.data?.controls ?? {};
-  const selectedControl: ControlDetail | null = selectedControlId ? controls[selectedControlId] ?? null : null;
+  const matrix = heatmapData?.matrix ?? {};
+  const controls = heatmapData?.controls ?? {};
+  const controlKeys = Object.keys(controls);
+  const activeControlId = selectedControlId ?? (controlKeys.length > 0 ? controlKeys[0] : null);
+  const selectedControl: ControlDetail | null = activeControlId ? controls[activeControlId] ?? null : null;
 
   if (isLoading) {
     return <Skeleton className="h-96 w-full rounded-xl" />;
@@ -98,7 +100,7 @@ export function CSAHeatmapTab() {
                             key={cellKey}
                             className={`min-h-[64px] p-1.5 border rounded-lg flex flex-col items-center justify-center gap-1 transition ${cellBg}`}
                           >
-                            <span className="text-[10px] font-bold text-slate-400">
+                            <span className="text-xs font-bold text-slate-400">
                               {score}
                             </span>
                             <div className="flex flex-wrap gap-1 justify-center">
@@ -106,8 +108,8 @@ export function CSAHeatmapTab() {
                                 <button
                                   key={ctrl.id}
                                   onClick={() => setSelectedControlId(ctrl.id)}
-                                  className={`px-1.5 py-0.5 text-[10px] font-bold rounded shadow-2xs transition ${
-                                    selectedControlId === ctrl.id
+                                  className={`px-1.5 py-0.5 text-xs font-bold rounded shadow-2xs transition ${
+                                    activeControlId === ctrl.id
                                       ? 'bg-sky-700 text-white ring-2 ring-sky-400'
                                       : 'bg-white text-slate-700 border border-slate-300 hover:bg-sky-50'
                                   }`}
@@ -157,7 +159,7 @@ export function CSAHeatmapTab() {
                           key={ctrl.id}
                           onClick={() => setSelectedControlId(ctrl.id)}
                           className={`p-3 rounded-lg border text-xs cursor-pointer transition flex items-center justify-between ${
-                            selectedControlId === ctrl.id
+                            activeControlId === ctrl.id
                               ? 'border-sky-500 bg-sky-50'
                               : 'border-slate-200 hover:bg-slate-50'
                           }`}
@@ -165,7 +167,7 @@ export function CSAHeatmapTab() {
                           <div>
                             <span className="font-bold text-sky-800">{ctrl.code}</span>
                             <p className="font-medium text-slate-700 mt-0.5">{ctrl.cycle}</p>
-                            <p className="text-slate-500 text-[11px]">{ctrl.impact}</p>
+                            <p className="text-slate-500 text-xs">{ctrl.impact}</p>
                           </div>
                           <span
                             className={`font-semibold text-xs ${

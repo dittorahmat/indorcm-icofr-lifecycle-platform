@@ -23,22 +23,19 @@ describe('CSAHeatmapTab component', () => {
 
   it('renders heatmap matrix and updates detail panel when control is selected', async () => {
     vi.mocked(api).mockResolvedValue({
-      success: true,
-      data: {
-        matrix: {
-          '1-5': [{ id: 'REV-01', code: 'CTRL-REV-01', title: 'Three-way match billing' }],
-        },
-        controls: {
-          'REV-01': {
-            id: 'REV-01',
-            code: 'CTRL-REV-01',
-            cycle: 'Revenue to Cash',
-            impact: 'Skor 5 / 5',
-            impactDesc: 'Pengakuan omset fiktif',
-            csa: 'Desain: 5/5 | Operasi: 5/5',
-            csaDesc: 'Kontrol otomatis ERP berhasil',
-            residualStatus: 'Low',
-          },
+      matrix: {
+        '1-5': [{ id: 'REV-01', code: 'CTRL-REV-01', title: 'Three-way match billing' }],
+      },
+      controls: {
+        'REV-01': {
+          id: 'REV-01',
+          code: 'CTRL-REV-01',
+          cycle: 'Revenue to Cash',
+          impact: 'Skor 5 / 5',
+          impactDesc: 'Pengakuan omset fiktif',
+          csa: 'Desain: 5/5 | Operasi: 5/5',
+          csaDesc: 'Kontrol otomatis ERP berhasil',
+          residualStatus: 'Low',
         },
       },
     });

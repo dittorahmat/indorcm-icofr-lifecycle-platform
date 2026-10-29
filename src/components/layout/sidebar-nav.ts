@@ -62,7 +62,6 @@ export const NAV_GROUPS: readonly SidebarNavGroup[] = [
     labelKey: 'groups.mainTasks',
     items: [
       { kind: 'link', path: '/dashboard', labelKey: 'items.dashboard', icon: LayoutDashboard },
-      { kind: 'link', path: '/analytics', labelKey: 'items.analytics', icon: Gauge },
       { kind: 'link', path: '/scoping', labelKey: 'items.scoping', icon: Target },
       { kind: 'link', path: '/bpm', labelKey: 'items.bpm', icon: Workflow },
       { kind: 'link', path: '/todo', labelKey: 'items.todo', icon: ListTodo },
@@ -93,6 +92,7 @@ export const NAV_GROUPS: readonly SidebarNavGroup[] = [
       { kind: 'link', path: '/wbs-recap', labelKey: 'items.wbs', icon: AlertTriangle },
       { kind: 'link', path: '/reports/appendix-10', labelKey: 'items.app10', icon: FileSpreadsheet },
       { kind: 'link', path: '/reports', labelKey: 'items.app11', icon: FileBarChart },
+      { kind: 'link', path: '/analytics', labelKey: 'items.analytics', icon: Gauge },
     ],
   },
   {

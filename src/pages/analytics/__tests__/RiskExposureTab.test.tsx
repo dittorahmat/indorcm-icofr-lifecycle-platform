@@ -22,20 +22,17 @@ describe('RiskExposureTab component', () => {
   });
 
   it('renders bubble chart and risk summary table', async () => {
-    vi.mocked(api).mockResolvedValue({
-      success: true,
-      data: [
-        {
-          id: 'R1',
-          process: 'Revenue to Cash',
-          name: 'Cut-off revenue fiktif',
-          rating: 'High',
-          x: 4.2,
-          y: 4.5,
-          z: 350,
-        },
-      ],
-    });
+    vi.mocked(api).mockResolvedValue([
+      {
+        id: 'R1',
+        process: 'Revenue to Cash',
+        name: 'Cut-off revenue fiktif',
+        rating: 'High',
+        x: 4.2,
+        y: 4.5,
+        z: 350,
+      },
+    ]);
 
     render(
       <QueryClientProvider client={queryClient}>
@@ -47,5 +44,22 @@ describe('RiskExposureTab component', () => {
     expect(await screen.findByText('Cut-off revenue fiktif')).toBeInTheDocument();
     expect(await screen.findByText('L4.2')).toBeInTheDocument();
     expect(await screen.findByText('I4.5')).toBeInTheDocument();
+  });
+
+  it('renders baseline aggregate fallback when API returns empty array', async () => {
+    vi.mocked(api).mockResolvedValueOnce([]);
+
+    const freshClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={freshClient}>
+        <RiskExposureTab />
+      </QueryClientProvider>
+    );
+
+    expect(await screen.findByText('Revenue to Cash')).toBeInTheDocument();
+    expect(await screen.findByText('Cut-off revenue fiktif')).toBeInTheDocument();
   });
 });

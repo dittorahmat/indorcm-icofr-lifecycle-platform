@@ -35,12 +35,10 @@ export function AnalyticsPage() {
     setSearchParams({ tab });
   };
 
-  const { data: summaryResponse, isLoading } = useQuery<{ success: boolean; data: AnalyticsSummary }>({
+  const { data: summary, isLoading } = useQuery<AnalyticsSummary>({
     queryKey: ['analytics-summary', workingYear],
-    queryFn: () => api<{ success: boolean; data: AnalyticsSummary }>(`/api/analytics/summary?year=${workingYear}`),
+    queryFn: () => api<AnalyticsSummary>(`/api/analytics/summary?year=${workingYear}`),
   });
-
-  const summary = summaryResponse?.data;
 
   return (
     <AppLayout>
