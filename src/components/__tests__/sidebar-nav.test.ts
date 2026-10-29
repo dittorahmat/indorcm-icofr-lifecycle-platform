@@ -29,7 +29,7 @@ describe('sidebar navigation data', () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  it('keeps the Appendix 10 entry between WBS and Appendix 11 inside the reporting group', () => {
+  it('keeps the Appendix 10 entry between WBS and Appendix 11 inside the reporting group, followed by Visual Analytics', () => {
     const reporting = NAV_GROUPS.find((group) => group.labelKey === 'groups.reportingRcm');
     expect(reporting).toBeDefined();
     expect(linkPaths(reporting?.items ?? [])).toEqual([
@@ -39,6 +39,7 @@ describe('sidebar navigation data', () => {
       '/wbs-recap',
       '/reports/appendix-10',
       '/reports',
+      '/analytics',
     ]);
   });
 
