@@ -100,8 +100,7 @@ export function useRCMImportWizard({
     try {
       setIsSubmitting(true);
       const res = await api<{
-        success: boolean;
-        summary: {
+        summary?: {
           createdProcesses: number;
           createdRisks: number;
           createdControls: number;
@@ -120,9 +119,10 @@ export function useRCMImportWizard({
         ),
       });
 
-      if (res.success) {
+      const summary = res?.summary;
+      if (summary) {
         toast.success(
-          `Impor RCM Berhasil: ${res.summary.createdControls} kontrol & ${res.summary.createdNodeLinks} tautan BPM dibuat.`
+          `Impor RCM Berhasil: ${summary.createdControls} kontrol & ${summary.createdNodeLinks} tautan BPM dibuat.`
         );
         if (onSuccess) onSuccess();
         onClose();

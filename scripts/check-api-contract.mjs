@@ -333,6 +333,28 @@ for (const c of calls) {
   violations.push(c);
 }
 
+// Check for double-unwrapping anti-pattern: api<{ success: ... }> or api<ApiResponse<...>>
+const doubleUnwrapViolations = [];
+for (const file of walk(join(root, 'src')).filter((f) => !f.includes('__tests__') && !/\.test\.tsx?$/.test(f))) {
+  const content = readFileSync(file, 'utf8');
+  const matches = [...content.matchAll(/api\s*<\s*(\{\s*success\b|ApiResponse\b)/g)];
+  for (const m of matches) {
+    doubleUnwrapViolations.push({
+      file: relative(root, file).replace(/\\/g, '/'),
+      line: lineOf(content, m.index),
+      match: m[0],
+    });
+  }
+}
+
+if (doubleUnwrapViolations.length > 0) {
+  console.log('FAIL — double-unwrapping detected in api<T>() generic calls (api<T> unwraps automatically):');
+  for (const v of doubleUnwrapViolations) {
+    console.log('  ' + v.match + '  <- ' + v.file + ':' + v.line);
+  }
+  process.exit(1);
+}
+
 console.log('check-api-contract: backend routes=' + backend.length + ', frontend calls=' + calls.length + ' (' + seen.size + ' unique), unresolved=' + unresolved.length);
 for (const u of unresolved.slice(0, 20)) {
   console.log('  UNRESOLVED ' + u.file + ':' + u.line + ' (' + u.hint + ')');
