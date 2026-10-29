@@ -47,8 +47,15 @@ export const ActivityNode = ({ data, selected, type }: NodeProps) => {
         )}
       >
         <EightConnectionHandles isLocked={data.isLocked} selected={selected} />
-        <div className="font-bold text-xs mb-1.5 uppercase text-slate-500 border-b pb-1 flex items-center justify-center gap-1">
-          <Activity className="h-2.5 w-2.5" /> {data.role || "Role"}
+        <div className="font-bold text-xs mb-1.5 uppercase text-slate-500 border-b pb-1 flex items-center justify-between gap-1">
+          <div className="flex items-center gap-1 truncate">
+            <Activity className="h-2.5 w-2.5 shrink-0" /> <span className="truncate">{data.role || "Role"}</span>
+          </div>
+          {data.stepRef && (
+            <span className="font-mono text-[10px] font-bold px-1 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
+              {data.stepRef}
+            </span>
+          )}
         </div>
         <div className={cn("font-semibold text-slate-800 leading-tight whitespace-pre-wrap break-words", fontClass)}>{data.label}</div>
         {data.isLocked && (

@@ -62,6 +62,7 @@ export interface BPMNode {
     description?: string;
     role?: string;
     code?: string;
+    stepRef?: string;
     department?: string; // For Swimlane labels
     function?: string;   // For Swimlane labels
     riskIds?: string[]; // Multiple RCM IDs linked to this node

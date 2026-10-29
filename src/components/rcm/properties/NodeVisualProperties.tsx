@@ -29,6 +29,16 @@ export function NodeVisualProperties({
       </Label>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
+          <Label className="text-xs font-medium text-slate-700 uppercase">{t('rcm:matrix.properties.step_ref')}</Label>
+          <Input 
+            disabled={isLocked} 
+            placeholder={t('rcm:matrix.properties.step_ref_placeholder')}
+            value={selectedNode.data.stepRef || ''} 
+            onChange={(e) => onUpdateNodeData(selectedNode.id, { stepRef: e.target.value })} 
+            className="h-10 text-sm bg-white" 
+          />
+        </div>
+        <div className="space-y-2">
           <Label className="text-xs font-medium text-slate-700 uppercase">{t('rcm:matrix.properties.label')}</Label>
           <Input 
             disabled={isLocked} 

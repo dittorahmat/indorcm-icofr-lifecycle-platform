@@ -110,6 +110,8 @@
       "risk_id": "ID Risiko",
       "control_id": "ID Kontrol",
       "visual_diagram_info": "Informasi Visual Diagram",
+      "step_ref": "No. Referensi Langkah (Step Ref)",
+      "step_ref_placeholder": "mis. 1.2, ACT-01",
       "label": "Label",
       "pelaksana": "Pelaksana (Role)",
       "deskripsi_risiko": "Deskripsi Risiko Aktivitas",

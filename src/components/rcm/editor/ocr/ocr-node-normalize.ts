@@ -38,7 +38,13 @@ export function normalizeLaidOutNodes(laidOut: OcrLayoutResult): Node[] {
   return laidOut.nodes.map((n) => {
     const isSwimlane = n.type === 'swimlane';
     const resolvedDept = n.department?.trim() || n.label?.trim() || deriveLabelFromId(n.id);
-    const resolvedLabel = n.label?.trim() || resolvedDept;
+    const rawLabel = n.label?.trim() || '';
+    const resolvedLabel = rawLabel || resolvedDept;
+    
+    // Automatically extract stepRef if label starts with pattern like "1.2", "[1.2]", "(1.2)", "ACT-01"
+    const stepRefMatch = !isSwimlane ? rawLabel.match(/^(?:\[([A-Za-z0-9_.-]+)\]|\(([A-Za-z0-9_.-]+)\)|([0-9]+(?:\.[0-9]+)+|[A-Za-z]+-[0-9]+))(?:\s*[:.-]?\s*|$)/) : null;
+    const extractedStepRef = stepRefMatch ? (stepRefMatch[1] || stepRefMatch[2] || stepRefMatch[3]) : undefined;
+
     return {
       id: n.id,
       type: n.type,
@@ -57,7 +63,7 @@ export function normalizeLaidOutNodes(laidOut: OcrLayoutResult): Node[] {
             function: n.function?.trim() || '',
             isLocked: false,
           }
-        : { label: n.label, type: n.type },
+        : { label: n.label, type: n.type, ...(extractedStepRef ? { stepRef: extractedStepRef } : {}) },
     };
   });
 }

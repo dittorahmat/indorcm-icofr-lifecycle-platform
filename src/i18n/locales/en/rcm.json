@@ -110,6 +110,8 @@
       "risk_id": "Risk ID",
       "control_id": "Control ID",
       "visual_diagram_info": "Visual Diagram Information",
+      "step_ref": "Step Reference (BPM Step)",
+      "step_ref_placeholder": "e.g. 1.2, ACT-01",
       "label": "Label",
       "pelaksana": "Executor (Role)",
       "deskripsi_risiko": "Risk Activity Description",
