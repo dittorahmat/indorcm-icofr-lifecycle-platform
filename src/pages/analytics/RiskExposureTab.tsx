@@ -124,7 +124,7 @@ export function RiskExposureTab() {
                   <td className="py-2.5 px-3 text-slate-600">{b.name}</td>
                   <td className="py-2.5 px-3">
                     <span
-                      className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
+                      className={`px-2 py-0.5 rounded-full font-bold text-xs ${
                         b.rating === 'High'
                           ? 'bg-rose-100 text-rose-800 border border-rose-200'
                           : b.rating === 'Medium'

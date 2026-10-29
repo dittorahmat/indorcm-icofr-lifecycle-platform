@@ -100,19 +100,19 @@ export function TestingEvaluationTab() {
               <span className="text-emerald-700 font-bold block text-sm">
                 {statusBreakdown[0]?.value || 0}
               </span>
-              <span className="text-slate-500 text-[10px]">{t('testing.effectiveControls')}</span>
+              <span className="text-slate-500 text-xs">{t('testing.effectiveControls')}</span>
             </div>
             <div className="p-2 bg-amber-50 rounded-lg">
               <span className="text-amber-700 font-bold block text-sm">
                 {statusBreakdown[1]?.value || 0}
               </span>
-              <span className="text-slate-500 text-[10px]">{t('testing.designDeficiency')}</span>
+              <span className="text-slate-500 text-xs">{t('testing.designDeficiency')}</span>
             </div>
             <div className="p-2 bg-rose-50 rounded-lg">
               <span className="text-rose-700 font-bold block text-sm">
                 {statusBreakdown[2]?.value || 0}
               </span>
-              <span className="text-slate-500 text-[10px]">{t('testing.operatingDeficiency')}</span>
+              <span className="text-slate-500 text-xs">{t('testing.operatingDeficiency')}</span>
             </div>
           </div>
         </div>

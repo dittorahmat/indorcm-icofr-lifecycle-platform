@@ -120,7 +120,7 @@ export function RemediationDODTab() {
                 style={{ width: `${slaCompliance}%` }}
               ></div>
             </div>
-            <p className="text-[11px] text-slate-400">{t('remediation.slaBenchmark')}</p>
+            <p className="text-xs text-slate-400">{t('remediation.slaBenchmark')}</p>
           </div>
         </div>
       </div>

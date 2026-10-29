@@ -98,7 +98,7 @@ export function CSAHeatmapTab() {
                             key={cellKey}
                             className={`min-h-[64px] p-1.5 border rounded-lg flex flex-col items-center justify-center gap-1 transition ${cellBg}`}
                           >
-                            <span className="text-[10px] font-bold text-slate-400">
+                            <span className="text-xs font-bold text-slate-400">
                               {score}
                             </span>
                             <div className="flex flex-wrap gap-1 justify-center">
@@ -106,7 +106,7 @@ export function CSAHeatmapTab() {
                                 <button
                                   key={ctrl.id}
                                   onClick={() => setSelectedControlId(ctrl.id)}
-                                  className={`px-1.5 py-0.5 text-[10px] font-bold rounded shadow-2xs transition ${
+                                  className={`px-1.5 py-0.5 text-xs font-bold rounded shadow-2xs transition ${
                                     selectedControlId === ctrl.id
                                       ? 'bg-sky-700 text-white ring-2 ring-sky-400'
                                       : 'bg-white text-slate-700 border border-slate-300 hover:bg-sky-50'
@@ -165,7 +165,7 @@ export function CSAHeatmapTab() {
                           <div>
                             <span className="font-bold text-sky-800">{ctrl.code}</span>
                             <p className="font-medium text-slate-700 mt-0.5">{ctrl.cycle}</p>
-                            <p className="text-slate-500 text-[11px]">{ctrl.impact}</p>
+                            <p className="text-slate-500 text-xs">{ctrl.impact}</p>
                           </div>
                           <span
                             className={`font-semibold text-xs ${

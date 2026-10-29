@@ -11,7 +11,7 @@
     "dev": "vite --host 0.0.0.0 --port 3000",
     "clean-dev": "rimraf node_modules/.vite .eslintcache tsconfig.tsbuildinfo && npm run dev -- --force",
     "type-check": "npm run type-check:app && npm run type-check:worker && npm run type-check:scripts && npm run type-check:node",
-    "type-check:app": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit -p tsconfig.app.json",
+    "type-check:app": "node --max-old-space-size=8192 ./node_modules/typescript/bin/tsc --noEmit -p tsconfig.app.json",
     "type-check:worker": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit -p tsconfig.worker.json",
     "type-check:scripts": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit -p tsconfig.scripts.json",
     "type-check:node": "node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc --noEmit -p tsconfig.node.json",
