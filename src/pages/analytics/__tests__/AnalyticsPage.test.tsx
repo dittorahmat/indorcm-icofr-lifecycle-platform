@@ -28,21 +28,18 @@ describe('AnalyticsPage component', () => {
 
   it('renders executive KPI cards and charts when data is loaded', async () => {
     vi.mocked(api).mockResolvedValue({
-      success: true,
-      data: {
-        totalRisks: 12,
-        totalControls: 24,
-        toePassRate: 85.5,
-        csaHealthScore: 4.2,
-        openDeficiencies: 3,
-        materialWeaknesses: 0,
-        complianceRate: 88.5,
-        mitigationProgress: 72.0,
-        controlsByEffectiveness: [
-          { name: 'Effective', value: 21 },
-          { name: 'Deficient', value: 3 },
-        ],
-      },
+      totalRisks: 12,
+      totalControls: 24,
+      toePassRate: 85.5,
+      csaHealthScore: 4.2,
+      openDeficiencies: 3,
+      materialWeaknesses: 0,
+      complianceRate: 88.5,
+      mitigationProgress: 72.0,
+      controlsByEffectiveness: [
+        { name: 'Effective', value: 21 },
+        { name: 'Deficient', value: 3 },
+      ],
     });
 
     render(

@@ -15,13 +15,13 @@ export function CSAHeatmapTab() {
   const [selectedControlId, setSelectedControlId] = useState<string | null>('REV-01');
   const [isListView, setIsListView] = useState<boolean>(false);
 
-  const { data: heatmapResponse, isLoading } = useQuery<{ success: boolean; data: HeatmapResponse }>({
+  const { data: heatmapData, isLoading } = useQuery<HeatmapResponse>({
     queryKey: ['analytics-heatmap', workingYear],
-    queryFn: () => api<{ success: boolean; data: HeatmapResponse }>(`/api/analytics/heatmap?year=${workingYear}`),
+    queryFn: () => api<HeatmapResponse>(`/api/analytics/heatmap?year=${workingYear}`),
   });
 
-  const matrix = heatmapResponse?.data?.matrix ?? {};
-  const controls = heatmapResponse?.data?.controls ?? {};
+  const matrix = heatmapData?.matrix ?? {};
+  const controls = heatmapData?.controls ?? {};
   const selectedControl: ControlDetail | null = selectedControlId ? controls[selectedControlId] ?? null : null;
 
   if (isLoading) {
