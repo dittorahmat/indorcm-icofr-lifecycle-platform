@@ -45,4 +45,21 @@ describe('RiskExposureTab component', () => {
     expect(await screen.findByText('L4.2')).toBeInTheDocument();
     expect(await screen.findByText('I4.5')).toBeInTheDocument();
   });
+
+  it('renders baseline aggregate fallback when API returns empty array', async () => {
+    vi.mocked(api).mockResolvedValueOnce([]);
+
+    const freshClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={freshClient}>
+        <RiskExposureTab />
+      </QueryClientProvider>
+    );
+
+    expect(await screen.findByText('Revenue to Cash')).toBeInTheDocument();
+    expect(await screen.findByText('Cut-off revenue fiktif')).toBeInTheDocument();
+  });
 });

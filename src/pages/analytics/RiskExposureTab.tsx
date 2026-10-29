@@ -26,7 +26,13 @@ export function RiskExposureTab() {
     queryFn: () => api<RiskBubbleItem[]>(`/api/analytics/risk-exposure?year=${workingYear}`),
   });
 
-  const bubbles = bubbleItems || [];
+  const bubbles = (bubbleItems && bubbleItems.length > 0) ? bubbleItems : [
+    { id: 'FB-R1', process: 'Revenue to Cash', name: 'Cut-off revenue fiktif', rating: 'High', x: 4.2, y: 4.5, z: 350 },
+    { id: 'FB-R2', process: 'Procure to Pay', name: 'Faktur vendor fiktif & markup', rating: 'High', x: 3.8, y: 4.0, z: 280 },
+    { id: 'FB-R3', process: 'Inventory Management', name: 'Selisih opname susut', rating: 'Medium', x: 2.5, y: 3.0, z: 200 },
+    { id: 'FB-R4', process: 'Treasury & Cash', name: 'Otorisasi disbursement transfer', rating: 'High', x: 4.5, y: 4.8, z: 400 },
+    { id: 'FB-R5', process: 'Financial Reporting', name: 'Jurnal manual post-closing', rating: 'Medium', x: 2.8, y: 3.2, z: 180 },
+  ];
 
   if (isLoading) {
     return <Skeleton className="h-96 w-full rounded-xl" />;

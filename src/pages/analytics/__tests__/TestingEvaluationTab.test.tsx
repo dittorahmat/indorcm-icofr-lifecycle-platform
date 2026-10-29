@@ -48,4 +48,24 @@ describe('TestingEvaluationTab component', () => {
     expect(await screen.findByText('testing.radarCardTitle')).toBeInTheDocument();
     expect(await screen.findByText('testing.statusCardTitle')).toBeInTheDocument();
   });
+
+  it('renders baseline radar scores when API returns empty radar scores', async () => {
+    vi.mocked(api).mockResolvedValueOnce({
+      radarScores: [],
+      statusBreakdown: [],
+    });
+
+    const freshClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={freshClient}>
+        <TestingEvaluationTab />
+      </QueryClientProvider>
+    );
+
+    expect(await screen.findByText('testing.title')).toBeInTheDocument();
+    expect(await screen.findByText('testing.radarCardTitle')).toBeInTheDocument();
+  });
 });

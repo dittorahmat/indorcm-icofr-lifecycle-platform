@@ -12,7 +12,7 @@ import type { HeatmapResponse, ControlDetail } from './types';
 export function CSAHeatmapTab() {
   const { t } = useTranslation('analytics');
   const { workingYear } = useFiscalYearStore();
-  const [selectedControlId, setSelectedControlId] = useState<string | null>('REV-01');
+  const [selectedControlId, setSelectedControlId] = useState<string | null>(null);
   const [isListView, setIsListView] = useState<boolean>(false);
 
   const { data: heatmapData, isLoading } = useQuery<HeatmapResponse>({
@@ -22,7 +22,9 @@ export function CSAHeatmapTab() {
 
   const matrix = heatmapData?.matrix ?? {};
   const controls = heatmapData?.controls ?? {};
-  const selectedControl: ControlDetail | null = selectedControlId ? controls[selectedControlId] ?? null : null;
+  const controlKeys = Object.keys(controls);
+  const activeControlId = selectedControlId ?? (controlKeys.length > 0 ? controlKeys[0] : null);
+  const selectedControl: ControlDetail | null = activeControlId ? controls[activeControlId] ?? null : null;
 
   if (isLoading) {
     return <Skeleton className="h-96 w-full rounded-xl" />;
@@ -107,7 +109,7 @@ export function CSAHeatmapTab() {
                                   key={ctrl.id}
                                   onClick={() => setSelectedControlId(ctrl.id)}
                                   className={`px-1.5 py-0.5 text-xs font-bold rounded shadow-2xs transition ${
-                                    selectedControlId === ctrl.id
+                                    activeControlId === ctrl.id
                                       ? 'bg-sky-700 text-white ring-2 ring-sky-400'
                                       : 'bg-white text-slate-700 border border-slate-300 hover:bg-sky-50'
                                   }`}
@@ -157,7 +159,7 @@ export function CSAHeatmapTab() {
                           key={ctrl.id}
                           onClick={() => setSelectedControlId(ctrl.id)}
                           className={`p-3 rounded-lg border text-xs cursor-pointer transition flex items-center justify-between ${
-                            selectedControlId === ctrl.id
+                            activeControlId === ctrl.id
                               ? 'border-sky-500 bg-sky-50'
                               : 'border-slate-200 hover:bg-slate-50'
                           }`}
