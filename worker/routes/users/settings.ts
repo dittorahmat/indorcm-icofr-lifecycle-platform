@@ -8,6 +8,7 @@ import type { Settings } from '@shared/types';
 import { sendEmail } from '../../services/email';
 import { rbac } from '../../lib/guard';
 import { buildWebhookPayload, buildSmtpTestEmailHtml, isWebhookProvider } from '../../services/notifications/payloads';
+import { validateSafeWebhookUrl } from '../../lib/ssrf';
 
 /** The `organization.metadata` blob this route owns, spelled out once. */
 interface OrganizationMetadata {
@@ -62,7 +63,7 @@ settings.get('/settings', async (c) => {
     smtpHost: meta.smtpHost || '',
     smtpPort: meta.smtpPort || 587,
     smtpUser: meta.smtpUser || '',
-    smtpPass: meta.smtpPass || '',
+    smtpPass: meta.smtpPass ? '********' : '',
     customYears: meta.customYears || [],
     slackWebhookUrl: meta.slackWebhookUrl || '',
     slackEnabled: meta.slackEnabled ?? false,
@@ -86,6 +87,21 @@ settings.put('/settings', rbac(['Admin', 'Line 2']), async (c) => {
   const org = orgs[0];
   const meta = (org.metadata ?? {}) as OrganizationMetadata;
 
+  // Regulatory protection: if period is signed off (has verificationHash), lock cannot be undone
+  if (meta.verificationHash) {
+    if (body.isPeriodLocked === false) {
+      return bad(c, 'CANNOT_UNLOCK_SIGNED_PERIOD', 403, 'Cannot unlock period after official sign-off');
+    }
+    if (body.fiscalYear !== undefined && body.fiscalYear !== (meta.fiscalYear || meta.periodYear)) {
+      return bad(c, 'CANNOT_MODIFY_SIGNED_PERIOD_YEAR', 403, 'Cannot change fiscal year of signed-off period');
+    }
+  }
+
+  // If smtpPass is unchanged placeholder '********' or undefined, keep existing password
+  const finalSmtpPass = (body.smtpPass && body.smtpPass !== '********')
+    ? body.smtpPass
+    : meta.smtpPass;
+
   const updatedMeta: OrganizationMetadata = {
     ...meta,
     ceoName: body.ceoName,
@@ -98,7 +114,7 @@ settings.put('/settings', rbac(['Admin', 'Line 2']), async (c) => {
     smtpHost: body.smtpHost,
     smtpPort: body.smtpPort,
     smtpUser: body.smtpUser,
-    smtpPass: body.smtpPass,
+    smtpPass: finalSmtpPass,
     customYears: body.customYears,
     slackWebhookUrl: body.slackWebhookUrl,
     slackEnabled: body.slackEnabled,
@@ -122,17 +138,26 @@ settings.put('/settings', rbac(['Admin', 'Line 2']), async (c) => {
 settings.post('/settings/test-email', rbac(['Admin', 'Line 2']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const userId = c.get('userId');
+  const orgId = c.get('organizationId');
   const body = await c.req.json<Partial<Settings>>();
 
   const currentUser = await db.select().from(user).where(eq(user.id, userId)).limit(1);
   if (currentUser.length === 0) return notFound(c, 'USER_NOT_FOUND', 'User not found');
 
+  // If smtpPass was redacted ('********'), pull existing password from DB
+  let effectiveSettings = body;
+  if (body.smtpPass === '********' || !body.smtpPass) {
+    const orgs = await db.select().from(organization).where(eq(organization.id, orgId)).limit(1);
+    const existingMeta = (orgs[0]?.metadata ?? {}) as OrganizationMetadata;
+    effectiveSettings = { ...body, smtpPass: existingMeta.smtpPass };
+  }
+
   try {
     await sendEmail({
       to: currentUser[0].email,
       subject: 'IndoGRC Pro - Test SMTP Connection',
-      html: buildSmtpTestEmailHtml(body),
-      settings: body,
+      html: buildSmtpTestEmailHtml(effectiveSettings),
+      settings: effectiveSettings,
       env: c.env,
     });
     return ok(c, { success: true });
@@ -147,6 +172,12 @@ settings.post('/settings/test-webhook', rbac(['Admin', 'Line 2']), async (c) => 
   if (!body.webhookUrl) return bad(c, 'WEBHOOK_URL_REQUIRED', 400, 'Webhook URL is required');
   if (!isWebhookProvider(body.provider)) {
     return bad(c, 'WEBHOOK_PROVIDER_UNKNOWN', 400, 'Unknown webhook provider');
+  }
+
+  // SSRF Protection
+  const validation = validateSafeWebhookUrl(body.webhookUrl);
+  if (!validation.valid) {
+    return bad(c, 'SSRF_TARGET_BLOCKED', 400, validation.reason ?? 'Webhook URL is not permitted');
   }
 
   // The test endpoint sends the SAME body a real notification sends: that is the
