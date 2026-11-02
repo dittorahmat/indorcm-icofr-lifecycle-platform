@@ -3,6 +3,9 @@ import type { HonoEnv } from '../../app';
 import { ok, bad, notFound } from '../../lib/utils';
 import { getStorageBucket } from '../../lib/storage';
 import { rbac } from '../../lib/guard';
+import { getDb } from '../../db';
+import { applications } from '../../db/schema';
+import { and, eq } from 'drizzle-orm';
 
 const aiFilesApp = new Hono<HonoEnv>();
 
@@ -34,23 +37,66 @@ aiFilesApp.post('/upload', rbac(['Line 1', 'Line 2', 'Admin']), async (c) => {
 });
 
 aiFilesApp.get('/files/*', async (c) => {
+  const userId = c.get('userId');
+  const orgId = c.get('organizationId');
+
+  if (!userId || !orgId) {
+    return bad(c, 'UNAUTHORIZED', 401, 'Authentication required to view files');
+  }
+
   // Use split to reliably get everything after /files/ regardless of mount point
   const pathParts = c.req.path.split('/files/');
   let key = pathParts.length > 1 ? pathParts[1] : null;
 
-  if (!key) return bad(c, 'Key is required');
+  if (!key) return bad(c, 'KEY_REQUIRED', 400, 'Key is required');
 
   // Ensure the key is decoded (e.g., %20 -> space) to match R2 storage keys
   key = decodeURIComponent(key);
 
+  // Tenant Boundary Check: verify key belongs to caller's organization
+  if (key.startsWith('uploads/')) {
+    const expectedPrefix = `uploads/${orgId}/`;
+    if (!key.startsWith(expectedPrefix)) {
+      return bad(c, 'FILE_CROSS_TENANT_FORBIDDEN', 403, 'Access denied: File belongs to another organization');
+    }
+  } else if (key.startsWith('applications/')) {
+    const parts = key.split('/');
+    const appId = parts.length > 1 ? parts[1] : '';
+    const db = getDb(c.env.DATABASE_URL);
+    const [appRow] = await db.select({ id: applications.id })
+      .from(applications)
+      .where(and(eq(applications.id, appId), eq(applications.organizationId, orgId)))
+      .limit(1);
+
+    if (!appRow) {
+      return bad(c, 'FILE_CROSS_TENANT_FORBIDDEN', 403, 'Access denied: Application file belongs to another organization');
+    }
+  } else {
+    return bad(c, 'FILE_ACCESS_DENIED', 403, 'Access denied: Invalid file path');
+  }
+
   const bucket = getStorageBucket(c);
   const object = await bucket.get(key);
-  if (!object) return notFound(c, 'File not found');
+  if (!object) return notFound(c, 'FILE_NOT_FOUND', 'File not found');
 
   const headers = new Headers();
   object.writeHttpMetadata(headers);
   headers.set('etag', object.httpEtag);
-  headers.set('Content-Disposition', 'inline');
+
+  // Security Headers: Prevent XSS from user-controlled files (especially SVG / HTML)
+  const lowerKey = key.toLowerCase();
+  const rawFileName = key.split('/').pop() || 'download';
+  const isScriptable = lowerKey.endsWith('.svg') || lowerKey.endsWith('.html') || lowerKey.endsWith('.htm') || lowerKey.endsWith('.xml');
+
+  if (isScriptable) {
+    headers.set('Content-Disposition', `attachment; filename="${encodeURIComponent(rawFileName)}"`);
+    headers.set('Content-Type', 'application/octet-stream');
+  } else {
+    headers.set('Content-Disposition', 'inline');
+  }
+
+  headers.set('Content-Security-Policy', "default-src 'none'; sandbox");
+  headers.set('X-Content-Type-Options', 'nosniff');
 
   return new Response(object.body, { headers });
 });
