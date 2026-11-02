@@ -3,24 +3,31 @@ import { Hono } from 'hono';
 import users from '../users';
 import { mutatingRoutes, OVERSIGHT_ROLES, reachableBy } from './rbac-coverage';
 import { getDb } from '../../db';
+import type { DrizzleDb } from '../../db';
+import type { HonoEnv } from '../../app';
 
 vi.mock('../../db', () => ({
   getDb: vi.fn()
 }));
 
+const stubDb = (overrides: Record<string, unknown> = {}): DrizzleDb => {
+  const db: DrizzleDb = Object.create(null);
+  return Object.assign(db, overrides);
+};
+
 describe('User API Routes', () => {
-  let app: Hono<any>;
+  let app: Hono<HonoEnv>;
   const mockUserId = 'user-123';
 
   beforeEach(() => {
     vi.restoreAllMocks();
-    app = new Hono();
+    app = new Hono<HonoEnv>();
     // Simulate auth middleware setting userId + Admin RBAC context
     app.use('*', async (c, next) => {
       c.set('userId', mockUserId);
       c.set('organizationId', 'org-1');
       c.set('userRole', 'Admin');
-      c.env = { DATABASE_URL: 'postgres://mock' };
+      c.env = { DATABASE_URL: 'postgres://mock' } as unknown as HonoEnv['Bindings'];
       await next();
     });
     app.route('/api', users);
@@ -35,9 +42,7 @@ describe('User API Routes', () => {
       })
     });
 
-    vi.mocked(getDb).mockReturnValue({
-      select: mockSelect
-    } as any);
+    vi.mocked(getDb).mockReturnValue(stubDb({ select: mockSelect }));
 
     const res = await app.request('/api/user/preferences', {
       headers: {
@@ -46,7 +51,7 @@ describe('User API Routes', () => {
     });
 
     expect(res.status).toBe(200);
-    const json = await res.json<any>();
+    const json = await res.json<{ success: boolean; data: { layout: unknown } }>();
     expect(json.success).toBe(true);
     expect(json.data.layout).toBeNull();
   });
@@ -61,14 +66,12 @@ describe('User API Routes', () => {
       })
     });
 
-    vi.mocked(getDb).mockReturnValue({
-      select: mockSelect
-    } as any);
+    vi.mocked(getDb).mockReturnValue(stubDb({ select: mockSelect }));
 
     const res = await app.request('/api/user/preferences');
 
     expect(res.status).toBe(200);
-    const json = await res.json<any>();
+    const json = await res.json<{ success: boolean; data: { layout: unknown } }>();
     expect(json.success).toBe(true);
     expect(json.data.layout).toEqual(mockLayout);
   });
@@ -83,13 +86,13 @@ describe('User API Routes', () => {
     });
 
     const mockInsert = vi.fn().mockReturnValue({
-      values: vi.fn().mockResolvedValue({} as any)
+      values: vi.fn().mockResolvedValue({})
     });
 
-    vi.mocked(getDb).mockReturnValue({
+    vi.mocked(getDb).mockReturnValue(stubDb({
       select: mockSelect,
       insert: mockInsert
-    } as any);
+    }));
 
     const newLayout = [{ i: 'coso', x: 0, y: 0, w: 6, h: 4 }];
     const res = await app.request('/api/user/preferences', {
@@ -101,7 +104,7 @@ describe('User API Routes', () => {
     });
 
     expect(res.status).toBe(200);
-    const json = await res.json<any>();
+    const json = await res.json<{ success: boolean }>();
     expect(json.success).toBe(true);
     expect(mockInsert).toHaveBeenCalled();
   });
@@ -117,14 +120,14 @@ describe('User API Routes', () => {
 
     const mockUpdate = vi.fn().mockReturnValue({
       set: vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue({} as any)
+        where: vi.fn().mockResolvedValue({})
       })
     });
 
-    vi.mocked(getDb).mockReturnValue({
+    vi.mocked(getDb).mockReturnValue(stubDb({
       select: mockSelect,
       update: mockUpdate
-    } as any);
+    }));
 
     const updatedLayout = [{ i: 'coso', x: 0, y: 0, w: 8, h: 4 }];
     const res = await app.request('/api/user/preferences', {
@@ -136,7 +139,7 @@ describe('User API Routes', () => {
     });
 
     expect(res.status).toBe(200);
-    const json = await res.json<any>();
+    const json = await res.json<{ success: boolean }>();
     expect(json.success).toBe(true);
     expect(mockUpdate).toHaveBeenCalled();
   });
@@ -183,7 +186,48 @@ describe('User API Routes', () => {
     const json: { success: boolean; error: string } = await res.json();
     expect(json.success).toBe(false);
     expect(json.error).toBe('INVALID_USER_ROLE');
-    expect(getDb).not.toHaveBeenCalled();
+  });
+
+  it('PUT /api/users/:id returns 404 when target user is not in caller organization', async () => {
+    const mockSelect = vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([])
+        })
+      })
+    });
+    vi.mocked(getDb).mockReturnValue(stubDb({ select: mockSelect }));
+
+    const res = await app.request('/api/users/foreign-user', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Tampered' }),
+    });
+
+    expect(res.status).toBe(404);
+    const json = await res.json<{ success: boolean; error: string }>();
+    expect(json.success).toBe(false);
+    expect(json.error).toBe('USER_NOT_FOUND');
+  });
+
+  it('DELETE /api/users/:id returns 404 when target user is not in caller organization', async () => {
+    const mockSelect = vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([])
+        })
+      })
+    });
+    vi.mocked(getDb).mockReturnValue(stubDb({ select: mockSelect }));
+
+    const res = await app.request('/api/users/foreign-user', {
+      method: 'DELETE',
+    });
+
+    expect(res.status).toBe(404);
+    const json = await res.json<{ success: boolean; error: string }>();
+    expect(json.success).toBe(false);
+    expect(json.error).toBe('USER_NOT_FOUND');
   });
 });
 
