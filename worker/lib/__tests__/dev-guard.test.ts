@@ -20,8 +20,9 @@ describe('dev-guard production gate', () => {
     expect(assertDevAllowed({})).toEqual({ allowed: true });
   });
 
-  it('requires the confirm token only when one is configured', () => {
-    expect(assertConfirmToken({}, undefined)).toBe(true);
+  it('requires DEV_CONFIRM_TOKEN and fails closed when unset', () => {
+    expect(assertConfirmToken({}, undefined)).toBe(false);
+    expect(assertConfirmToken({}, 'any-token')).toBe(false);
     expect(assertConfirmToken({ DEV_CONFIRM_TOKEN: 't' }, 'wrong')).toBe(false);
     expect(assertConfirmToken({ DEV_CONFIRM_TOKEN: 't' }, 't')).toBe(true);
   });

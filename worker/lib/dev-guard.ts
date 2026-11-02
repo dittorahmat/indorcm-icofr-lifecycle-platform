@@ -33,9 +33,9 @@ export function assertDevAllowed(env: DevGuardEnv): DevGateResult {
   return { allowed: true };
 }
 
-/** `true` when the request carries the configured confirm token, or when none is configured. */
+/** `true` when DEV_CONFIRM_TOKEN is configured and matches the request token; fails closed if unset. */
 export function assertConfirmToken(env: DevGuardEnv, token: string | undefined): boolean {
   const expected = env.DEV_CONFIRM_TOKEN || (typeof process !== 'undefined' ? process.env.DEV_CONFIRM_TOKEN : '');
-  if (!expected) return true;
+  if (!expected) return false;
   return token === expected;
 }
