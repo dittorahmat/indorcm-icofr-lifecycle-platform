@@ -57,6 +57,9 @@ describe('the user role source (#106)', () => {
           innerJoin: vi.fn(() => ({
             where: vi.fn(() => Promise.resolve([{ id: 'u-1', name: 'Siti', email: 'a@b.c', role: 'Line 2' }])),
           })),
+          where: vi.fn(() => ({
+            limit: vi.fn(() => Promise.resolve([{ userId: 'u-1' }])),
+          })),
         })),
       };
     });
