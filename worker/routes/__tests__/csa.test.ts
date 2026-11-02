@@ -3,6 +3,13 @@ import { Hono } from 'hono';
 import csa from '../csa';
 import { mutatingRoutes, OVERSIGHT_ROLES, reachableBy } from './rbac-coverage';
 import { getDb } from '../../db';
+import type { HonoEnv } from '../../app';
+import type { DrizzleDb } from '../../db';
+
+const stubDb = (overrides: Record<string, unknown> = {}): DrizzleDb => {
+  const db: DrizzleDb = Object.create(null);
+  return Object.assign(db, overrides);
+};
 
 vi.mock('../../db', () => ({
   getDb: vi.fn(() => ({
@@ -74,6 +81,83 @@ describe('CSA barrel routes and sub-apps', () => {
     const json = await res.json<{ success: boolean; data: { items: unknown[] } }>();
     expect(json.success).toBe(true);
     expect(json.data.items).toEqual([]);
+  });
+
+  it('POST /csa/samples/batch returns 404 when csaRecord is not in caller organization', async () => {
+    const mockSelect = vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([])
+        })
+      })
+    });
+    vi.mocked(getDb).mockReturnValue(stubDb({ select: mockSelect }));
+
+    const app = new Hono<HonoEnv>();
+    app.use('*', async (c, next) => {
+      c.set('userId', 'user-1');
+      c.set('organizationId', 'org-1');
+      c.set('userRole', 'Line 1');
+      Object.assign(c, { env: { DATABASE_URL: 'postgres://mock' } });
+      await next();
+    });
+    app.route('/api', csa);
+
+    const res = await app.request('/api/csa/samples/batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        csaRecordId: 'foreign-csa-record',
+        samples: [{ sampleName: 'Sample 1' }]
+      })
+    });
+
+    expect(res.status).toBe(404);
+    const json = await res.json<{ success: boolean; error: string }>();
+    expect(json.success).toBe(false);
+    expect(json.error).toBe('CSA_RECORD_NOT_FOUND');
+  });
+
+  it('POST /csa/samples/batch returns 403 when modifying a sample from another organization', async () => {
+    let callCount = 0;
+    const mockSelect = vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockImplementation(() => {
+            callCount++;
+            // 1st call: csaRecord check in caller org
+            if (callCount === 1) return Promise.resolve([{ id: 'csa-rec-1' }]);
+            // 2nd call: existing sample check returns foreign org
+            return Promise.resolve([{ id: 'sample-foreign', organizationId: 'org-2' }]);
+          })
+        })
+      })
+    });
+    vi.mocked(getDb).mockReturnValue(stubDb({ select: mockSelect }));
+
+    const app = new Hono<HonoEnv>();
+    app.use('*', async (c, next) => {
+      c.set('userId', 'user-1');
+      c.set('organizationId', 'org-1');
+      c.set('userRole', 'Line 1');
+      Object.assign(c, { env: { DATABASE_URL: 'postgres://mock' } });
+      await next();
+    });
+    app.route('/api', csa);
+
+    const res = await app.request('/api/csa/samples/batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        csaRecordId: 'csa-rec-1',
+        samples: [{ id: 'sample-foreign', sampleName: 'Hijack attempt' }]
+      })
+    });
+
+    expect(res.status).toBe(403);
+    const json = await res.json<{ success: boolean; error: string }>();
+    expect(json.success).toBe(false);
+    expect(json.error).toBe('SAMPLE_CROSS_TENANT_FORBIDDEN');
   });
 });
 
