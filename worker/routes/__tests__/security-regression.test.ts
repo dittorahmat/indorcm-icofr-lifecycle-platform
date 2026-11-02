@@ -151,6 +151,7 @@ describe('End-to-End Security Hardening Regression Suite', () => {
       const app = new Hono<HonoEnv>();
       app.use('*', async (c, next) => {
         c.set('userId', 'admin-1');
+        c.set('userRole', 'Admin');
         c.set('organizationId', 'org-1');
         c.env = { DATABASE_URL: 'postgres://dummy' } as HonoEnv['Bindings'];
         await next();

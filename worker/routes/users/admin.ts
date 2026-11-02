@@ -92,17 +92,20 @@ admin.post('/users', rbac(['Admin']), async (c) => {
   return ok(c, { id });
 });
 
+async function verifyOrgMember(db: ReturnType<typeof getDb>, userId: string, orgId: string): Promise<boolean> {
+  const targetMember = await db.select({ userId: member.userId })
+    .from(member)
+    .where(and(eq(member.userId, userId), eq(member.organizationId, orgId)))
+    .limit(1);
+  return targetMember.length > 0;
+}
+
 admin.put('/users/:id', rbac(['Admin']), async (c) => {
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
   const db = getDb(c.env.DATABASE_URL);
 
-  const targetMember = await db.select({ userId: member.userId })
-    .from(member)
-    .where(and(eq(member.userId, id), eq(member.organizationId, orgId)))
-    .limit(1);
-
-  if (targetMember.length === 0) {
+  if (!(await verifyOrgMember(db, id, orgId))) {
     return notFound(c, 'USER_NOT_FOUND', 'User not found in organization');
   }
 
@@ -136,12 +139,7 @@ admin.delete('/users/:id', rbac(['Admin']), async (c) => {
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
 
-  const targetMember = await db.select({ userId: member.userId })
-    .from(member)
-    .where(and(eq(member.userId, id), eq(member.organizationId, orgId)))
-    .limit(1);
-
-  if (targetMember.length === 0) {
+  if (!(await verifyOrgMember(db, id, orgId))) {
     return notFound(c, 'USER_NOT_FOUND', 'User not found in organization');
   }
 

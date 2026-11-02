@@ -40,6 +40,8 @@ const settings = new Hono<HonoEnv>();
 settings.get('/settings', async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const orgId = c.get('organizationId');
+  const userRole = c.get('userRole');
+  const isPrivileged = userRole === 'Admin' || userRole === 'Line 2';
 
   const orgs = await db.select().from(organization).where(eq(organization.id, orgId)).limit(1);
   if (orgs.length === 0) return notFound(c, 'ORGANIZATION_NOT_FOUND', 'Organization not found');
@@ -58,19 +60,19 @@ settings.get('/settings', async (c) => {
     verificationHash: meta.verificationHash,
     signedOffDate: meta.signedOffDate ? (typeof meta.signedOffDate === 'string' ? new Date(meta.signedOffDate).getTime() : meta.signedOffDate) : undefined,
     emailProvider: meta.emailProvider || 'system',
-    senderEmail: meta.senderEmail || '',
+    senderEmail: isPrivileged ? (meta.senderEmail || '') : '',
     senderName: meta.senderName || '',
-    smtpHost: meta.smtpHost || '',
-    smtpPort: meta.smtpPort || 587,
-    smtpUser: meta.smtpUser || '',
-    smtpPass: meta.smtpPass ? '********' : '',
+    smtpHost: isPrivileged ? (meta.smtpHost || '') : '',
+    smtpPort: isPrivileged ? (meta.smtpPort || 587) : 587,
+    smtpUser: isPrivileged ? (meta.smtpUser || '') : '',
+    smtpPass: (isPrivileged && meta.smtpPass) ? '********' : '',
     customYears: meta.customYears || [],
-    slackWebhookUrl: meta.slackWebhookUrl || '',
-    slackEnabled: meta.slackEnabled ?? false,
-    msTeamsWebhookUrl: meta.msTeamsWebhookUrl || '',
-    msTeamsEnabled: meta.msTeamsEnabled ?? false,
-    genericWebhookUrl: meta.genericWebhookUrl || '',
-    genericWebhookEnabled: meta.genericWebhookEnabled ?? false,
+    slackWebhookUrl: isPrivileged ? (meta.slackWebhookUrl || '') : '',
+    slackEnabled: isPrivileged ? (meta.slackEnabled ?? false) : false,
+    msTeamsWebhookUrl: isPrivileged ? (meta.msTeamsWebhookUrl || '') : '',
+    msTeamsEnabled: isPrivileged ? (meta.msTeamsEnabled ?? false) : false,
+    genericWebhookUrl: isPrivileged ? (meta.genericWebhookUrl || '') : '',
+    genericWebhookEnabled: isPrivileged ? (meta.genericWebhookEnabled ?? false) : false,
   };
 
   return ok(c, response);

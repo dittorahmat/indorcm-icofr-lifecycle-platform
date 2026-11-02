@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { HonoEnv } from '../../app';
-import { ok, bad } from '../../lib/utils';
+import { ok, bad, notFound } from '../../lib/utils';
 import { getDb } from '../../db';
 import { csaRecords, csaSamples, todEvaluations, testRecords } from '../../db/schema';
 import { eq, and, desc, SQL, sql, or } from 'drizzle-orm';
@@ -39,7 +39,7 @@ csaSamplesTestingRoute.post('/csa/samples/batch', rbac(['Line 1', 'Admin']), asy
   const orgId = c.get('organizationId');
   const { csaRecordId, samples } = await c.req.json<{ csaRecordId: string, samples: any[] }>();
 
-  if (!csaRecordId || !samples) return bad(c, 'Invalid payload');
+  if (!csaRecordId || !samples) return bad(c, 'INVALID_PAYLOAD', 400, 'Invalid payload');
 
   const csaRecord = await db.select({ id: csaRecords.id })
     .from(csaRecords)
@@ -47,7 +47,7 @@ csaSamplesTestingRoute.post('/csa/samples/batch', rbac(['Line 1', 'Admin']), asy
     .limit(1);
 
   if (csaRecord.length === 0) {
-    return bad(c, 'CSA_RECORD_NOT_FOUND', 404, 'CSA record not found in organization');
+    return notFound(c, 'CSA_RECORD_NOT_FOUND', 'CSA record not found in organization');
   }
 
   for (const s of samples) {

@@ -100,6 +100,55 @@ describe('Settings API Hardening', () => {
     expect(data.data.smtpPass).toBe('********');
   });
 
+  it('omits smtp and webhook secrets for non-privileged roles in GET /settings', async () => {
+    const mockOrg = {
+      id: 'org-1',
+      name: 'PT BUMN Holding',
+      logo: null,
+      metadata: {
+        smtpHost: 'smtp.example.com',
+        smtpPort: 587,
+        smtpUser: 'notify@bumn.go.id',
+        smtpPass: 'super-secret-password-12345',
+        slackWebhookUrl: 'https://hooks.slack.com/services/T/B/X',
+        slackEnabled: true,
+        fiscalYear: 2026,
+      },
+    };
+
+    mockedGetDb.mockReturnValue(
+      stubDb({
+        select: () => ({
+          from: () => ({
+            where: () => ({
+              limit: async () => [mockOrg],
+            }),
+          }),
+        }),
+      })
+    );
+
+    const app = new Hono<HonoEnv>();
+    app.use('*', async (c, next) => {
+      c.set('userId', 'user-line1');
+      c.set('userRole', 'Line 1');
+      c.set('organizationId', 'org-1');
+      c.env = {
+        DATABASE_URL: 'postgres://dummy',
+        BETTER_AUTH_URL: 'http://localhost:3000',
+      } as HonoEnv['Bindings'];
+      await next();
+    });
+    app.route('/', settingsRoute);
+
+    const res = await app.request('/settings');
+    expect(res.status).toBe(200);
+    const data = await res.json<{ data: { smtpPass: string; smtpHost: string; slackWebhookUrl: string } }>();
+    expect(data.data.smtpPass).toBe('');
+    expect(data.data.smtpHost).toBe('');
+    expect(data.data.slackWebhookUrl).toBe('');
+  });
+
   it('rejects unlocking period when verificationHash is present in PUT /settings', async () => {
     const mockOrg = {
       id: 'org-1',
