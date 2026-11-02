@@ -83,7 +83,7 @@ simulationRoutes.post('/simulations', rbac(['Line 2', 'Admin']), async (c) => {
         .limit(1)
     : [];
 
-  if (glSnapshotId && !snapshot) return bad(c, 'GL_SNAPSHOT_NOT_FOUND', 404);
+  if (glSnapshotId && !snapshot) return notFound(c, 'GL_SNAPSHOT_NOT_FOUND', 'GL snapshot not found');
   // boundary: `benchmarkFsliNames` is a jsonb column; only this feature writes it, always as a string[].
   const snapshotBenchmarks = (snapshot?.benchmarkFsliNames as string[] | null) ?? [];
 

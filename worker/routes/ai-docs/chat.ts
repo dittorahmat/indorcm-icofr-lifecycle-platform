@@ -44,7 +44,7 @@ aiChatApp.post('/ai/chat', async (c) => {
 
   const { message, conversationHistory = [] } = body;
 
-  const clientId = c.req.header('X-Forwarded-For') || c.req.header('CF-Connecting-IP') || 'unknown';
+  const clientId = c.get('userId') || c.req.header('cf-connecting-ip') || 'unknown';
 
   // Contract: cache hits count toward the daily limit — checked before cache lookup.
   const checked = checkDailyRateLimit(sharedAiRateLimitStore, `chat:${clientId}`, Date.now());

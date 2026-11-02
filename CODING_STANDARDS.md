@@ -202,3 +202,18 @@ the verdict. Emptiness claims enumerate the live catalog
 justified in code. `--apply` refuses when source and target resolve to the same
 database. Precedents: `scripts/lib/clone-identity.ts`,
 `scripts/__tests__/clone-identity.test.ts`.
+
+## Tenant scoping on mutations and maintenance routes
+
+Any mutating SQL query or ORM execution in `worker/routes/` that modifies,
+purges, or inspects tenant-owned business data must be scoped explicitly to the
+caller's active `organizationId` (`c.get('organizationId')`). Maintenance or dev
+tooling (e.g. `/dev/purge-all`) that issues mass deletions without a tenant filter
+is an immediate multi-tenant vulnerability.
+
+Check: for every mutating operation (`update`, `delete`, `DELETE FROM ...`) in the
+diff, verify that either (a) an explicit `WHERE organization_id = ${orgId}` predicate
+is attached, or (b) the target record's tenant ownership was verified beforehand
+in the same transaction.
+Precedents: `worker/routes/users/dev.ts` (`/dev/purge-all`), `worker/routes/users/admin.ts`.
+

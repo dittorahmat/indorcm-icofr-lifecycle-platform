@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import type { HonoEnv } from '../../app';
-import { ok, bad } from '../../lib/utils';
+import { ok, bad, notFound } from '../../lib/utils';
 import { getDb } from '../../db';
-import { csaSamples, todEvaluations, testRecords } from '../../db/schema';
+import { csaRecords, csaSamples, todEvaluations, testRecords } from '../../db/schema';
 import { eq, and, desc, SQL, sql, or } from 'drizzle-orm';
 import { matchesPeriodYear } from '../../lib/period-query';
 import type { TestRecord } from "@shared/types";
@@ -39,11 +39,29 @@ csaSamplesTestingRoute.post('/csa/samples/batch', rbac(['Line 1', 'Admin']), asy
   const orgId = c.get('organizationId');
   const { csaRecordId, samples } = await c.req.json<{ csaRecordId: string, samples: any[] }>();
 
-  if (!csaRecordId || !samples) return bad(c, 'Invalid payload');
+  if (!csaRecordId || !samples) return bad(c, 'INVALID_PAYLOAD', 400, 'Invalid payload');
+
+  const csaRecord = await db.select({ id: csaRecords.id })
+    .from(csaRecords)
+    .where(and(eq(csaRecords.id, csaRecordId), eq(csaRecords.organizationId, orgId)))
+    .limit(1);
+
+  if (csaRecord.length === 0) {
+    return notFound(c, 'CSA_RECORD_NOT_FOUND', 'CSA record not found in organization');
+  }
 
   for (const s of samples) {
     const id = s.id || crypto.randomUUID();
-    const existing = await db.select().from(csaSamples).where(eq(csaSamples.id, id)).limit(1);
+    const existing = s.id
+      ? await db.select({ id: csaSamples.id, organizationId: csaSamples.organizationId })
+          .from(csaSamples)
+          .where(eq(csaSamples.id, id))
+          .limit(1)
+      : [];
+
+    if (existing.length > 0 && existing[0].organizationId !== orgId) {
+      return bad(c, 'SAMPLE_CROSS_TENANT_FORBIDDEN', 403, 'Cannot modify sample belonging to another organization');
+    }
 
     const values = {
       organizationId: orgId,
@@ -55,7 +73,9 @@ csaSamplesTestingRoute.post('/csa/samples/batch', rbac(['Line 1', 'Admin']), asy
     };
 
     if (existing.length > 0) {
-      await db.update(csaSamples).set(values).where(eq(csaSamples.id, id));
+      await db.update(csaSamples)
+        .set(values)
+        .where(and(eq(csaSamples.id, id), eq(csaSamples.organizationId, orgId)));
     } else {
       await db.insert(csaSamples).values({ id, ...values });
     }

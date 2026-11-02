@@ -47,35 +47,38 @@ devRoutes.post('/dev/purge-all', rbac(['Admin']), async (c) => {
   const refusal = devRefusal(c);
   if (refusal) return refusal;
   const db = getDb(c.env.DATABASE_URL);
+  const orgId = c.get('organizationId');
+  if (!orgId) return bad(c, 'ORGANIZATION_REQUIRED', 400, 'Active organization context required');
+
   try {
-    // One transaction: a mid-list failure must not leave a half-purged tenant.
+    // One transaction: scoped strictly to the caller's active organization ID
     await db.transaction(async (tx) => {
-      await tx.execute(sql`DELETE FROM bpm_diagrams`);
-      await tx.execute(sql`DELETE FROM bpm_node_rcms`);
-      await tx.execute(sql`DELETE FROM rcm_controls`);
-      await tx.execute(sql`DELETE FROM rcms`);
-      await tx.execute(sql`DELETE FROM controls`);
-      await tx.execute(sql`DELETE FROM bpm_processes`);
-      await tx.execute(sql`DELETE FROM csa_records`);
-      await tx.execute(sql`DELETE FROM test_records`);
-      await tx.execute(sql`DELETE FROM action_plans`);
-      await tx.execute(sql`DELETE FROM deficiencies`);
-      await tx.execute(sql`DELETE FROM simulations`);
-      await tx.execute(sql`DELETE FROM gl_snapshots`);
-      await tx.execute(sql`DELETE FROM gl_rows`);
-      await tx.execute(sql`DELETE FROM departments`);
-      await tx.execute(sql`DELETE FROM audit_logs`);
-      await tx.execute(sql`DELETE FROM aggregate_deficiencies`);
-      await tx.execute(sql`DELETE FROM account_assertions`);
-      await tx.execute(sql`DELETE FROM vendors`);
-      await tx.execute(sql`DELETE FROM soc_reports`);
-      await tx.execute(sql`DELETE FROM soc_evaluations`);
-      await tx.execute(sql`DELETE FROM csa_schedules`);
-      await tx.execute(sql`DELETE FROM transaction_details`);
-      await tx.execute(sql`DELETE FROM transaction_uploads`);
+      await tx.execute(sql`DELETE FROM bpm_diagrams WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM bpm_node_rcms WHERE rcm_id IN (SELECT id FROM rcms WHERE organization_id = ${orgId})`);
+      await tx.execute(sql`DELETE FROM rcm_controls WHERE rcm_id IN (SELECT id FROM rcms WHERE organization_id = ${orgId})`);
+      await tx.execute(sql`DELETE FROM rcms WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM controls WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM bpm_processes WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM csa_records WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM test_records WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM action_plans WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM deficiencies WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM simulations WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM gl_snapshots WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM gl_rows WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM departments WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM audit_logs WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM aggregate_deficiencies WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM account_assertions WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM vendors WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM soc_reports WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM soc_evaluations WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM csa_schedules WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM transaction_details WHERE organization_id = ${orgId}`);
+      await tx.execute(sql`DELETE FROM transaction_uploads WHERE organization_id = ${orgId}`);
     });
 
-    return ok(c, { message: 'All business data purged. Fresh start!' });
+    return ok(c, { message: 'Organization business data purged successfully.' });
   } catch (e: unknown) {
     console.error('Purge-all error:', e);
     return bad(c, 'DEV_PURGE_FAILED', 500);

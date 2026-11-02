@@ -1,6 +1,6 @@
 import { Hono, type Context } from 'hono';
 import type { HonoEnv } from '../../app';
-import { ok, bad, AppError } from '../../lib/utils';
+import { ok, bad, notFound, AppError } from '../../lib/utils';
 import { getDb } from '../../db';
 import { user, member } from '../../db/schema';
 import { eq, and } from 'drizzle-orm';
@@ -92,9 +92,23 @@ admin.post('/users', rbac(['Admin']), async (c) => {
   return ok(c, { id });
 });
 
+async function verifyOrgMember(db: ReturnType<typeof getDb>, userId: string, orgId: string): Promise<boolean> {
+  const targetMember = await db.select({ userId: member.userId })
+    .from(member)
+    .where(and(eq(member.userId, userId), eq(member.organizationId, orgId)))
+    .limit(1);
+  return targetMember.length > 0;
+}
+
 admin.put('/users/:id', rbac(['Admin']), async (c) => {
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
+  const db = getDb(c.env.DATABASE_URL);
+
+  if (!(await verifyOrgMember(db, id, orgId))) {
+    return notFound(c, 'USER_NOT_FOUND', 'User not found in organization');
+  }
+
   const body = await c.req.json<UpdateUserBody>();
 
   if (body.role !== undefined && !isUserRole(body.role)) return rejectOption(c, new AppError('INVALID_USER_ROLE', `Unknown role: ${String(body.role)}`, 400));
@@ -103,7 +117,6 @@ admin.put('/users/:id', rbac(['Admin']), async (c) => {
   const nextRole: UserRole | undefined = isUserRole(body.role) ? body.role : undefined;
   const nextLevel = isUserLevel(body.level) ? body.level : undefined;
 
-  const db = getDb(c.env.DATABASE_URL);
   await db.update(user).set({
     name: body.name,
     email: body.email,
@@ -125,6 +138,11 @@ admin.delete('/users/:id', rbac(['Admin']), async (c) => {
   const db = getDb(c.env.DATABASE_URL);
   const id = c.req.param('id');
   const orgId = c.get('organizationId');
+
+  if (!(await verifyOrgMember(db, id, orgId))) {
+    return notFound(c, 'USER_NOT_FOUND', 'User not found in organization');
+  }
+
   await db.delete(member).where(and(eq(member.userId, id), eq(member.organizationId, orgId)));
   await db.delete(user).where(eq(user.id, id));
   return ok(c, { success: true });

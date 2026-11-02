@@ -60,7 +60,7 @@ simulationAccounts.post('/simulations/:id/account-departments/sync', rbac(['Line
     where: and(eq(simulations.id, simId), eq(simulations.organizationId, orgId))
   });
 
-  if (!sim) return bad(c, "Simulation not found", 404);
+  if (!sim) return notFound(c, 'SIMULATION_NOT_FOUND', 'Simulation not found');
 
   try {
     // Sequential updates to avoid transaction issues and overwhelming the DB

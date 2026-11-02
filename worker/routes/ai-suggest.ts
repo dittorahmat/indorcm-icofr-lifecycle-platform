@@ -27,7 +27,7 @@ aiSuggestApp.post('/ai/suggest-risk-controls', async (c) => {
     return bad(c, 'Invalid request body');
   }
 
-  const clientId = c.req.header('X-Forwarded-For') || c.req.header('CF-Connecting-IP') || 'unknown';
+  const clientId = c.get('userId') || c.req.header('cf-connecting-ip') || 'unknown';
 
   // Contract: cache hits count toward the daily limit — checked before cache lookup.
   const limit = checkDailyRateLimit(sharedAiRateLimitStore, `suggest:${clientId}`, Date.now());
