@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { MaterialityParamsCard } from './MaterialityParamsCard';
-import type { MaterialitySimulation } from '@shared/types';
+import { createMockMaterialitySimulation } from '@/test/fixtures/scoping-simulation';
 import { strictT } from '@/test/mock-i18n';
 
 vi.mock('react-i18next', () => ({
@@ -13,32 +13,15 @@ vi.mock('react-i18next', () => ({
 }));
 
 describe('MaterialityParamsCard Component', () => {
-  const mockSim = {
+  const mockSim = createMockMaterialitySimulation({
     id: 'sim-1',
-    organizationId: 'org-1',
-    year: '2026',
     name: 'Baseline 2026',
-    basis: 'Laba Sebelum Pajak',
-    status: 'Draft',
-    workflowStatus: 'Draft' as const,
     omPercentage: 5,
     haircutPercentage: 25,
-    omValue: 5000000,
-    pmValue: 3750000,
-    locationCount: 1,
-    assessmentData: {},
-    workflowHistory: [],
-    history: [],
-    createdBy: 'user-1',
-    locationThreshold: 0,
-    locationResults: null,
     materialityJustification: {
       justificationText: 'Justifikasi sudah lengkap.'
     },
-    glSnapshotId: null,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  } as MaterialitySimulation;
+  });
 
   it('renders inputs and triggers recalculate with updated parameters', () => {
     const handleRecalculate = vi.fn();
