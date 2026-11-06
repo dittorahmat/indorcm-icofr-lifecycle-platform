@@ -50,8 +50,8 @@ export function ScopingEditor({ simulation, onBack }: ScopingEditorProps) {
     simState, setSimState, mergedGlData, entityHierarchy, selectedEntityCodes, setSelectedEntityCodes,
     omValue, pmValue, multiplier, benchmarkValue, scopingCompliance,
     departments, applications, localAppMappings, isLocked, mutations, handlers, isDirty,
-    draftBasis, setDraftBasis, draftOmPercentage, setDraftOmPercentage,
-    draftHaircutPercentage, setDraftHaircutPercentage, isStale, isRecalculating, handleRecalculate
+    draftOmPercentage, setDraftOmPercentage,
+    draftHaircutPercentage, setDraftHaircutPercentage, isRecalculating, handleRecalculate
   } = useScopingEditor(simulation);
 
   const handleOwnerAcceptanceChange = async (noGL: string, acceptance: "Accepted" | "Rejected") => {
@@ -98,20 +98,15 @@ export function ScopingEditor({ simulation, onBack }: ScopingEditorProps) {
                 setSimState={setSimState}
                 multiplier={multiplier}
                 benchmarkValue={benchmarkValue}
-                omValue={omValue}
-                pmValue={pmValue}
                 isLocked={isLocked}
                 onClose={() => {
                   hasUserToggledRef.current = true;
                   setIsParamsOpen(false);
                 }}
-                draftBasis={draftBasis}
-                setDraftBasis={setDraftBasis}
                 draftOmPercentage={draftOmPercentage}
                 setDraftOmPercentage={setDraftOmPercentage}
                 draftHaircutPercentage={draftHaircutPercentage}
                 setDraftHaircutPercentage={setDraftHaircutPercentage}
-                isStale={isStale}
                 isRecalculating={isRecalculating}
                 handleRecalculate={handleRecalculate}
                 onSaveJustification={(justification) => {
