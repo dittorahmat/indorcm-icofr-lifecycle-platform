@@ -1,17 +1,20 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Settings2, Info, Calculator, Percent, Layers, AlertTriangle, X, ShieldCheck, CheckCircle2, AlertCircle, FileText } from 'lucide-react';
+import { 
+  Calculator, Settings2, Info, AlertTriangle, 
+  Layers, Percent, X, CheckCircle2, AlertCircle, FileText
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { formatIDR } from '@/components/reports/dod/dod-format';
 import type { MaterialitySimulation, MaterialityJustification } from '@shared/types';
-import { cn } from '@/lib/utils';
 import { MaterialityJustificationModal } from './MaterialityJustificationModal';
 import { isJustificationComplete } from '../services/materiality-justification';
-import { formatIDR } from '@/components/reports/dod/dod-format';
+import { cn } from '@/lib/utils';
 
 interface MaterialityParamsCardProps {
   simState: MaterialitySimulation;
@@ -22,7 +25,7 @@ interface MaterialityParamsCardProps {
   pmValue: number;
   isLocked: boolean;
   onClose?: () => void;
-  onSaveJustification?: (justification: MaterialityJustification) => void;
+  // Local/Draft parameter controls to avoid heavy parent re-renders on keystroke
   draftBasis: string;
   setDraftBasis: (val: string) => void;
   draftOmPercentage: number;
@@ -31,7 +34,8 @@ interface MaterialityParamsCardProps {
   setDraftHaircutPercentage: (val: number) => void;
   isStale: boolean;
   isRecalculating: boolean;
-  handleRecalculate: (om?: number, haircut?: number) => void;
+  handleRecalculate: (omPct: number, hcPct: number) => void;
+  onSaveJustification?: (justification: MaterialityJustification) => void;
 }
 
 export function MaterialityParamsCard({
@@ -39,20 +43,20 @@ export function MaterialityParamsCard({
   setSimState,
   multiplier,
   benchmarkValue,
-  omValue,
-  pmValue,
+  omValue: _omValue,
+  pmValue: _pmValue,
   isLocked,
   onClose,
-  onSaveJustification,
-  draftBasis,
-  setDraftBasis,
+  draftBasis: _draftBasis,
+  setDraftBasis: _setDraftBasis,
   draftOmPercentage,
   setDraftOmPercentage,
   draftHaircutPercentage,
   setDraftHaircutPercentage,
-  isStale,
+  isStale: _isStale,
   isRecalculating,
-  handleRecalculate
+  handleRecalculate,
+  onSaveJustification
 }: MaterialityParamsCardProps) {
   const { t } = useTranslation('scoping');
 
@@ -73,32 +77,31 @@ export function MaterialityParamsCard({
   }, [draftHaircutPercentage]);
 
   const localIsStale = localOmPercentage !== (simState.omPercentage ?? 0) ||
-                       localHaircutPercentage !== (simState.haircutPercentage ?? 0) ||
-                       draftBasis !== simState.basis;
+                       localHaircutPercentage !== (simState.haircutPercentage ?? 0);
 
   const onRecalculateClick = () => {
-    // Propagate to parent draft states
     setDraftOmPercentage(localOmPercentage);
     setDraftHaircutPercentage(localHaircutPercentage);
-    // Trigger recalculation with local parameters
     handleRecalculate(localOmPercentage, localHaircutPercentage);
   };
 
   return (
     <Card className="border-slate-200 shadow-sm overflow-hidden w-full h-full bg-white flex flex-col">
-      <CardHeader className="py-3 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 shrink-0 flex-wrap gap-2 min-w-0">
-        <CardTitle className="text-xs uppercase font-bold text-slate-500 tracking-[0.2em] flex items-center gap-2">
-          <Settings2 className="h-3.5 w-3.5 text-slate-900" /> {t('params.title')}
+      <CardHeader className="py-2.5 border-b border-slate-100 bg-slate-50/50 flex flex-row items-center justify-between px-3.5 shrink-0 gap-2 min-w-0">
+        <CardTitle className="text-xs uppercase font-bold text-slate-500 tracking-[0.15em] flex items-center gap-1.5 truncate">
+          <Settings2 className="h-3.5 w-3.5 text-slate-900 shrink-0" />
+          <span className="truncate">{t('params.title')}</span>
         </CardTitle>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           <Popover>
             <PopoverTrigger asChild>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-6 gap-1 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-md px-2 transition-all text-xs font-bold uppercase tracking-wider"
+                className="h-6 gap-1 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-md px-1.5 transition-all text-xs font-bold uppercase tracking-wider"
               >
-                <Info className="h-3 w-3 text-indigo-500" /> {t('logic.title')}
+                <Info className="h-3 w-3 text-indigo-500" />
+                <span>{t('logic.title')}</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[calc(100vw-2rem)] max-w-[300px] sm:w-[300px] p-4 border-slate-200 shadow-xl" align="end" side="bottom" sideOffset={5}>
@@ -113,7 +116,7 @@ export function MaterialityParamsCard({
                     <span>{t('logic.quant')}</span>
                   </li>
                   <li className="flex gap-2">
-                    <Badge className="h-3.5 w-3.5 p-0 flex items-center justify-center rounded-full bg-blue-600 border-none text-white text-xs font-black shrink-0">2</Badge>
+                    <Badge className="h-3.5 w-3.5 p-0 flex items-center justify-center rounded-full bg-indigo-600 border-none text-white text-xs font-black shrink-0">2</Badge>
                     <span>{t('logic.qual')}</span>
                   </li>
                 </ol>
@@ -133,11 +136,12 @@ export function MaterialityParamsCard({
           )}
         </div>
       </CardHeader>
-      <CardContent className="p-4 flex flex-col gap-4 flex-grow overflow-y-auto min-h-0 justify-between">
-        <div className="flex flex-col gap-4 w-full">
+
+      <CardContent className="p-3.5 flex flex-col gap-3 flex-grow min-h-0 justify-between">
+        <div className="flex flex-col gap-2.5 w-full">
           {/* Significant Locations */}
           <div className="space-y-1">
-            <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center justify-between gap-2">
               <Label className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
                 <Layers className="h-3.5 w-3.5 text-slate-400" /> {t('params.locations')}
               </Label>
@@ -152,128 +156,136 @@ export function MaterialityParamsCard({
                 disabled={isLocked} 
                 value={simState.locationCount ?? 1} 
                 onChange={e => setSimState(s => ({ ...s, locationCount: Number(e.target.value) }))} 
-                className="h-9 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-12 text-slate-900 text-xs rounded-lg"
+                className="h-8 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-12 text-slate-900 text-xs rounded-lg"
               />
-              <div className="absolute inset-y-0 right-3 flex items-center text-xs font-bold text-slate-400 uppercase">
+              <div className="absolute inset-y-0 right-3 flex items-center text-xs font-bold text-slate-400 uppercase pointer-events-none">
                 {t('params.unit')}
               </div>
             </div>
           </div>
 
-          {/* % OM Percentage */}
-          <div className="space-y-1">
-            <Label className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
-              <Percent className="h-3.5 w-3.5 text-slate-400" /> {t('params.omLabel')}
-            </Label>
-            <div className="relative">
-              <Input 
-                type="number" 
-                step={0.1} 
-                disabled={isLocked} 
-                value={localOmPercentage} 
-                onChange={e => setLocalOmPercentage(Number(e.target.value))} 
-                onBlur={() => setDraftOmPercentage(localOmPercentage)}
-                className="h-9 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-8 text-slate-900 text-xs rounded-lg"
-              />
-              <div className="absolute inset-y-0 right-3 flex items-center text-slate-400 text-xs font-bold">
-                %
+          {/* % OM & % Haircut side-by-side in 2 columns */}
+          <div className="grid grid-cols-2 gap-2 w-full">
+            {/* % OM */}
+            <div className="space-y-1 min-w-0">
+              <Label className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1 truncate">
+                <Percent className="h-3 w-3 text-slate-400 shrink-0" />
+                <span className="truncate">{t('params.omLabel')}</span>
+              </Label>
+              <div className="relative">
+                <Input 
+                  type="number" 
+                  step={0.1} 
+                  disabled={isLocked} 
+                  value={localOmPercentage} 
+                  onChange={e => setLocalOmPercentage(Number(e.target.value))} 
+                  onBlur={() => setDraftOmPercentage(localOmPercentage)}
+                  className="h-8 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-7 text-slate-900 text-xs rounded-lg"
+                />
+                <div className="absolute inset-y-0 right-2.5 flex items-center text-slate-400 text-xs font-bold pointer-events-none">
+                  %
+                </div>
+              </div>
+            </div>
+
+            {/* % Haircut */}
+            <div className="space-y-1 min-w-0">
+              <Label className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1 truncate">
+                <ShieldAlert className="h-3 w-3 text-rose-500 shrink-0" />
+                <span className="truncate">{t('params.haircutLabel')}</span>
+              </Label>
+              <div className="relative">
+                <Input 
+                  type="number" 
+                  disabled={isLocked} 
+                  value={localHaircutPercentage} 
+                  onChange={e => setLocalHaircutPercentage(Number(e.target.value))} 
+                  onBlur={() => setDraftHaircutPercentage(localHaircutPercentage)}
+                  className="h-8 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-7 text-slate-900 text-xs rounded-lg"
+                />
+                <div className="absolute inset-y-0 right-2.5 flex items-center text-slate-400 text-xs font-bold pointer-events-none">
+                  %
+                </div>
               </div>
             </div>
           </div>
 
-          {/* % Haircut */}
-          <div className="space-y-1">
-            <Label className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1.5">
-              <ShieldAlert className="h-3.5 w-3.5 text-rose-500" /> {t('params.haircutLabel')}
-            </Label>
-            <div className="relative">
-              <Input 
-                type="number" 
-                disabled={isLocked} 
-                value={localHaircutPercentage} 
-                onChange={e => setLocalHaircutPercentage(Number(e.target.value))} 
-                onBlur={() => setDraftHaircutPercentage(localHaircutPercentage)}
-                className="h-9 font-bold bg-slate-50 border-slate-200 focus:bg-white transition-all pr-8 text-slate-900 text-xs rounded-lg"
-              />
-              <div className="absolute inset-y-0 right-3 flex items-center text-slate-400 text-xs font-bold">
-                %
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Warning & Recalculate Block */}
-        <div className="flex flex-col gap-3 w-full mt-4 shrink-0">
+          {/* Stale Warning & Recalculate Button */}
           {localIsStale && (
-            <div className="bg-amber-50 border border-amber-100 rounded-lg p-2.5 flex items-start gap-2 text-amber-800 text-xs font-semibold leading-normal">
-              <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-              <span>{t('params.staleWarning', 'Parameter telah berubah. Silakan hitung ulang untuk memperbarui tabel.')}</span>
+            <div className="bg-amber-50 border border-amber-200/80 rounded-lg p-2 flex items-start gap-1.5 text-amber-800 text-xs font-semibold leading-tight animate-in fade-in duration-200">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
+              <span>{t('params.staleWarning', 'Parameter telah berubah. Silakan hitung ulang.')}</span>
             </div>
           )}
 
           <Button
             onClick={onRecalculateClick}
             disabled={!localIsStale || isRecalculating || isLocked}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider h-10 rounded-xl gap-2 shadow-sm"
+            className={cn(
+              "w-full text-white font-bold text-xs uppercase tracking-wider h-8 rounded-lg gap-1.5 shadow-sm transition-all",
+              localIsStale
+                ? "bg-indigo-600 hover:bg-indigo-700 ring-2 ring-indigo-200 shadow-indigo-100"
+                : "bg-slate-300 text-slate-600 hover:bg-slate-300 cursor-not-allowed opacity-70"
+            )}
           >
-            <Calculator className="h-4 w-4" />
-            {isRecalculating ? t('params.recalculating', 'Recalculating...') : t('params.recalculate', 'Recalculate')}
+            <Calculator className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">
+              {isRecalculating ? t('params.recalculating', 'Recalculating...') : t('params.recalculate', 'Recalculate')}
+            </span>
           </Button>
+        </div>
 
-          {/* Benchmark Details Block */}
-          <div className="flex flex-col gap-2 bg-slate-50 border border-slate-100 rounded-lg p-3 w-full">
-            <div className="space-y-0.5 text-left">
-              <p className="text-xs text-slate-400 uppercase font-black tracking-wider flex items-center justify-start gap-1">
-                {t('params.benchmarkValue', { basis: simState.basis })} 
-                <Info className="h-3 w-3 opacity-40" />
-              </p>
-              <p className="text-xs font-display font-black text-slate-700">{formatIDR(benchmarkValue)}</p>
-            </div>
+        {/* Bottom Section: Benchmark Summary & Justification */}
+        <div className="flex flex-col gap-2 w-full pt-2 border-t border-slate-100 shrink-0">
+          {/* Benchmark Details Inline */}
+          <div className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-md px-2.5 py-1.5 w-full text-xs">
+            <span className="text-slate-500 font-bold uppercase tracking-wider truncate mr-2">
+              {t('params.benchmarkValue', { basis: simState.basis || 'Benchmark' })}
+            </span>
+            <span className="font-mono font-bold text-slate-800 shrink-0">
+              {formatIDR(benchmarkValue)}
+            </span>
           </div>
 
           {/* Justification Status & Modal Trigger */}
-          <div className="pt-2 border-t border-slate-100">
-            <div className="flex items-center justify-between mb-1.5 flex-wrap gap-2">
-              <span className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1">
-                <ShieldCheck className="h-3.5 w-3.5 text-indigo-500" />
-                {t('scoping:justification.buttonLabel')}
-              </span>
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-xs font-semibold px-2 py-0 rounded-md",
-                  hasCompleteJustification
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-300"
-                    : "bg-amber-50 text-amber-700 border-amber-300"
-                )}
-              >
-                {hasCompleteJustification ? (
-                  <span className="flex items-center gap-1">
-                    <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-                    {t('scoping:justification.statusComplete')}
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3 text-amber-600" />
-                    {t('scoping:justification.statusPending')}
-                  </span>
-                )}
-              </Badge>
-            </div>
+          <div className="flex items-center justify-between gap-2">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsJustificationOpen(true)}
               className={cn(
-                "w-full h-8 text-xs font-semibold rounded-md flex items-center justify-center gap-1.5 transition-all",
+                "flex-1 h-8 text-xs font-semibold rounded-md flex items-center justify-between px-2.5 transition-all min-w-0",
                 hasCompleteJustification
                   ? "border-slate-200 hover:bg-slate-50 text-slate-700"
                   : "border-amber-300 bg-amber-50/50 hover:bg-amber-50 text-amber-800"
               )}
             >
-              <FileText className="h-3.5 w-3.5 text-indigo-500" />
-              {t('scoping:justification.buttonLabel')}
+              <span className="flex items-center gap-1.5 truncate">
+                <FileText className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                <span className="truncate">{t('scoping:justification.buttonLabel')}</span>
+              </span>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-xs font-semibold px-1.5 py-0 rounded border shrink-0 leading-tight",
+                  hasCompleteJustification
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                    : "bg-amber-50 text-amber-700 border-amber-300"
+                )}
+              >
+                {hasCompleteJustification ? (
+                  <span className="flex items-center gap-0.5">
+                    <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600" />
+                    {t('scoping:justification.statusComplete')}
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-0.5">
+                    <AlertCircle className="h-2.5 w-2.5 text-amber-600" />
+                    {t('scoping:justification.statusPending')}
+                  </span>
+                )}
+              </Badge>
             </Button>
           </div>
         </div>
