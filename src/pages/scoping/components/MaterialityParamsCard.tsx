@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Calculator, Settings2, Info, AlertTriangle, 
-  Layers, Percent, X, CheckCircle2, AlertCircle, FileText
+  Layers, Percent, X, CheckCircle2, AlertCircle, FileText, ShieldAlert
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatIDR } from '@/components/reports/dod/dod-format';
@@ -21,18 +21,13 @@ interface MaterialityParamsCardProps {
   setSimState: React.Dispatch<React.SetStateAction<MaterialitySimulation>>;
   multiplier: number;
   benchmarkValue: number;
-  omValue: number;
-  pmValue: number;
   isLocked: boolean;
   onClose?: () => void;
-  // Local/Draft parameter controls to avoid heavy parent re-renders on keystroke
-  draftBasis: string;
-  setDraftBasis: (val: string) => void;
+  // Local/Draft parameter controls
   draftOmPercentage: number;
   setDraftOmPercentage: (val: number) => void;
   draftHaircutPercentage: number;
   setDraftHaircutPercentage: (val: number) => void;
-  isStale: boolean;
   isRecalculating: boolean;
   handleRecalculate: (omPct: number, hcPct: number) => void;
   onSaveJustification?: (justification: MaterialityJustification) => void;
@@ -43,17 +38,12 @@ export function MaterialityParamsCard({
   setSimState,
   multiplier,
   benchmarkValue,
-  omValue: _omValue,
-  pmValue: _pmValue,
   isLocked,
   onClose,
-  draftBasis: _draftBasis,
-  setDraftBasis: _setDraftBasis,
   draftOmPercentage,
   setDraftOmPercentage,
   draftHaircutPercentage,
   setDraftHaircutPercentage,
-  isStale: _isStale,
   isRecalculating,
   handleRecalculate,
   onSaveJustification
@@ -164,8 +154,8 @@ export function MaterialityParamsCard({
             </div>
           </div>
 
-          {/* % OM & % Haircut side-by-side in 2 columns */}
-          <div className="grid grid-cols-2 gap-2 w-full">
+          {/* % OM & % Haircut: mobile-first grid (single column base 320px, 2-col on min-[360px] or sm) */}
+          <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-2 w-full">
             {/* % OM */}
             <div className="space-y-1 min-w-0">
               <Label className="text-xs font-bold uppercase text-slate-500 tracking-wider flex items-center gap-1 truncate">
@@ -214,7 +204,7 @@ export function MaterialityParamsCard({
           {localIsStale && (
             <div className="bg-amber-50 border border-amber-200/80 rounded-lg p-2 flex items-start gap-1.5 text-amber-800 text-xs font-semibold leading-tight animate-in fade-in duration-200">
               <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
-              <span>{t('params.staleWarning', 'Parameter telah berubah. Silakan hitung ulang.')}</span>
+              <span>{t('params.staleWarning')}</span>
             </div>
           )}
 
@@ -230,7 +220,7 @@ export function MaterialityParamsCard({
           >
             <Calculator className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">
-              {isRecalculating ? t('params.recalculating', 'Recalculating...') : t('params.recalculate', 'Recalculate')}
+              {isRecalculating ? t('params.recalculating') : t('params.recalculate')}
             </span>
           </Button>
         </div>
@@ -307,21 +297,3 @@ export function MaterialityParamsCard({
     </Card>
   );
 }
-
-const ShieldAlert = ({ className }: { className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width="24" height="24" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1z" />
-    <path d="M12 8v4" />
-    <path d="M12 16h.01" />
-  </svg>
-);
