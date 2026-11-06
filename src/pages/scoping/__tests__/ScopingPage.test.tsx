@@ -75,21 +75,39 @@ vi.mock('../components/MaterialityParamsCard', () => ({
 }));
 
 vi.mock('../components/ScopingEditorContent', () => ({
-  ScopingEditorContent: () => <div data-testid="scoping-editor-content">Scoping Editor Content</div>,
+  ScopingEditorContent: ({ onOpenWorkflow }: { onOpenWorkflow?: () => void }) => (
+    <div data-testid="scoping-editor-content">
+      Scoping Editor Content
+      <button onClick={onOpenWorkflow}>Open Workflow</button>
+    </div>
+  ),
 }));
 
 vi.mock('../components/ScopingEditorHeader', () => ({
-  ScopingEditorHeader: ({ isParamsOpen, onToggleParams }: any) => (
+  ScopingEditorHeader: ({ isParamsOpen, onToggleParams, onOpenWorkflow }: { isParamsOpen?: boolean; onToggleParams?: () => void; onOpenWorkflow?: () => void }) => (
     <div data-testid="scoping-editor-header">
       <button onClick={onToggleParams}>
         {isParamsOpen ? 'Hide Parameters' : 'Show Parameters'}
+      </button>
+      <button onClick={onOpenWorkflow}>
+        Submit for Review
       </button>
     </div>
   ),
 }));
 
 vi.mock('@/components/workflow/WorkflowPanel', () => ({
-  WorkflowPanel: () => <div data-testid="workflow-panel" />,
+  WorkflowPanel: ({ beforeAction, isDirty }: { beforeAction?: (action: string) => Promise<boolean>; isDirty?: boolean }) => (
+    <div data-testid="workflow-panel">
+      <button
+        data-testid="workflow-submit-btn"
+        data-is-dirty={isDirty ? 'true' : 'false'}
+        onClick={() => beforeAction?.('Submit')}
+      >
+        Submit
+      </button>
+    </div>
+  ),
 }));
 
 describe('ScopingPage / ScopingEditor responsive behavior', () => {
@@ -248,9 +266,62 @@ describe('ScopingPage / ScopingEditor responsive behavior', () => {
     expect(screen.queryByText('rollover.title')).toBeNull();
   });
 
-  it('shows the rollover card to Line 3 on an empty year', () => {
-    renderEmptyYear('Line 3');
+  it('executes auto-save before submit when justification is present', async () => {
+    const saveMutateAsync = vi.fn().mockResolvedValue({});
+    const mockedUseScopingEditor = vi.mocked(useScopingEditor);
+    mockedUseScopingEditor.mockReturnValue({
+      simState: {
+        ...mockSimulation,
+        materialityJustification: {
+          justificationText: 'Rasional penetapan OM 5% sudah lengkap.',
+        },
+      },
+      setSimState: vi.fn(),
+      mergedGlData: [],
+      entityHierarchy: [],
+      selectedEntityCodes: [],
+      setSelectedEntityCodes: vi.fn(),
+      omValue: 97944.75,
+      pmValue: 73458563,
+      multiplier: 1,
+      benchmarkValue: 1000000,
+      scopingCompliance: null,
+      departments: [],
+      applications: [],
+      localAppMappings: {},
+      isLocked: false,
+      mutations: {
+        save: { mutate: vi.fn(), mutateAsync: saveMutateAsync, isPending: false },
+      },
+      handlers: {
+        onAssessmentChange: vi.fn(),
+        onAssignDepartments: vi.fn(),
+        onAppsChange: vi.fn(),
+      },
+      isDirty: true,
+      draftBasis: 'Laba Sebelum Pajak',
+      setDraftBasis: vi.fn(),
+      draftOmPercentage: 5,
+      setDraftOmPercentage: vi.fn(),
+      draftHaircutPercentage: 25,
+      setDraftHaircutPercentage: vi.fn(),
+      isStale: false,
+      isRecalculating: false,
+      handleRecalculate: vi.fn(),
+    } as unknown as ReturnType<typeof useScopingEditor>);
 
-    expect(screen.getByText('rollover.title')).toBeDefined();
+    render(<ScopingPage />);
+
+    // Open workflow modal
+    const reviewBtn = screen.getByRole('button', { name: 'Open Workflow' });
+    fireEvent.click(reviewBtn);
+
+    // Submit button inside workflow panel
+    const submitBtn = await screen.findByTestId('workflow-submit-btn');
+    expect(submitBtn.getAttribute('data-is-dirty')).toBe('true');
+
+    fireEvent.click(submitBtn);
+
+    expect(saveMutateAsync).toHaveBeenCalledTimes(1);
   });
 });

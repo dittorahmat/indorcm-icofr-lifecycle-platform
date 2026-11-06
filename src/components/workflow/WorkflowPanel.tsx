@@ -32,6 +32,8 @@ interface WorkflowPanelProps {
   onStatusChange?: (newStatus: string) => void;
   className?: string;
   isDirty?: boolean;
+  /** Optional pre-action hook. When provided, allows the caller to perform validation
+   *  or auto-save draft state before transition. If false is returned, the action aborts. */
   beforeAction?: (actionId: WorkflowAction) => boolean | Promise<boolean>;
 }
 
@@ -66,16 +68,16 @@ export function WorkflowPanel({
   const isLocked = isWorkflowLocked(entityType, currentStatus);
 
   const handleActionClick = async (actionId: WorkflowAction) => {
-    if (isDirty) {
+    // If beforeAction is provided, allow it to handle validation and/or auto-saving.
+    // Otherwise, block with unsaved changes notification.
+    if (beforeAction) {
+      const canProceed = await beforeAction(actionId);
+      if (!canProceed) return;
+    } else if (isDirty) {
       toast.warning(t('common:unsavedChanges.title'), {
         description: t('common:unsavedChanges.description')
       });
       return;
-    }
-
-    if (beforeAction) {
-      const canProceed = await beforeAction(actionId);
-      if (!canProceed) return;
     }
 
     const config = findActionConfig(actionId);

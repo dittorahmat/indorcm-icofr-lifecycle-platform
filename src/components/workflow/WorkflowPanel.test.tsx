@@ -103,4 +103,23 @@ describe('WorkflowPanel Mobile Support', () => {
     expect(screen.queryByText(/demo mode/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/bypass/i)).not.toBeInTheDocument();
   });
+
+  it('allows action to proceed with beforeAction even when isDirty is true', async () => {
+    beforeActionMock.mockClear();
+    executeActionMock.mockClear();
+    render(
+      <WorkflowPanel
+        entityType="BPM"
+        entityId="proc-1"
+        currentStatus="In Review"
+        history={[]}
+        isDirty={true}
+        beforeAction={beforeActionMock}
+      />
+    );
+
+    const rejectButtons = screen.getAllByRole('button', { name: /status\.rejected/i });
+    fireEvent.click(rejectButtons[rejectButtons.length - 1]);
+    expect(beforeActionMock).toHaveBeenCalledTimes(1);
+  });
 });
