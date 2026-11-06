@@ -32,6 +32,8 @@ interface WorkflowPanelProps {
   onStatusChange?: (newStatus: string) => void;
   className?: string;
   isDirty?: boolean;
+  /** Optional pre-action hook. When provided, allows the caller to perform validation
+   *  or auto-save draft state before transition. If false is returned, the action aborts. */
   beforeAction?: (actionId: WorkflowAction) => boolean | Promise<boolean>;
 }
 
