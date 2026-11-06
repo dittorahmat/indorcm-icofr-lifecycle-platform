@@ -47,6 +47,15 @@ describe('materiality-justification service', () => {
     expect(isJustificationComplete(null)).toBe(false);
     expect(isJustificationComplete(undefined)).toBe(false);
 
+    // Text-based justification
+    expect(isJustificationComplete({
+      justificationText: 'Penetapan OM 5% dan Haircut 25% sesuai baseline industri dan kestabilan sistem ERP.'
+    })).toBe(true);
+
+    expect(isJustificationComplete({
+      justificationText: '   '
+    })).toBe(false);
+
     expect(isJustificationComplete({
       entityCharacteristics: 'profit_oriented',
       internalControlMaturity: 'effective_strong',

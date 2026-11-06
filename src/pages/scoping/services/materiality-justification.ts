@@ -124,6 +124,11 @@ export function generateMaterialityNarrative({
 
 export function isJustificationComplete(justification?: MaterialityJustification | null): boolean {
   if (!justification) return false;
+  // If modern text justification is provided
+  if (typeof justification.justificationText === 'string') {
+    return justification.justificationText.trim().length > 0;
+  }
+  // Fallback for legacy 4-factor survey records
   return Boolean(
     justification.entityCharacteristics &&
     justification.internalControlMaturity &&

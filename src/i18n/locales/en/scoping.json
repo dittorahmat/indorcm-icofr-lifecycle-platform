@@ -297,10 +297,13 @@
   },
   "justification": {
     "modalTitle": "Materiality & Haircut Determination Justification",
-    "modalDescription": "Document the professional rationale for benchmark selection, OM %, and Haircut % (PM) in compliance with ISA 320 and SK-5/2024 standards.",
+    "modalDescription": "Document the justification for setting or changing materiality parameters (OM, Haircut, PM) for approval rationale.",
     "buttonLabel": "Materiality Justification",
     "statusComplete": "Justified",
     "statusPending": "Action Required",
+    "notesLabel": "Materiality Determination Justification / Rationale",
+    "notesDesc": "Explain the rationale and background for setting or changing materiality numbers (e.g., operational conditions, system stability, or committee direction).",
+    "notesPlaceholder": "Enter the justification for materiality numbers here...",
     "factor1Title": "1. Entity Characteristics & Focus (Benchmark Basis)",
     "factor1Desc": "Rationale for selecting the benchmark account (PBT, Assets, or Revenue).",
     "factor2Title": "2. Internal Control Maturity (PM/Haircut Factor)",
@@ -329,7 +332,7 @@
     "supplementaryNotesPlaceholder": "e.g., Approved in Audit Committee Meeting Minutes No. BA-04/KA/2026 dated 15 February 2026...",
     "saveButton": "Save Justification",
     "savedSuccess": "Materiality justification saved successfully",
-    "incompleteAlertTitle": "Materiality Justification Incomplete",
-    "incompleteAlertDesc": "Per audit standards, you must complete all 4 materiality justification factors before the scoping simulation can be locked/approved."
+    "incompleteAlertTitle": "Materiality Justification Missing",
+    "incompleteAlertDesc": "Please provide the justification rationale for materiality figures before submitting for review."
   }
 }

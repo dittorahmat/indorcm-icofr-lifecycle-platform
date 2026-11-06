@@ -297,10 +297,13 @@
   },
   "justification": {
     "modalTitle": "Justifikasi Penentuan Materialitas & Haircut",
-    "modalDescription": "Dokumentasikan rasionalisasi profesional pemilihan basis benchmark, % OM, dan % Haircut (PM) sesuai standar ISA 320 dan SK-5/2024.",
+    "modalDescription": "Dokumentasikan justifikasi penetapan atau perubahan parameter materialitas (OM, Haircut, PM) untuk dasar pertimbangan persetujuan.",
     "buttonLabel": "Justifikasi Materialitas",
-    "statusComplete": "Justifikasi Lengkap",
-    "statusPending": "Wajib Diisi",
+    "statusComplete": "Sudah Diisi",
+    "statusPending": "Belum Diisi",
+    "notesLabel": "Alasan / Justifikasi Penetapan Materialitas",
+    "notesDesc": "Jelaskan latar belakang dan pertimbangan perubahan atau penetapan angka materialitas (misal: kondisi operasional, kestabilan sistem, atau arahan komite).",
+    "notesPlaceholder": "Tuliskan justifikasi penetapan angka materialitas di sini...",
     "factor1Title": "1. Karakteristik & Fokus Entitas (Dasar Benchmark)",
     "factor1Desc": "Alasan pemilihan akun benchmark (PBT, Aset, atau Pendapatan).",
     "factor2Title": "2. Kematangan Pengendalian Internal (Faktor PM/Haircut)",
@@ -329,7 +332,7 @@
     "supplementaryNotesPlaceholder": "misal: Disetujui dalam Risalah Rapat Komite Audit No. BA-04/KA/2026 tanggal 15 Februari 2026...",
     "saveButton": "Simpan Justifikasi",
     "savedSuccess": "Justifikasi materialitas berhasil disimpan",
-    "incompleteAlertTitle": "Justifikasi Materialitas Belum Lengkap",
-    "incompleteAlertDesc": "Sesuai standar audit, Anda wajib melengkapi ke-4 faktor justifikasi materialitas sebelum simulasi scoping dapat dikunci/disahkan."
+    "incompleteAlertTitle": "Justifikasi Materialitas Belum Diisi",
+    "incompleteAlertDesc": "Harap isi alasan justifikasi penetapan materialitas sebelum melakukan pengajuan (submit)."
   }
 }
