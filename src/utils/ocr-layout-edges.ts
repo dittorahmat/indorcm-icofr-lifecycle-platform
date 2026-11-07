@@ -5,7 +5,7 @@
 // once after both layout engines, which keeps handle routing identical between
 // coordinate mode and the rank fallback.
 
-import { canonicalizeHandleId, DOWNWARD_PLUNGE_THRESHOLD_DY } from './bpm-constants';
+import { canonicalizeHandleId, DOWNWARD_PLUNGE_THRESHOLD_DY, SAME_LANE_SEQUENTIAL_FLOW_THRESHOLD_DY } from './bpm-constants';
 import type { OcrRawEdge } from './ocr-validate';
 
 export interface EdgeAnchor {
@@ -22,7 +22,7 @@ function pickHandles(source: EdgeAnchor, target: EdgeAnchor): { sourceHandle: st
 
   // Strict top-to-bottom hierarchy within the same swimlane (Lampiran 3 BUMN flow)
   // When target is below source (even with minor horizontal tilt), flow bottom -> top
-  if (isSameLane && dy > 15) {
+  if (isSameLane && dy > SAME_LANE_SEQUENTIAL_FLOW_THRESHOLD_DY) {
     return { sourceHandle: 'bottom', targetHandle: 'top' };
   }
 
