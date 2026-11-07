@@ -6,7 +6,7 @@ import { Eye } from 'lucide-react';
 import { BPMCanvasAlignmentGuides } from './BPMCanvasAlignmentGuides';
 import { BPMSelectionHUD } from './BPMSelectionHUD';
 import { BPMShapePalette } from './BPMShapePalette';
-import { canonicalizeHandleId } from '../edges/edge-routing-utils';
+import { normalizeConnectionDirection } from '@/utils/bpm-connection-direction';
 import { isBadgeNodeType } from './bpm-editor-constants';
 import { bridgeEdgeOptions } from './canvas-hydration';
 
@@ -72,6 +72,7 @@ export function BPMCanvas(props: BPMCanvasProps) {
   // True while a connection drag is in flight: all handles are revealed
   // so drops land easily at low zoom (Q6). Reset on drop or cancel.
   const [isConnecting, setIsConnecting] = React.useState(false);
+  const connectOriginRef = React.useRef<{ nodeId: string | null; handleId?: string | null } | null>(null);
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
@@ -130,31 +131,34 @@ export function BPMCanvas(props: BPMCanvasProps) {
               : (params: Connection) => {
                   props.pushState(nodes, edges);
                   props.setDirty(true);
-                  // Persist canonical handle ids (qc-* drags included) so the
-                  // arrow can never invert vs the drag direction (Q5).
-                  const repairedSource = params.sourceHandle
-                    ? (canonicalizeHandleId(params.sourceHandle, true) ?? undefined)
-                    : params.sourceHandle;
-                  const repairedTarget = params.targetHandle
-                    ? (canonicalizeHandleId(params.targetHandle, false) ?? undefined)
-                    : params.targetHandle;
+                  // Normalizes connection direction to always match user drag origin (A -> B)
+                  // and guarantees canonical handle ids.
+                  const normalized = normalizeConnectionDirection(params, connectOriginRef.current);
                   props.setEdges((eds) =>
                     addEdge(
                       {
                         ...bridgeEdgeOptions,
                         ...params,
-                        sourceHandle: repairedSource,
-                        targetHandle: repairedTarget,
+                        source: normalized.source,
+                        target: normalized.target,
+                        sourceHandle: normalized.sourceHandle,
+                        targetHandle: normalized.targetHandle,
                       },
                       eds,
                     ),
                   );
                 }
           }
-          onConnectStart={() => {
-            if (!isTouchReadOnly) setIsConnecting(true);
+          onConnectStart={(_, params) => {
+            if (!isTouchReadOnly) {
+              connectOriginRef.current = params ? { nodeId: params.nodeId, handleId: params.handleId } : null;
+              setIsConnecting(true);
+            }
           }}
-          onConnectEnd={() => setIsConnecting(false)}
+          onConnectEnd={() => {
+            connectOriginRef.current = null;
+            setIsConnecting(false);
+          }}
           onNodeClick={(_, node) => {
             // Select only: never opens the worksheet. Users can drag,
             // lock, or delete straight from the selection HUD.
