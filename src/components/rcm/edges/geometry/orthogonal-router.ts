@@ -142,12 +142,12 @@ export function getOrthogonalPath(
       points.push({ x: turnX, y: sPt.y });
 
       if (tPt.y > sPt.y) {
-        // Target is below: descend and turn horizontally into target top from above
+        // Target is below: descend and turn horizontally into target top from above (min 20px clearance)
         let entryY = tPt.y - 20;
         if (bendOffset?.y !== undefined) {
           entryY += bendOffset.y;
         }
-        entryY = Math.max(SAFE_HEADER_CEILING, Math.min(entryY, tPt.y - 12));
+        entryY = Math.max(SAFE_HEADER_CEILING, Math.min(entryY, tPt.y - 20));
         points.push({ x: turnX, y: entryY });
         points.push({ x: tPt.x, y: entryY });
         primaryHandle = { x: turnX, y: (sPt.y + entryY) / 2, axis: 'x' };
@@ -200,7 +200,7 @@ export function getOrthogonalPath(
         if (bendOffset?.y !== undefined) {
           entryY += bendOffset.y;
         }
-        entryY = Math.max(SAFE_HEADER_CEILING, Math.min(entryY, tPt.y - 12));
+        entryY = Math.max(SAFE_HEADER_CEILING, Math.min(entryY, tPt.y - 20));
         points.push({ x: turnX, y: entryY });
         points.push({ x: tPt.x, y: entryY });
         primaryHandle = { x: turnX, y: (sPt.y + entryY) / 2, axis: 'x' };

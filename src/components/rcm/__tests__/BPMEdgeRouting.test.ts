@@ -127,7 +127,19 @@ describe('BPM Edge Flexible Routing (Visio-Style)', () => {
     // Vertical entry into processTop should arrive at processTop.x
     const lastVertical = result.segments[result.segments.length - 1];
     expect(lastVertical.p2.x).toBe(processTop.x);
-    // Entry Y should stay above process top (clearance >= 12px)
-    expect(lastVertical.p1.y).toBeLessThan(processTop.y);
+    // Entry Y should stay above process top (clearance >= 20px)
+    expect(processTop.y - lastVertical.p1.y).toBeGreaterThanOrEqual(20);
+
+    // Bounding Box Collision Check: Target node Rect: [x: 70 to 230, y: 300 to 356]
+    // No segment should enter inside the inner body of the target rectangle
+    const targetBox = { minX: 70, maxX: 230, minY: 300, maxY: 356 };
+    for (const seg of result.segments) {
+      const isInternal =
+        Math.min(seg.p1.x, seg.p2.x) > targetBox.minX &&
+        Math.max(seg.p1.x, seg.p2.x) < targetBox.maxX &&
+        Math.min(seg.p1.y, seg.p2.y) > targetBox.minY &&
+        Math.max(seg.p1.y, seg.p2.y) < targetBox.maxY;
+      expect(isInternal).toBe(false);
+    }
   });
 });
