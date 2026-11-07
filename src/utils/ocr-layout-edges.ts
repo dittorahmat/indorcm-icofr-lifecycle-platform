@@ -17,7 +17,14 @@ export interface EdgeAnchor {
 function pickHandles(source: EdgeAnchor, target: EdgeAnchor): { sourceHandle: string; targetHandle: string } {
   const dx = target.x - source.x;
   const dy = target.y - source.y;
+  const isSameLane = source.parentId !== undefined && target.parentId !== undefined && source.parentId === target.parentId;
   const isCrossLane = source.parentId !== target.parentId;
+
+  // Strict top-to-bottom hierarchy within the same swimlane (Lampiran 3 BUMN flow)
+  // When target is below source (even with minor horizontal tilt), flow bottom -> top
+  if (isSameLane && dy > 15) {
+    return { sourceHandle: 'bottom', targetHandle: 'top' };
+  }
 
   // When target sits lower down in the process flow, target handle should plunge from the top
   if (dy > DOWNWARD_PLUNGE_THRESHOLD_DY) {
