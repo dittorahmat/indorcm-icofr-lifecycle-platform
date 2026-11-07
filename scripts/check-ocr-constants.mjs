@@ -23,7 +23,7 @@ const OWNERS = new Map([
     ['LANE_MIN_W', 'LANE_MIN_H', 'LANE_FOOTER', 'LANE_PADDING_X', 'ROW_GAP', 'ROW_MERGE_TOLERANCE', 'CONTENT_TOP', 'contentLaneHeight'],
   ],
   ['src/utils/ocr-layout-deoverlap.ts', ['MIN_NODE_CLEARANCE', 'boxesOverlap']],
-  ['src/utils/bpm-constants.ts', ['DOWNWARD_PLUNGE_THRESHOLD_DY']],
+  ['src/utils/bpm-constants.ts', ['DOWNWARD_PLUNGE_THRESHOLD_DY', 'SAME_LANE_SEQUENTIAL_FLOW_THRESHOLD_DY', 'SAFE_HEADER_CEILING']],
 ]);
 
 const DECLARATION = /(?:^|\s)(?:export\s+)?(?:const|let|var|function)\s+([A-Za-z_$][\w$]*)/;
