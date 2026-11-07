@@ -51,6 +51,9 @@ export const SAFE_HEADER_CEILING = 100;
 // Minimum vertical descent required to automatically orient edge target into the top handle
 export const DOWNWARD_PLUNGE_THRESHOLD_DY = 40;
 
+// Minimum vertical descent within the same swimlane to enforce strict sequential bottom -> top flow
+export const SAME_LANE_SEQUENTIAL_FLOW_THRESHOLD_DY = 15;
+
 export type BpmEdgeSide =
   | 'top'
   | 'bottom'

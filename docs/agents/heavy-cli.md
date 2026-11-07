@@ -81,3 +81,9 @@ killed the host, while the same `tsc` redirected to a file exited 0).
   resolution, and the CJS output rejects top-level await) — the repo root is
   what makes the probe ESM and resolvable. Observed 2026-10-21: three failed
   attempts before running the same probe from `scripts/`.
+- Avoid heavy git worktree thrashing on large repositories under Windows (NTFS I/O):
+  Checking out 7000+ files in `.worktrees/*` causes significant filesystem I/O lag and
+  subagent start delays. For scoped edits (<= 5 files), prefer single-session sequential
+  commits directly on the feature/integration branch over spawning multiple isolated
+  worktrees. If an Implementer Subagent fails during start or network lookup, fail fast
+  to single-session mode immediately instead of retrying subagents across worktrees.

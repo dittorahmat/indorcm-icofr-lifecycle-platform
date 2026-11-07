@@ -17,6 +17,54 @@ export interface OrthogonalPathResult {
   };
 }
 
+function computeLateralToVerticalCorridor(
+  sPt: Point,
+  tPt: Point,
+  side: 'left' | 'right',
+  targetSide: 'top' | 'bottom',
+  channelOffset: number,
+  bendOffset?: { x?: number; y?: number }
+): { points: Point[]; primaryHandle: { x: number; y: number; axis: 'x' | 'y' } } {
+  const lateralClearance = 24;
+  let turnX: number;
+  if (side === 'right') {
+    turnX = Math.max(sPt.x + lateralClearance, tPt.x > sPt.x ? sPt.x + (tPt.x - sPt.x) / 2 : sPt.x + lateralClearance) + channelOffset;
+    if (bendOffset?.x !== undefined) turnX += bendOffset.x;
+  } else {
+    turnX = Math.min(sPt.x - lateralClearance, tPt.x < sPt.x ? sPt.x - (sPt.x - tPt.x) / 2 : sPt.x - lateralClearance) + channelOffset;
+    if (bendOffset?.x !== undefined) turnX += bendOffset.x;
+  }
+
+  const corridorPoints: Point[] = [{ x: turnX, y: sPt.y }];
+  let primaryHandle: { x: number; y: number; axis: 'x' | 'y' };
+
+  if (targetSide === 'top') {
+    if (tPt.y > sPt.y) {
+      let entryY = tPt.y - 20;
+      if (bendOffset?.y !== undefined) entryY += bendOffset.y;
+      entryY = Math.max(SAFE_HEADER_CEILING, Math.min(entryY, tPt.y - 20));
+      corridorPoints.push({ x: turnX, y: entryY });
+      corridorPoints.push({ x: tPt.x, y: entryY });
+      primaryHandle = { x: turnX, y: (sPt.y + entryY) / 2, axis: 'x' };
+    } else {
+      let entryY = tPt.y - 24;
+      if (bendOffset?.y !== undefined) entryY += bendOffset.y;
+      entryY = Math.max(SAFE_HEADER_CEILING, entryY);
+      corridorPoints.push({ x: turnX, y: entryY });
+      corridorPoints.push({ x: tPt.x, y: entryY });
+      primaryHandle = { x: turnX, y: (sPt.y + entryY) / 2, axis: 'x' };
+    }
+  } else {
+    let entryY = tPt.y + 20;
+    if (bendOffset?.y !== undefined) entryY += bendOffset.y;
+    corridorPoints.push({ x: turnX, y: entryY });
+    corridorPoints.push({ x: tPt.x, y: entryY });
+    primaryHandle = { x: turnX, y: (sPt.y + entryY) / 2, axis: 'x' };
+  }
+
+  return { points: corridorPoints, primaryHandle };
+}
+
 export function getOrthogonalPath(
   sPt: Point,
   sSide: string,
@@ -128,13 +176,9 @@ export function getOrthogonalPath(
     }
   } else if (sSide === 'right') {
     if (tSide === 'top' || tSide === 'bottom') {
-      let turnX = sPt.x + Math.max(20, (tPt.x - sPt.x) / 2) + channelOffset;
-      if (bendOffset?.x !== undefined) {
-        turnX += bendOffset.x;
-      }
-      points.push({ x: turnX, y: sPt.y });
-      points.push({ x: turnX, y: tPt.y });
-      primaryHandle = { x: turnX, y: (sPt.y + tPt.y) / 2, axis: 'x' };
+      const corridor = computeLateralToVerticalCorridor(sPt, tPt, 'right', tSide, channelOffset, bendOffset);
+      points.push(...corridor.points);
+      primaryHandle = corridor.primaryHandle;
     } else {
       let midX = Math.max(sPt.x + 30, sPt.x + dx / 2 + channelOffset);
       if (bendOffset?.x !== undefined) {
@@ -146,13 +190,9 @@ export function getOrthogonalPath(
     }
   } else if (sSide === 'left') {
     if (tSide === 'top' || tSide === 'bottom') {
-      let turnX = sPt.x - Math.max(20, (sPt.x - tPt.x) / 2) + channelOffset;
-      if (bendOffset?.x !== undefined) {
-        turnX += bendOffset.x;
-      }
-      points.push({ x: turnX, y: sPt.y });
-      points.push({ x: turnX, y: tPt.y });
-      primaryHandle = { x: turnX, y: (sPt.y + tPt.y) / 2, axis: 'x' };
+      const corridor = computeLateralToVerticalCorridor(sPt, tPt, 'left', tSide, channelOffset, bendOffset);
+      points.push(...corridor.points);
+      primaryHandle = corridor.primaryHandle;
     } else {
       let midX = Math.min(sPt.x - 30, sPt.x + dx / 2 + channelOffset);
       if (bendOffset?.x !== undefined) {
