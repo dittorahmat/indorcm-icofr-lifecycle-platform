@@ -127,14 +127,56 @@ export function getOrthogonalPath(
       primaryHandle = { x: (sPt.x + tPt.x) / 2, y: exitY, axis: 'y' };
     }
   } else if (sSide === 'right') {
-    if (tSide === 'top' || tSide === 'bottom') {
-      let turnX = sPt.x + Math.max(20, (tPt.x - sPt.x) / 2) + channelOffset;
+    if (tSide === 'top') {
+      // Lateral exit from right going to top handle of a node below or above.
+      // 1. Step right at least 24px clearance from source.
+      // 2. If target is to the left or below, step out right past both source and target if needed,
+      //    or if target is further right, turn at midpoint or comfortable clearance.
+      // 3. For a clean vertical entry into target top: (sPt) -> (turnX, sPt.y) -> (turnX, entryY) -> (tPt.x, entryY) -> (tPt.x, tPt.y)
+      //    where entryY is at least 20px above tPt.y.
+      const lateralClearance = 24;
+      let turnX = Math.max(sPt.x + lateralClearance, tPt.x > sPt.x ? sPt.x + (tPt.x - sPt.x) / 2 : sPt.x + lateralClearance) + channelOffset;
       if (bendOffset?.x !== undefined) {
         turnX += bendOffset.x;
       }
       points.push({ x: turnX, y: sPt.y });
-      points.push({ x: turnX, y: tPt.y });
-      primaryHandle = { x: turnX, y: (sPt.y + tPt.y) / 2, axis: 'x' };
+
+      if (tPt.y > sPt.y) {
+        // Target is below: descend and turn horizontally into target top from above
+        let entryY = tPt.y - 20;
+        if (bendOffset?.y !== undefined) {
+          entryY += bendOffset.y;
+        }
+        entryY = Math.max(SAFE_HEADER_CEILING, Math.min(entryY, tPt.y - 12));
+        points.push({ x: turnX, y: entryY });
+        points.push({ x: tPt.x, y: entryY });
+        primaryHandle = { x: turnX, y: (sPt.y + entryY) / 2, axis: 'x' };
+      } else {
+        // Target is above: ascend and enter target top
+        let entryY = tPt.y - 24;
+        if (bendOffset?.y !== undefined) {
+          entryY += bendOffset.y;
+        }
+        entryY = Math.max(SAFE_HEADER_CEILING, entryY);
+        points.push({ x: turnX, y: entryY });
+        points.push({ x: tPt.x, y: entryY });
+        primaryHandle = { x: turnX, y: (sPt.y + entryY) / 2, axis: 'x' };
+      }
+    } else if (tSide === 'bottom') {
+      const lateralClearance = 24;
+      let turnX = Math.max(sPt.x + lateralClearance, tPt.x > sPt.x ? sPt.x + (tPt.x - sPt.x) / 2 : sPt.x + lateralClearance) + channelOffset;
+      if (bendOffset?.x !== undefined) {
+        turnX += bendOffset.x;
+      }
+      points.push({ x: turnX, y: sPt.y });
+
+      let entryY = tPt.y + 20;
+      if (bendOffset?.y !== undefined) {
+        entryY += bendOffset.y;
+      }
+      points.push({ x: turnX, y: entryY });
+      points.push({ x: tPt.x, y: entryY });
+      primaryHandle = { x: turnX, y: (sPt.y + entryY) / 2, axis: 'x' };
     } else {
       let midX = Math.max(sPt.x + 30, sPt.x + dx / 2 + channelOffset);
       if (bendOffset?.x !== undefined) {
@@ -145,14 +187,48 @@ export function getOrthogonalPath(
       primaryHandle = { x: midX, y: (sPt.y + tPt.y) / 2, axis: 'x' };
     }
   } else if (sSide === 'left') {
-    if (tSide === 'top' || tSide === 'bottom') {
-      let turnX = sPt.x - Math.max(20, (sPt.x - tPt.x) / 2) + channelOffset;
+    if (tSide === 'top') {
+      const lateralClearance = 24;
+      let turnX = Math.min(sPt.x - lateralClearance, tPt.x < sPt.x ? sPt.x - (sPt.x - tPt.x) / 2 : sPt.x - lateralClearance) + channelOffset;
       if (bendOffset?.x !== undefined) {
         turnX += bendOffset.x;
       }
       points.push({ x: turnX, y: sPt.y });
-      points.push({ x: turnX, y: tPt.y });
-      primaryHandle = { x: turnX, y: (sPt.y + tPt.y) / 2, axis: 'x' };
+
+      if (tPt.y > sPt.y) {
+        let entryY = tPt.y - 20;
+        if (bendOffset?.y !== undefined) {
+          entryY += bendOffset.y;
+        }
+        entryY = Math.max(SAFE_HEADER_CEILING, Math.min(entryY, tPt.y - 12));
+        points.push({ x: turnX, y: entryY });
+        points.push({ x: tPt.x, y: entryY });
+        primaryHandle = { x: turnX, y: (sPt.y + entryY) / 2, axis: 'x' };
+      } else {
+        let entryY = tPt.y - 24;
+        if (bendOffset?.y !== undefined) {
+          entryY += bendOffset.y;
+        }
+        entryY = Math.max(SAFE_HEADER_CEILING, entryY);
+        points.push({ x: turnX, y: entryY });
+        points.push({ x: tPt.x, y: entryY });
+        primaryHandle = { x: turnX, y: (sPt.y + entryY) / 2, axis: 'x' };
+      }
+    } else if (tSide === 'bottom') {
+      const lateralClearance = 24;
+      let turnX = Math.min(sPt.x - lateralClearance, tPt.x < sPt.x ? sPt.x - (sPt.x - tPt.x) / 2 : sPt.x - lateralClearance) + channelOffset;
+      if (bendOffset?.x !== undefined) {
+        turnX += bendOffset.x;
+      }
+      points.push({ x: turnX, y: sPt.y });
+
+      let entryY = tPt.y + 20;
+      if (bendOffset?.y !== undefined) {
+        entryY += bendOffset.y;
+      }
+      points.push({ x: turnX, y: entryY });
+      points.push({ x: tPt.x, y: entryY });
+      primaryHandle = { x: turnX, y: (sPt.y + entryY) / 2, axis: 'x' };
     } else {
       let midX = Math.min(sPt.x - 30, sPt.x + dx / 2 + channelOffset);
       if (bendOffset?.x !== undefined) {

@@ -104,4 +104,30 @@ describe('BPM Edge Flexible Routing (Visio-Style)', () => {
       expect(seg.p2.y).toBeGreaterThanOrEqual(100);
     }
   });
+
+  it('routes lateral decision exit (right) to top handle below with obstacle clearance', () => {
+    // Decision node at right apex (200, 200), process node below at (150, 300)
+    const decisionApexRight = { x: 200, y: 200 };
+    const processTop = { x: 150, y: 300 };
+
+    const result = getOrthogonalPath(
+      decisionApexRight,
+      'right',
+      processTop,
+      'top',
+      0,
+      undefined,
+      'auto'
+    );
+
+    expect(result.segments.length).toBeGreaterThanOrEqual(3);
+    // Path must step laterally outward to the right beyond source apex (>= 224)
+    const firstHorizontal = result.segments[0];
+    expect(firstHorizontal.p2.x).toBeGreaterThanOrEqual(224);
+    // Vertical entry into processTop should arrive at processTop.x
+    const lastVertical = result.segments[result.segments.length - 1];
+    expect(lastVertical.p2.x).toBe(processTop.x);
+    // Entry Y should stay above process top (clearance >= 12px)
+    expect(lastVertical.p1.y).toBeLessThan(processTop.y);
+  });
 });
