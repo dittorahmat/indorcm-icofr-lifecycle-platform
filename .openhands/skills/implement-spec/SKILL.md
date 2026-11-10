@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 You have been provided a spec. This spec should have tickets associated with it, describing how to implement the spec.
 
+> **Repo override (indorcm-icofr-lifecycle-platform): lihat AGENTS.md §9 & Mandat Isolasi Worktree. Seluruh pengerjaan tiket WAJIB dijalankan di dalam salah satu git worktree terpisah (`icofr1`, `icofr2`, atau `icofr3`) pada branch fitur baru via `scripts/worktree-new.ps1` dan dibersihkan dengan `scripts/worktree-remove.ps1`. DILARANG KERAS mengimplementasikan kode langsung di working tree root `indorcm-icofr-lifecycle-platform` maupun di branch `main`.**
+
 The issue tracker should have been provided to you. If not, tell the user to run `/setup-matt-pocock-skills`.
 
 The goal is the entire spec implemented on a single **integration branch**, with every ticket resolved the way the issue tracker closes work.

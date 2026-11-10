@@ -59,4 +59,14 @@ describe('Input Component - Numeric Auto-select on Focus', () => {
 
     expect(selectSpy).not.toHaveBeenCalled()
   })
+
+  it('contains anti-stepper styling classes for spin buttons', () => {
+    render(<Input type="number" data-testid="styled-num-input" />)
+    const input = screen.getByTestId('styled-num-input')
+    expect(input.className).toContain('[appearance:textfield]')
+    expect(input.className).toContain('[&::-webkit-outer-spin-button]:appearance-none')
+    expect(input.className).toContain('[&::-webkit-inner-spin-button]:appearance-none')
+    expect(input.className).toContain('[&::-webkit-outer-spin-button]:m-0')
+    expect(input.className).toContain('[&::-webkit-inner-spin-button]:m-0')
+  })
 })
