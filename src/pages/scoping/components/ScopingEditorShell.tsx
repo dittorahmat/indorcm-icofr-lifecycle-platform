@@ -175,7 +175,7 @@ export function ScopingEditor({ simulation, onBack }: ScopingEditorProps) {
                 className="w-full border-none shadow-2xl"
                 isDirty={isDirty}
                 beforeAction={async (actionId) => {
-                  if (actionId === 'Submit' || actionId === 'Approve') {
+                  if (actionId === 'Submit') {
                     if (!isJustificationComplete(simState.materialityJustification)) {
                       toast.error(t('scoping:justification.incompleteAlertTitle'), {
                         description: t('scoping:justification.incompleteAlertDesc')
