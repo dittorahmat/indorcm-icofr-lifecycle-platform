@@ -5,7 +5,14 @@
     "testing": "Pengujian",
     "others": "Lainnya",
     "user": "User",
-    "admin": "Administrasi"
+    "admin": "Administrasi",
+    "cluster1_utama": "1. Utama",
+    "cluster2_governance": "2. Tata Kelola & Ruang Lingkup",
+    "cluster3_risk_control": "3. Asesmen Risiko & Kontrol",
+    "cluster4_evaluation": "4. Evaluasi & Pengujian",
+    "cluster5_follow_up": "5. Tindak Lanjut",
+    "cluster6_reporting": "6. Pelaporan & Asurans",
+    "cluster7_system": "7. Sistem"
   },
   "items": {
     "dashboard": "Dashboard",
@@ -42,7 +49,18 @@
     "improvement": "Continuous Improvement",
     "settings": "Admin User",
     "adminUsers": "Manajemen User",
-    "logout": "Keluar"
+    "logout": "Keluar",
+    "organization": "Struktur Organisasi BUMN",
+    "riskAssessment": "Asesmen Risiko",
+    "rcm": "Matriks Kontrol Risiko (RCM)",
+    "validation": "Validasi Lini 2",
+    "auditTesting": "Pengujian Audit (TOD & TOE)",
+    "findingManagement": "Manajemen Temuan",
+    "remediation": "Remediasi & Tindak Lanjut",
+    "reporting": "Pelaporan Regulasi",
+    "managementAssessment": "Asesmen Manajemen",
+    "externalAssurance": "Asurans Eksternal (KAP)",
+    "administration": "Administrasi Sistem"
   },
   "sections": {
     "rcmMatrix": "Matriks RCM",

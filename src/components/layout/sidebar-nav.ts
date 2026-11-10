@@ -3,6 +3,8 @@ import {
   Bell,
   Bot,
   BrainCircuit,
+  Building2,
+  CheckSquare,
   ClipboardCheck,
   Cpu,
   Database,
@@ -10,10 +12,12 @@ import {
   FileSpreadsheet,
   FileText,
   Gauge,
+  Gavel,
   LayoutDashboard,
   ListChecks,
   ListTodo,
   LogOut,
+  Scale,
   Settings2,
   Shield,
   ShieldCheck,
@@ -59,12 +63,17 @@ export interface SidebarNavGroup {
 
 export const NAV_GROUPS: readonly SidebarNavGroup[] = [
   {
-    labelKey: 'groups.mainTasks',
+    labelKey: 'groups.cluster1_utama',
     items: [
       { kind: 'link', path: '/dashboard', labelKey: 'items.dashboard', icon: LayoutDashboard },
-      { kind: 'link', path: '/scoping', labelKey: 'items.scoping', icon: Target },
-      { kind: 'link', path: '/bpm', labelKey: 'items.bpm', icon: Workflow },
       { kind: 'link', path: '/todo', labelKey: 'items.todo', icon: ListTodo },
+      { kind: 'link', path: '/analytics', labelKey: 'items.analytics', icon: Gauge },
+    ],
+  },
+  {
+    labelKey: 'groups.cluster2_governance',
+    items: [
+      { kind: 'link', path: '/scoping', labelKey: 'items.scoping', icon: Target },
       {
         kind: 'link',
         path: '/scoping/approval',
@@ -73,40 +82,55 @@ export const NAV_GROUPS: readonly SidebarNavGroup[] = [
         capability: 'scoping:view-approvals',
         badge: 'approvals',
       },
+      { kind: 'link', path: '/applications', labelKey: 'items.applications', icon: Cpu },
+      { kind: 'link', path: '/change-log', labelKey: 'items.changelog', icon: ListChecks },
+    ],
+  },
+  {
+    labelKey: 'groups.cluster3_risk_control',
+    items: [
+      { kind: 'link', path: '/bpm', labelKey: 'items.bpm', icon: Workflow },
+      { kind: 'link', path: '/rcm', labelKey: 'items.rcm', icon: Shield },
+      { kind: 'link', path: '/rcm/elc', labelKey: 'items.rcmElc', icon: Building2 },
+      { kind: 'link', path: '/rcm/tlc', labelKey: 'items.rcmTlc', icon: CheckSquare },
+      { kind: 'link', path: '/rcm/itgc', labelKey: 'items.rcmItgc', icon: Database },
+    ],
+  },
+  {
+    labelKey: 'groups.cluster4_evaluation',
+    items: [
       { kind: 'link', path: '/csa', labelKey: 'items.csaReports', icon: ClipboardCheck },
       {
         kind: 'link',
         path: '/rcm/verification-design',
         labelKey: 'items.verificationDesign',
         icon: ClipboardCheck,
+        capability: 'rcm:edit-verification-design',
       },
-      { kind: 'link', path: '/applications', labelKey: 'items.applications', icon: Cpu },
+      { kind: 'link', path: '/testing', labelKey: 'items.auditTesting', icon: Scale },
     ],
   },
   {
-    labelKey: 'groups.reportingRcm',
-    items: [
-      { kind: 'link', path: '/rcm/elc', labelKey: 'items.rcmElc', icon: Shield },
-      { kind: 'link', path: '/rcm/tlc', labelKey: 'items.rcmTlc', icon: ListChecks },
-      { kind: 'link', path: '/rcm/itgc', labelKey: 'items.rcmItgc', icon: Database },
-      { kind: 'link', path: '/wbs-recap', labelKey: 'items.wbs', icon: AlertTriangle },
-      { kind: 'link', path: '/reports/appendix-10', labelKey: 'items.app10', icon: FileSpreadsheet },
-      { kind: 'link', path: '/reports', labelKey: 'items.app11', icon: FileBarChart },
-      { kind: 'link', path: '/analytics', labelKey: 'items.analytics', icon: Gauge },
-    ],
-  },
-  {
-    labelKey: 'groups.testing',
+    labelKey: 'groups.cluster5_follow_up',
     items: [
       { kind: 'link', path: '/deficiencies', labelKey: 'items.deficiencies', icon: AlertTriangle },
     ],
   },
   {
-    labelKey: 'groups.others',
+    labelKey: 'groups.cluster6_reporting',
     items: [
+      { kind: 'link', path: '/wbs-recap', labelKey: 'items.wbs', icon: AlertTriangle },
+      { kind: 'link', path: '/reports/appendix-10', labelKey: 'items.app10', icon: FileSpreadsheet },
+      { kind: 'link', path: '/reports', labelKey: 'items.app11', icon: FileBarChart },
+      { kind: 'link', path: '/audit-portal', labelKey: 'items.externalAssurance', icon: Gavel },
+    ],
+  },
+  {
+    labelKey: 'groups.cluster7_system',
+    items: [
+      { kind: 'link', path: '/documents', labelKey: 'items.documents', icon: FileText },
       { kind: 'link', path: '/ai-hub', labelKey: 'items.aiAnalytics', icon: BrainCircuit },
       { kind: 'action', action: 'ai-assistant', labelKey: 'items.aiAssistant', icon: Bot },
-      { kind: 'link', path: '/documents', labelKey: 'items.documents', icon: FileText },
       {
         kind: 'link',
         path: '/notifications',
