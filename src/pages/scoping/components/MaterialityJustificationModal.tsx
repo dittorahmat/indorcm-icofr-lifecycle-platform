@@ -19,6 +19,8 @@ import type {
   MaterialitySimulation,
   MaterialityJustification
 } from '@shared/types';
+import { resolveSimulationStatus } from '@shared/scoping-simulation-status';
+import { isJustificationLocked } from '../services/materiality-justification';
 
 interface MaterialityJustificationModalProps {
   isOpen: boolean;
@@ -36,6 +38,10 @@ export function MaterialityJustificationModal({
   isLocked = false
 }: MaterialityJustificationModalProps) {
   const { t } = useTranslation(['scoping', 'common']);
+
+  // Justification can still be updated during review (Pending CFO / Pending Komut)
+  // unless the overall simulation has reached a final state (Approved / Deletion).
+  const isInputLocked = isLocked && isJustificationLocked(resolveSimulationStatus(simulation));
 
   const initialText =
     simulation.materialityJustification?.justificationText ||
@@ -151,8 +157,8 @@ export function MaterialityJustificationModal({
             <Textarea
               id="justification-text"
               value={justificationText}
-              onChange={(e) => !isLocked && setJustificationText(e.target.value)}
-              disabled={isLocked}
+              onChange={(e) => !isInputLocked && setJustificationText(e.target.value)}
+              disabled={isInputLocked}
               rows={5}
               placeholder={t('scoping:justification.notesPlaceholder')}
               className="min-h-[120px] text-base sm:text-sm rounded-md border-border bg-background focus:ring-primary"
@@ -170,7 +176,7 @@ export function MaterialityJustificationModal({
           >
             {t('common:actions.cancel')}
           </Button>
-          {!isLocked && (
+          {!isInputLocked && (
             <Button
               type="button"
               size="sm"

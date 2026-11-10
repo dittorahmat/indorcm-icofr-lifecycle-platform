@@ -69,4 +69,47 @@ describe('MaterialityParamsCard Component', () => {
     expect(setDraftHaircutPercentage).toHaveBeenCalledWith(25);
     expect(handleRecalculate).toHaveBeenCalledWith(6, 25);
   });
+
+  it('keeps numerical calculation inputs locked but opens editable justification modal when in review status', () => {
+    const mockInReviewSim = createMockMaterialitySimulation({
+      id: 'sim-review',
+      status: 'Pending Komut',
+      workflowStatus: 'Pending Komut',
+      omPercentage: 5,
+      haircutPercentage: 25,
+      materialityJustification: {
+        justificationText: '',
+      },
+    });
+
+    render(
+      <MaterialityParamsCard
+        simState={mockInReviewSim}
+        setSimState={vi.fn()}
+        multiplier={1}
+        benchmarkValue={100000000}
+        isLocked={true}
+        draftOmPercentage={5}
+        setDraftOmPercentage={vi.fn()}
+        draftHaircutPercentage={25}
+        setDraftHaircutPercentage={vi.fn()}
+        isRecalculating={false}
+        handleRecalculate={vi.fn()}
+      />
+    );
+
+    // Numeric inputs are locked
+    expect(screen.getByDisplayValue('5')).toBeDisabled();
+    expect(screen.getByDisplayValue('25')).toBeDisabled();
+
+    // Click justification button to open modal
+    const justificationBtn = screen.getByRole('button', { name: /justification\.buttonLabel/i });
+    expect(justificationBtn).not.toBeDisabled();
+    fireEvent.click(justificationBtn);
+
+    // Inside modal, textarea and save button are available for reviewer
+    const textarea = screen.getByRole('textbox', { name: /justification\.notesLabel/i });
+    expect(textarea).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: /justification\.saveButton/i })).toBeInTheDocument();
+  });
 });

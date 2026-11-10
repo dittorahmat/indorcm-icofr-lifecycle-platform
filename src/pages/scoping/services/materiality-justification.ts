@@ -70,3 +70,14 @@ export function isJustificationComplete(justification?: MaterialityJustification
     justification.systemStability
   );
 }
+
+/**
+ * Justification text may be edited while in Draft/Rejected, OR during review
+ * (Pending CFO / Pending Komut) so approvers can complete missing justification
+ * notes without risking mathematical recalculation. Once finalized/approved or
+ * pending deletion, all modifications are forbidden.
+ */
+export function isJustificationLocked(status: string): boolean {
+  return status === 'Approved' || status === 'Pending Deletion Approval' || status === 'Pending Update Approval';
+}
+
