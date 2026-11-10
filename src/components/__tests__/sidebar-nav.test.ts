@@ -29,17 +29,14 @@ describe('sidebar navigation data', () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  it('keeps the Appendix 10 entry between WBS and Appendix 11 inside the reporting group, followed by Visual Analytics', () => {
-    const reporting = NAV_GROUPS.find((group) => group.labelKey === 'groups.reportingRcm');
+  it('keeps the Appendix 10 entry between WBS and Appendix 11 inside the reporting group', () => {
+    const reporting = NAV_GROUPS.find((group) => group.labelKey === 'groups.cluster6_reporting');
     expect(reporting).toBeDefined();
     expect(linkPaths(reporting?.items ?? [])).toEqual([
-      '/rcm/elc',
-      '/rcm/tlc',
-      '/rcm/itgc',
       '/wbs-recap',
       '/reports/appendix-10',
       '/reports',
-      '/analytics',
+      '/audit-portal',
     ]);
   });
 
@@ -71,10 +68,13 @@ describe('sidebar navigation data', () => {
   it('keeps every group for an unresolved role except capability-gated rows', () => {
     const groups = visibleNavGroups(undefined);
     expect(groups.map((group) => group.labelKey)).toEqual([
-      'groups.mainTasks',
-      'groups.reportingRcm',
-      'groups.testing',
-      'groups.others',
+      'groups.cluster1_utama',
+      'groups.cluster2_governance',
+      'groups.cluster3_risk_control',
+      'groups.cluster4_evaluation',
+      'groups.cluster5_follow_up',
+      'groups.cluster6_reporting',
+      'groups.cluster7_system',
     ]);
     expect(linkPaths(groups.flatMap((group) => [...group.items]))).not.toContain('/scoping/approval');
   });
