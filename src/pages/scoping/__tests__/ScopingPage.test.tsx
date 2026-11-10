@@ -266,49 +266,67 @@ describe('ScopingPage / ScopingEditor responsive behavior', () => {
     expect(screen.queryByText('rollover.title')).toBeNull();
   });
 
+  const makeScopingEditorState = (
+    simOverrides: Record<string, unknown> = {},
+    editorOverrides: Record<string, unknown> = {}
+  ) => ({
+    simState: {
+      ...mockSimulation,
+      ...simOverrides,
+    },
+    setSimState: vi.fn(),
+    mergedGlData: [],
+    entityHierarchy: [],
+    selectedEntityCodes: [],
+    setSelectedEntityCodes: vi.fn(),
+    omValue: 97944.75,
+    pmValue: 73458563,
+    multiplier: 1,
+    benchmarkValue: 1000000,
+    scopingCompliance: null,
+    departments: [],
+    applications: [],
+    localAppMappings: {},
+    isLocked: false,
+    mutations: {
+      save: { mutate: vi.fn(), mutateAsync: vi.fn().mockResolvedValue({}), isPending: false },
+    },
+    handlers: {
+      onAssessmentChange: vi.fn(),
+      onAssignDepartments: vi.fn(),
+      onAppsChange: vi.fn(),
+    },
+    isDirty: false,
+    draftBasis: 'Laba Sebelum Pajak',
+    setDraftBasis: vi.fn(),
+    draftOmPercentage: 5,
+    setDraftOmPercentage: vi.fn(),
+    draftHaircutPercentage: 25,
+    setDraftHaircutPercentage: vi.fn(),
+    isStale: false,
+    isRecalculating: false,
+    handleRecalculate: vi.fn(),
+    ...editorOverrides,
+  } as unknown as ReturnType<typeof useScopingEditor>);
+
   it('executes auto-save before submit when justification is present', async () => {
     const saveMutateAsync = vi.fn().mockResolvedValue({});
     const mockedUseScopingEditor = vi.mocked(useScopingEditor);
-    mockedUseScopingEditor.mockReturnValue({
-      simState: {
-        ...mockSimulation,
-        materialityJustification: {
-          justificationText: 'Rasional penetapan OM 5% sudah lengkap.',
+    mockedUseScopingEditor.mockReturnValue(
+      makeScopingEditorState(
+        {
+          materialityJustification: {
+            justificationText: 'Rasional penetapan OM 5% sudah lengkap.',
+          },
         },
-      },
-      setSimState: vi.fn(),
-      mergedGlData: [],
-      entityHierarchy: [],
-      selectedEntityCodes: [],
-      setSelectedEntityCodes: vi.fn(),
-      omValue: 97944.75,
-      pmValue: 73458563,
-      multiplier: 1,
-      benchmarkValue: 1000000,
-      scopingCompliance: null,
-      departments: [],
-      applications: [],
-      localAppMappings: {},
-      isLocked: false,
-      mutations: {
-        save: { mutate: vi.fn(), mutateAsync: saveMutateAsync, isPending: false },
-      },
-      handlers: {
-        onAssessmentChange: vi.fn(),
-        onAssignDepartments: vi.fn(),
-        onAppsChange: vi.fn(),
-      },
-      isDirty: true,
-      draftBasis: 'Laba Sebelum Pajak',
-      setDraftBasis: vi.fn(),
-      draftOmPercentage: 5,
-      setDraftOmPercentage: vi.fn(),
-      draftHaircutPercentage: 25,
-      setDraftHaircutPercentage: vi.fn(),
-      isStale: false,
-      isRecalculating: false,
-      handleRecalculate: vi.fn(),
-    } as unknown as ReturnType<typeof useScopingEditor>);
+        {
+          isDirty: true,
+          mutations: {
+            save: { mutate: vi.fn(), mutateAsync: saveMutateAsync, isPending: false },
+          },
+        }
+      )
+    );
 
     render(<ScopingPage />);
 
@@ -323,5 +341,38 @@ describe('ScopingPage / ScopingEditor responsive behavior', () => {
     fireEvent.click(submitBtn);
 
     expect(saveMutateAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it('blocks submit and opens params card when justification is incomplete', async () => {
+    const saveMutateAsync = vi.fn().mockResolvedValue({});
+    const mockedUseScopingEditor = vi.mocked(useScopingEditor);
+    mockedUseScopingEditor.mockReturnValue(
+      makeScopingEditorState(
+        {
+          materialityJustification: {
+            justificationText: '',
+          },
+        },
+        {
+          mutations: {
+            save: { mutate: vi.fn(), mutateAsync: saveMutateAsync, isPending: false },
+          },
+        }
+      )
+    );
+
+    render(<ScopingPage />);
+
+    // Open workflow modal
+    const reviewBtn = screen.getByRole('button', { name: 'Open Workflow' });
+    fireEvent.click(reviewBtn);
+
+    const submitBtn = await screen.findByTestId('workflow-submit-btn');
+    fireEvent.click(submitBtn);
+
+    // Submission blocked: save must NOT be called
+    expect(saveMutateAsync).not.toHaveBeenCalled();
+    // Materiality parameters card is opened to prompt for justification
+    expect(screen.getByTestId('materiality-params-card')).toBeInTheDocument();
   });
 });
