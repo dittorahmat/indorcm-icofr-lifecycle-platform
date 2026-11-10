@@ -66,5 +66,7 @@ describe('Input Component - Numeric Auto-select on Focus', () => {
     expect(input.className).toContain('[appearance:textfield]')
     expect(input.className).toContain('[&::-webkit-outer-spin-button]:appearance-none')
     expect(input.className).toContain('[&::-webkit-inner-spin-button]:appearance-none')
+    expect(input.className).toContain('[&::-webkit-outer-spin-button]:m-0')
+    expect(input.className).toContain('[&::-webkit-inner-spin-button]:m-0')
   })
 })
