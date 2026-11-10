@@ -28,6 +28,7 @@ interface MaterialityJustificationModalProps {
   simulation: MaterialitySimulation;
   onSave: (justification: MaterialityJustification) => void;
   isLocked?: boolean;
+  isReadOnly?: boolean;
 }
 
 export function MaterialityJustificationModal({
@@ -35,13 +36,15 @@ export function MaterialityJustificationModal({
   onOpenChange,
   simulation,
   onSave,
-  isLocked = false
+  isLocked = false,
+  isReadOnly = false
 }: MaterialityJustificationModalProps) {
   const { t } = useTranslation(['scoping', 'common']);
 
   // Justification can still be updated during review (Pending CFO / Pending Komut)
-  // unless the overall simulation has reached a final state (Approved / Deletion).
-  const isInputLocked = isLocked && isJustificationLocked(resolveSimulationStatus(simulation));
+  // unless the overall simulation has reached a final state (Approved / Deletion)
+  // or caller explicitly designates read-only access (e.g. passive viewer / auditor).
+  const isInputLocked = isReadOnly || (isLocked && isJustificationLocked(resolveSimulationStatus(simulation)));
 
   const initialText =
     simulation.materialityJustification?.justificationText ||
