@@ -1,6 +1,99 @@
 {
   "title": "Dashboard",
   "description": "Overview of ICOFR compliance and status.",
+  "executiveBanner": {
+    "badgeMandat": "Mandate SK BUMN & BPKP",
+    "regNo": "Reg No: PIPK-BUMN/2024/Q4-REV",
+    "fiscalYearAudited": "Fiscal Year {{year}} (Audited Cycle)",
+    "headline": "Executive Dashboard Internal Control over Financial Reporting (ICOFR)",
+    "subheadline": "Comprehensive evaluation of internal control system effectiveness on consolidated financial reporting reliability of SOE & subsidiaries.",
+    "kesimpulanOpiniTitle": "Management Opinion Conclusion",
+    "opiniDefault": "SUBSTANTIALLY EFFECTIVE",
+    "opiniSub": "(Substantially Effective System)",
+    "maturityScoreTitle": "Maturity Score",
+    "maturityLevel": "Level {{level}}",
+    "cutoffDate": "Cut-Off: 31 Dec {{year}}"
+  },
+  "statCards": {
+    "card1": {
+      "title": "Overall ICOFR Status",
+      "statusEffective": "Effective",
+      "testedRatio": "{{tested}} of {{total}} Tested",
+      "minorDeviations": "{{count}} Minor Deviations"
+    },
+    "card2": {
+      "title": "Transaction Level (TLC) Effective",
+      "statusOnTrack": "On-Track",
+      "tlcTestedLabel": "TLC Key Controls",
+      "csaSyncLabel": "CSA Sync"
+    },
+    "card3": {
+      "title": "Entity Level (ELC) & ITGC",
+      "elcHigh": "High",
+      "elcLabel": "ELC: {{percent}}%",
+      "itgcLabel": "ITGC: {{percent}}%"
+    },
+    "card4": {
+      "title": "Deficiencies & Remediation",
+      "statusOverdue": "Overdue",
+      "slaOverdueNote": "SLA Exceeded Max Limit 14 Days",
+      "totalCap": "Total: {{total}} CAP ({{open}} Open)"
+    }
+  },
+  "riskHeatmap": {
+    "title": "Risk Matrix Impact vs Likelihood (Heatmap 5x5)",
+    "subtitle": "Mapping of material misstatements and fraud across major BUMN business cycles",
+    "bpkpStandard": "BPKP Guideline Standard",
+    "axisLabel": "Likelihood \\ Impact",
+    "l5": "5 - Almost Certain",
+    "l4": "4 - Likely",
+    "l3": "3 - Possible",
+    "l2": "2 - Unlikely",
+    "l1": "1 - Rare",
+    "i1": "1 - Insignificant",
+    "i2": "2 - Minor",
+    "i3": "3 - Moderate",
+    "i4": "4 - Major",
+    "i5": "5 - Catastrophic",
+    "priorityCycleTitle": "Priority Cycles"
+  },
+  "deficiencySummary": {
+    "title": "Classification & Typology of Deficiencies",
+    "subtitle": "Findings breakdown by design (DoD) vs operational (DoO)",
+    "dodLabel": "Deficiency of Design (DoD)",
+    "dooLabel": "Deficiency of Operation (DoO)",
+    "cases": "Cases",
+    "typologyNote": "Majority of deficiencies stem from hierarchical authorization control execution (DoO).",
+    "mwTitle": "Material Weakness (MW)",
+    "mwDescription": "Material impact on financial statement opinion",
+    "mwUnit": "Subsidiary",
+    "sdTitle": "Significant Deficiency (SD)",
+    "sdDescription": "Requires Board of Commissioners attention",
+    "sdUnit": "Active Findings",
+    "cdTitle": "Control Deficiency (CD)",
+    "cdDescription": "Operational deviation at business unit level",
+    "cdUnit": "Self-Correction",
+    "frameworkNote": "Evaluation based on COSO Internal Control 2013 Framework",
+    "downloadLog": "Download Deficiency Log"
+  },
+  "subsidiaryTable": {
+    "title": "ICOFR Cycle Status Monitoring per BUMN Subsidiary",
+    "subtitle": "Consolidation of risk control matrix fulfillment and field audit testing schedule",
+    "filterCluster": "Filter Cluster",
+    "allSectors": "All BUMN Sectors",
+    "refreshSync": "Refresh Sync Data",
+    "colSubsidiary": "Subsidiary Entity",
+    "colProgress": "Testing Progress",
+    "colControls": "Key Controls (Effective)",
+    "colDeficiencies": "Deficiency Classification",
+    "colOpinion": "Interim Opinion",
+    "colSignOff": "Target Sign-Off",
+    "colAction": "Action",
+    "opEffective": "Effective",
+    "opSubstantiallyEffective": "Substantially Effective",
+    "opNeedsImprovement": "Needs Improvement",
+    "viewAria": "View details for"
+  },
   "kpis": {
     "controlCoverage": "Control Coverage",
     "openDeficiencies": "Open Deficiencies",
