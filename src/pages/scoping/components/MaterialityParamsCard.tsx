@@ -22,6 +22,7 @@ interface MaterialityParamsCardProps {
   multiplier: number;
   benchmarkValue: number;
   isLocked: boolean;
+  isReadOnly?: boolean;
   onClose?: () => void;
   // Local/Draft parameter controls
   draftOmPercentage: number;
@@ -39,6 +40,7 @@ export function MaterialityParamsCard({
   multiplier,
   benchmarkValue,
   isLocked,
+  isReadOnly = false,
   onClose,
   draftOmPercentage,
   setDraftOmPercentage,
@@ -286,6 +288,7 @@ export function MaterialityParamsCard({
         onOpenChange={setIsJustificationOpen}
         simulation={simState}
         isLocked={isLocked}
+        isReadOnly={isReadOnly}
         onSave={(justification) => {
           setSimState((prev) => ({
             ...prev,

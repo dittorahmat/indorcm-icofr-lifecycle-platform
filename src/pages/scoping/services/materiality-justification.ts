@@ -3,7 +3,8 @@ import type {
   InternalControlMaturity,
   AuditAdjustmentHistory,
   SystemStability,
-  MaterialityJustification
+  MaterialityJustification,
+  SimulationStatus
 } from '@shared/types';
 
 interface NarrativeParams {
@@ -77,7 +78,7 @@ export function isJustificationComplete(justification?: MaterialityJustification
  * notes without risking mathematical recalculation. Once finalized/approved or
  * pending deletion, all modifications are forbidden.
  */
-export function isJustificationLocked(status: string): boolean {
+export function isJustificationLocked(status: SimulationStatus | string): boolean {
   return status === 'Approved' || status === 'Pending Deletion Approval' || status === 'Pending Update Approval';
 }
 
