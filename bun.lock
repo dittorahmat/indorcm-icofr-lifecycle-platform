@@ -56,7 +56,6 @@
         "hono": "^4.8.5",
         "html-to-image": "^1.11.11",
         "i18next": "^26.0.5",
-        "i18next-browser-languagedetector": "^8.2.1",
         "immer": "^10.1.1",
         "input-otp": "^1.4.2",
         "jsonrepair": "^3.15.0",
@@ -1388,8 +1387,6 @@
     "html2canvas": ["html2canvas@1.4.1", "", { "dependencies": { "css-line-break": "^2.1.0", "text-segmentation": "^1.0.3" } }, "sha512-fPU6BHNpsyIhr8yyMpTLLxAbkaK8ArIBcmZIRiBLiDhjeqvXolaEmDGmELFuX9I4xDcaKKcJl+TKZLqruBbmWA=="],
 
     "i18next": ["i18next@26.0.5", "", { "dependencies": { "@babel/runtime": "^7.29.2" }, "peerDependencies": { "typescript": "^5 || ^6" } }, "sha512-9uHb4T27TdV36phJXcbpnRPt5yzAfqHXVrdASvmHZyPuZJtrLythd+GyXhiaHV5LlpuuskbAqhwPjmfTbKbi8w=="],
-
-    "i18next-browser-languagedetector": ["i18next-browser-languagedetector@8.2.1", "", { "dependencies": { "@babel/runtime": "^7.23.2" } }, "sha512-bZg8+4bdmaOiApD7N7BPT9W8MLZG+nPTOFlLiJiT8uzKXFjhxw4v2ierCXOwB5sFDMtuA5G4kgYZ0AznZxQ/cw=="],
 
     "iconv-lite": ["iconv-lite@0.7.2", "", { "dependencies": { "safer-buffer": ">= 2.1.2 < 3.0.0" } }, "sha512-im9DjEDQ55s9fL4EYzOAv0yMqmMBSZp6G0VvFyTMPKWxiSBHUj9NW/qqLmXUwXrrM7AvqSlTCfvqRb0cM8yYqw=="],
 

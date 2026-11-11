@@ -1,6 +1,5 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
 
 // Import locales
 import commonEn from './locales/en/common.json';
@@ -39,8 +38,35 @@ import authId from './locales/id/auth.json';
 import adminId from './locales/id/admin.json';
 import analyticsId from './locales/id/analytics.json';
 
+function detectInitialLanguage(): string {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const stored = window.localStorage.getItem('i18nextLng');
+      if (stored && (stored === 'en' || stored === 'id')) {
+        return stored;
+      }
+      if (stored?.startsWith('id')) return 'id';
+      if (stored?.startsWith('en')) return 'en';
+    }
+  } catch {
+    // Ignore storage access errors in sandboxed / SSR environments
+  }
+
+  try {
+    if (typeof navigator !== 'undefined') {
+      const navLang = navigator.language || (navigator as { userLanguage?: string }).userLanguage;
+      if (navLang?.toLowerCase().startsWith('id')) {
+        return 'id';
+      }
+    }
+  } catch {
+    // Fallback to default
+  }
+
+  return 'en';
+}
+
 i18n
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
@@ -83,15 +109,12 @@ i18n
         analytics: analyticsId,
       },
     },
+    lng: detectInitialLanguage(),
     fallbackLng: 'en',
     ns: ['common', 'sidebar', 'scoping', 'dashboard', 'reports', 'knowledge', 'bpm', 'deficiency', 'testing', 'risklibrary', 'rcm', 'csa_hub', 'ai', 'workflow', 'auth', 'admin', 'analytics'],
     defaultNS: 'common',
     interpolation: {
       escapeValue: false, // react already safes from xss
-    },
-    detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
     },
   });
 
