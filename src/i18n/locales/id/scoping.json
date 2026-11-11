@@ -24,6 +24,10 @@
     "createNew": "Buat Simulasi Baru",
     "basisDescription": "Perhitungan basis akan menggunakan {{filename}}."
   },
+  "tabs": {
+    "subsidiaries": "Entitas & Alokasi Lingkup",
+    "justification": "Justifikasi Regulasi"
+  },
   "sheetSelection": {
     "title": "Pilih Lembar Kerja (Worksheet)",
     "description": "File \"{{file}}\" memiliki beberapa lembar kerja. Pilih lembar kerja yang memuat data Trial Balance / General Ledger.",
@@ -309,5 +313,52 @@
     "savedSuccess": "Justifikasi materialitas berhasil disimpan",
     "incompleteAlertTitle": "Justifikasi Materialitas Belum Diisi",
     "incompleteAlertDesc": "Harap isi alasan justifikasi penetapan materialitas sebelum melakukan pengajuan (submit)."
+  },
+  "sovereignBanner": {
+    "badgeMandat": "Tahap 2 • Tata Kelola & Ruang Lingkup (SK Menteri BUMN / BPKP RI)",
+    "regNo": "SK-5/DKU.MBU/11/2024",
+    "fiscalYearAudited": "FY {{year}} Terpilih",
+    "headline": "Scoping & Penentuan Materialitas ICOFR",
+    "subheadline": "Penetapan batas materialitas pelaporan konsolidasi BUMN, identifikasi akun signifikan, asersi laporan keuangan, serta pemetaan aplikasi sistem informasi penunjang audit internal.",
+    "contextYearTitle": "Periode Pelaporan",
+    "contextSub": "Basis Konsolidasi Holding & Sub-Holding",
+    "activeSourceTitle": "Snapshot GL Aktif",
+    "noActiveSource": "Belum Ada Snapshot",
+    "benchmarkReady": "Tolak Ukur Siap",
+    "benchmarkPending": "Pemetaan Belum Lengkap"
+  },
+  "materialityKpi": {
+    "omTitle": "Overall Materiality (OM)",
+    "omSub": "Ambang batas kuantitatif salah saji total berbasis {{basis}}",
+    "omBaselineLabel": "Baseline Toleransi:",
+    "pmTitle": "Performance Materiality (PM)",
+    "pmSub": "{{ratio}}% dari OM • Uji asersi akun spesifik & haircut",
+    "pmRatioLabel": "Rasio Penerapan:",
+    "standardized": "Terstandarisasi",
+    "trivialTitle": "Posting Threshold (SUD)",
+    "trivialSub": "5% dari OM • Batas rekap temuan audit",
+    "trivialPostingLimit": "Trivially Trivial Limit:"
+  },
+  "justificationPanel": {
+    "title": "Justifikasi Regulasi Penetapan Materialitas & Haircut",
+    "subtitle": "Mandat Lampiran 2 SK-5/2024 — Dokumentasikan pertimbangan profesional atas ambang batas kuantitatif dan penyesuaian.",
+    "calcLockedNote": "Kalkulasi Terkunci (Sedang Direviu)",
+    "btnSaveJustification": "Simpan Justifikasi",
+    "notesLabel": "Catatan Justifikasi & Konteks Operasional",
+    "notesPlaceholder": "Dokumentasikan pertimbangan ekonomi, kestabilan operasional, konsultasi auditor eksternal/KAP, dan arahan Komite Audit/Dewan Komisaris terkait persentase OM dan haircut yang dipilih...",
+    "antiDeadlockHint": "Mekanisme Anti-Deadlock: Reviewer dan administrator dapat mengedit dan menyimpan narasi justifikasi meskipun parameter kalkulasi terkunci saat proses reviu.",
+    "characters": "{{count}} karakter"
+  },
+  "subsidiaryGrid": {
+    "kicker": "Matriks Scoping Entitas & Anak Perusahaan",
+    "title": "Alokasi Entitas & Unit Bisnis BUMN",
+    "subtitle": "Distribusi saldo kuantitatif, penentuan kategori ruang lingkup, dan pertimbangan kualitatif per segmen bisnis.",
+    "badgeQualitative": "Filter Kualitatif BPKP",
+    "colEntity": "Entitas / Unit Operasional",
+    "colBalance": "Posisi Saldo Buku Besar",
+    "colContribution": "% Kontribusi",
+    "colProcesses": "Proses In-Scope",
+    "colQualitativeReason": "Pertimbangan Kualitatif",
+    "colStatus": "Status Lingkup"
   }
 }
