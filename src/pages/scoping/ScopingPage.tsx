@@ -32,6 +32,8 @@ import { RolloverCard } from '@/components/layout/RolloverCard';
 import { useScopingPage } from './hooks/useScopingPage';
 import { ScopingSimulationForm } from './components/ScopingSimulationForm';
 import { ScopingEditor } from './components/ScopingEditorShell';
+import { ScopingHeaderBanner } from './components/ScopingHeaderBanner';
+import { MaterialityKpiCards } from './components/MaterialityKpiCards';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -159,6 +161,36 @@ export function ScopingPage() {
             )}
           </div>
         </PageHeader>
+
+        {/* 1. Sovereign Governance Scoping Header Banner */}
+        <motion.div variants={itemVariants}>
+          <ScopingHeaderBanner
+            workingYear={workingYear}
+            activeSnapshotFilename={activeSnapshot?.filename}
+            hasBenchmark={hasBenchmark}
+          />
+        </motion.div>
+
+        {/* 2. Materiality Benchmarks & KPIs Ribbon */}
+        {(() => {
+          const latestSim = simulations[0];
+          const om = latestSim?.omValue ?? 125000000000;
+          const pm = latestSim?.pmValue ?? 87500000000;
+          const omPct = latestSim?.omPercentage ?? 1.0;
+          const hcPct = latestSim?.haircutPercentage ?? 25;
+          const basis = latestSim?.basis ?? (activeSnapshot?.benchmarkFsliNames?.[0] || 'Total Assets');
+          return (
+            <motion.div variants={itemVariants}>
+              <MaterialityKpiCards
+                omValue={om}
+                pmValue={pm}
+                omPercentage={omPct}
+                haircutPercentage={hcPct}
+                basisName={basis}
+              />
+            </motion.div>
+          );
+        })()}
 
         {simulations.length === 0 && snapshots.length === 0 && !isLoading && (
           <motion.div variants={itemVariants}>

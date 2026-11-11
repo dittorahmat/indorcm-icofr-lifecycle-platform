@@ -24,6 +24,10 @@
     "createNew": "Create New Simulation",
     "basisDescription": "Basis calculation will use {{filename}}."
   },
+  "tabs": {
+    "subsidiaries": "Subsidiaries & Scope Allocation",
+    "justification": "Regulatory Justification"
+  },
   "sheetSelection": {
     "title": "Select Worksheet",
     "description": "File \"{{file}}\" contains multiple worksheets. Please select the worksheet containing Trial Balance / General Ledger data.",
@@ -309,5 +313,52 @@
     "savedSuccess": "Materiality justification saved successfully",
     "incompleteAlertTitle": "Materiality Justification Missing",
     "incompleteAlertDesc": "Please provide the justification rationale for materiality figures before submitting for review."
+  },
+  "sovereignBanner": {
+    "badgeMandat": "Phase 2 • Governance & Scope (SK BUMN / BPKP RI)",
+    "regNo": "SK-5/DKU.MBU/11/2024",
+    "fiscalYearAudited": "FY {{year}} Audited",
+    "headline": "Scoping & Materiality Determination Workbench",
+    "subheadline": "Establish consolidated materiality thresholds, identify significant accounts, financial statement assertions, and align supporting IT applications per BPKP standards.",
+    "contextYearTitle": "Reporting Period",
+    "contextSub": "Consolidated Group Basis",
+    "activeSourceTitle": "Active GL Snapshot",
+    "noActiveSource": "No Active Snapshot",
+    "benchmarkReady": "Benchmark Ready",
+    "benchmarkPending": "Mapping Incomplete"
+  },
+  "materialityKpi": {
+    "omTitle": "Overall Materiality (OM)",
+    "omSub": "Quantitative threshold for total misstatement based on {{basis}}",
+    "omBaselineLabel": "Tolerance Baseline:",
+    "pmTitle": "Performance Materiality (PM)",
+    "pmSub": "{{ratio}}% of OM • Specific account assertions & haircut",
+    "pmRatioLabel": "Implementation Ratio:",
+    "standardized": "Standardized",
+    "trivialTitle": "Posting Threshold (SUD)",
+    "trivialSub": "5% of OM • Threshold for aggregating audit findings",
+    "trivialPostingLimit": "Clearly Trivial Limit:"
+  },
+  "justificationPanel": {
+    "title": "Materiality & Haircut Regulatory Justification",
+    "subtitle": "Lampiran 2 SK-5/2024 Mandate — Document the rationale for quantitative thresholds and adjustments.",
+    "calcLockedNote": "Calculations Locked (Under Review)",
+    "btnSaveJustification": "Save Justification",
+    "notesLabel": "Justification Notes & Operational Context",
+    "notesPlaceholder": "Document the economic rationale, operational stability, auditor consultations, and governing board guidance for the selected materiality and haircut percentages...",
+    "antiDeadlockHint": "Anti-Deadlock Mechanism: Reviewers and administrators can edit and save the justification narrative even while calculation parameters are locked in review status.",
+    "characters": "{{count}} characters"
+  },
+  "subsidiaryGrid": {
+    "kicker": "Entity & Subsidiary Scoping Matrix",
+    "title": "Business Units & Subsidiary Allocation",
+    "subtitle": "Quantitative balance distribution, scoping categorization, and qualitative assessment per business segment.",
+    "badgeQualitative": "BPKP Qualitative Filter",
+    "colEntity": "Entity / Operating Unit",
+    "colBalance": "GL Balance Position",
+    "colContribution": "% Contribution",
+    "colProcesses": "Processes In-Scope",
+    "colQualitativeReason": "Qualitative Factors",
+    "colStatus": "Scope Verdict"
   }
 }
