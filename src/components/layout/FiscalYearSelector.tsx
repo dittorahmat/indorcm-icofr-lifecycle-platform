@@ -145,14 +145,14 @@ export function FiscalYearSelector() {
         <SelectTrigger 
           aria-label={translate('common:placeholders.year', { defaultValue: 'Year' })}
           className={cn(
-            "h-10 sm:h-9 min-h-[44px] sm:min-h-0 w-auto min-w-[64px] max-w-[90px] sm:max-w-none sm:min-w-[100px] px-2 sm:px-3 rounded-lg border-none font-bold text-base sm:text-xs shadow-sm transition-all flex items-center justify-center shrink-0 truncate",
+            "h-10 sm:h-9 min-h-[44px] sm:min-h-0 w-auto min-w-[64px] max-w-[90px] sm:max-w-none sm:min-w-[100px] px-2 sm:px-3 rounded-lg font-bold text-base sm:text-xs shadow-sm transition-all flex items-center justify-center shrink-0 truncate",
             isDark 
-              ? "bg-slate-800 text-slate-100 hover:bg-slate-700" 
-              : "bg-white/10 text-white hover:bg-white/20"
+              ? "bg-slate-800 text-slate-100 hover:bg-slate-700 border border-slate-700" 
+              : "bg-surface-container/70 text-foreground hover:bg-surface-container hover:text-foreground border border-border/80"
           )}
         >
           <div className="flex items-center gap-1 sm:gap-2">
-            <Calendar className="h-3.5 w-3.5 opacity-70 shrink-0 hidden sm:inline-block" aria-hidden="true" />
+            <Calendar className={cn("h-3.5 w-3.5 shrink-0 hidden sm:inline-block", isDark ? "text-slate-400" : "text-muted-foreground")} aria-hidden="true" />
             <span className="inline sm:hidden font-mono tracking-tight font-semibold">FY {workingYear?.slice(-2) || workingYear}</span>
             <span className="hidden sm:inline">
               <SelectValue placeholder="Year" />

@@ -99,7 +99,7 @@ export function NotificationBell() {
         <Button 
           variant="ghost" 
           size="icon" 
-          className="relative hover:bg-white/10 text-inherit min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg"
+          className="relative text-muted-foreground hover:text-foreground hover:bg-surface-container dark:hover:bg-slate-800 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg"
           aria-label={
             unreadCount > 0
               ? t('notifications.ariaLabelUnread', { count: unreadCount, defaultValue: `Notifications, ${unreadCount} unread` })
