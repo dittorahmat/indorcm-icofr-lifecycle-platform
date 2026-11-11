@@ -28,7 +28,11 @@
     "eucP4": "Validasi Kontrol Akses (Dilindungi kata sandi)",
     "eucP5": "Tinjauan Dokumentasi Kontrol Perubahan",
     "comments": "Komentar TOD",
-    "placeholder": "Masukkan hasil TOD dan catatan walkthrough..."
+    "placeholder": "Masukkan hasil TOD dan catatan walkthrough...",
+    "sixPillarsTitle": "Evaluasi Rancangan Kontrol: 6-Pilar Walkthrough TOD",
+    "regulationBadge": "LAMPIRAN 8 SK-5",
+    "complianceNoteTitle": "Catatan Kepatuhan Regulasi (Lampiran 8 SK-5)",
+    "complianceNoteBody": "Evaluasi rancangan 6 pilar wajib memastikan bahwa kontrol dirancang secara memadai dan presisi untuk mencegah atau mendeteksi salah saji material pada asersi laporan keuangan secara tepat waktu."
   },
   "toe": {
     "sampling": "Detail Pengambilan Sampel",
@@ -107,7 +111,11 @@
     "status": "Status",
     "comments": "Catatan Sampel",
     "empty": "Belum ada sampel. Klik 'Tambah Sampel' untuk memulai.",
-    "commentPlaceholder": "Catatan untuk sampel ini..."
+    "commentPlaceholder": "Catatan untuk sampel ini...",
+    "badgeRegulation": "Lampiran 7 & 9 SK-5",
+    "remove": "Hapus sampel",
+    "attributesLegend": "Atribut Kepatuhan Transaksi (Lampiran 7)",
+    "legendTitle": "Lampiran 7 Legend:"
   },
   "pillars": {
     "objective": "Pencapaian Objektif",
@@ -124,6 +132,42 @@
       "reliability": "Apakah IPE/EUC yang digunakan dapat diandalkan?",
       "coverage": "Apakah kontrol mencakup seluruh periode pelaporan?",
       "evidence": "Apakah bukti pendukung tersedia dan memadai?"
+    },
+    "subLabels": {
+      "objective": "Pilar 1: Presisi mitigasi salah saji material",
+      "timing": "Pilar 2: Frekuensi dan konsistensi pelaksanaan",
+      "authority": "Pilar 3: Segregation of duties & kompetensi",
+      "reliability": "Pilar 4: Keandalan IPE/EUC & integritas data",
+      "coverage": "Pilar 5: Kelengkapan transaksi & akun LK",
+      "evidence": "Pilar 6: Ketertelusuran bukti pengujian"
     }
+  },
+  "banner": {
+    "badgeRegulation": "Mandat SK-5 / BPKP-2024",
+    "regNo": "Lampiran 8 (TOD) & Lampiran 9 (TOE)",
+    "auditCycle": "Siklus Audit FY {{year}}",
+    "title": "Kertas Kerja Pengujian Efektivitas Desain & Operasi Pengendalian",
+    "subtitle": "Kertas kerja audit terintegrasi pengujian rancangan 6 pilar TOD (Lampiran 8) dan uji efektivitas operasi transaksi TOE (Lampiran 9) berlandaskan standar SK-5/DKU.MBU/11/2024.",
+    "testedLabel": "Pengendalian Diuji",
+    "controlsUnit": "Kontrol",
+    "coverage": "Cakupan",
+    "mandateStatus": "Audit Scope PIPK",
+    "methodologyLabel": "Metodologi Terverifikasi:",
+    "method1": "6-Pilar Walkthrough TOD",
+    "method2": "Attribute Sampling TOE (Lampiran 7)",
+    "method3": "Three Lines Model Governance"
+  },
+  "summary": {
+    "totalTested": "Total Kontrol Diuji",
+    "controlsUnit": "Kontrol",
+    "testedNote": "Cakupan Uji Petik",
+    "effective": "Efektif (Lolos Uji)",
+    "effectiveNote": "TOD & TOE Efektif",
+    "deviations": "Deviasi / Defisiensi",
+    "casesUnit": "Temuan",
+    "deviationNote": "Wajib Masuk DoD Remediasi",
+    "line2Status": "Verifikasi Lini 2",
+    "validated": "Tervalidasi",
+    "line2Note": "Three Lines Model Ready"
   }
 }
