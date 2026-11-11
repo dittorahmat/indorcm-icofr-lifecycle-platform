@@ -136,6 +136,7 @@ export default ({ mode }: { mode: string }) => {
       alias: {
         "@": path.resolve(__dirname, "./src"),
         "@shared": path.resolve(__dirname, "./shared"),
+        "i18next-browser-languagedetector": path.resolve(__dirname, "./node_modules/i18next-browser-languagedetector/dist/esm/i18nextBrowserLanguageDetector.js"),
       },
     },
     optimizeDeps: {
