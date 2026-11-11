@@ -58,6 +58,8 @@
     "input-otp", // reason: ui stock only (input-otp.tsx)
     "vaul", // reason: ui stock only (drawer.tsx)
     "@inquirer/prompts", // reason: ops scripts in scripts/ (outside knip project scope)
-    "@types/react-grid-layout" // reason: paired with live `react-grid-layout` lib used by ReportDashboard
+    "@types/react-grid-layout", // reason: paired with live `react-grid-layout` lib used by ReportDashboard
+    "html-parse-stringify", // reason: transitive dep of react-i18next promoted to root for CF bundle resolution
+    "void-elements" // reason: transitive dep of react-i18next / html-parse-stringify promoted to root for CF bundle resolution
   ]
 }
