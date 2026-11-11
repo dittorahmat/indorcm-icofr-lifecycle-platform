@@ -19,11 +19,12 @@ try {
       const worktreeLines = worktreeList.split('\n').filter(l => l.startsWith('worktree '));
       
       // If worktrees are present, warn or enforce
-      if (worktreeLines.length > 1) {
-        console.warn(`\n⚠️  [WORKTREE ISOLATION WARNING] You are currently committing directly to '${currentBranch}' from the primary repository root:`);
-        console.warn(`   ${process.cwd()}`);
-        console.warn(`   Mandat AGENTS.md §9: Pengerjaan tiket/fitur WAJIB diisolasi ke dalam worktree terpisah (icofr1, icofr2, atau icofr3).`);
-        console.warn(`   Gunakan scripts/worktree-new.ps1 untuk membuat worktree sebelum memulai pengerjaan.\n`);
+      if (worktreeLines.length > 1 && !process.env.ALLOW_ROOT_FEATURE_COMMIT) {
+        console.error(`\n❌ [WORKTREE ISOLATION FAILED] Committing to feature branch '${currentBranch}' directly from the primary repository root is blocked:`);
+        console.error(`   ${process.cwd()}`);
+        console.error(`   Mandat AGENTS.md §9: Pengerjaan tiket/fitur WAJIB diisolasi ke dalam worktree terpisah (icofr1, icofr2, atau icofr3).`);
+        console.error(`   Gunakan scripts/worktree-new.ps1 untuk membuat worktree sebelum memulai pengerjaan.\n`);
+        process.exit(1);
       }
     }
   }

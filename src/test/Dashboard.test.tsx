@@ -85,7 +85,11 @@ describe('Dashboard Component', () => {
 
     expect(screen.getByText('title')).toBeInTheDocument();
     expect(screen.getByText('actionCenter.title')).toBeInTheDocument();
-    expect(screen.getByText('kpis.ready')).toBeInTheDocument();
+    expect(screen.getByText('executiveBanner.headline')).toBeInTheDocument();
+    expect(screen.getByText('statCards.card1.title')).toBeInTheDocument();
+    expect(screen.getByText('riskHeatmap.title')).toBeInTheDocument();
+    expect(screen.getByText('deficiencySummary.title')).toBeInTheDocument();
+    expect(screen.getByText('subsidiaryTable.title')).toBeInTheDocument();
   });
 
   // Load-sensitive (retro 2026-10-16): testing-library waitFor defaults to a

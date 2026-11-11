@@ -5,7 +5,14 @@
     "testing": "Testing",
     "others": "Others",
     "user": "User",
-    "admin": "Administration"
+    "admin": "Administration",
+    "cluster1_utama": "1. Main",
+    "cluster2_governance": "2. Governance & Scoping",
+    "cluster3_risk_control": "3. Risk Assessment & Control",
+    "cluster4_evaluation": "4. Evaluation & Testing",
+    "cluster5_follow_up": "5. Follow-Up & Remediation",
+    "cluster6_reporting": "6. Reporting & Assurance",
+    "cluster7_system": "7. System"
   },
   "items": {
     "dashboard": "Dashboard",
@@ -42,7 +49,18 @@
     "improvement": "Continuous Improvement",
     "settings": "User Admin",
     "adminUsers": "User Management",
-    "logout": "Logout"
+    "logout": "Logout",
+    "organization": "SOE Organization Structure",
+    "riskAssessment": "Risk Assessment",
+    "rcm": "Risk Control Matrix (RCM)",
+    "validation": "Line 2 Validation",
+    "auditTesting": "Audit Testing (TOD & TOE)",
+    "findingManagement": "Finding Management",
+    "remediation": "Remediation & Action Plan",
+    "reporting": "Regulatory Reporting",
+    "managementAssessment": "Management Assessment",
+    "externalAssurance": "External Assurance (CPA)",
+    "administration": "System Administration"
   },
   "sections": {
     "rcmMatrix": "RCM Matrix",

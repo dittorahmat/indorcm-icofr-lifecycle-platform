@@ -1,11 +1,10 @@
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Shield, LogOut } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { UserRole } from '@shared/types';
 import { toast } from 'sonner';
@@ -33,10 +32,10 @@ export function MainHeader() {
 
   return (
     <header className={cn(
-      "sticky top-0 z-[100] w-full border-b transition-colors duration-300 shadow-md print:hidden",
+      "sticky top-0 z-[100] w-full border-b transition-colors duration-300 shadow-sm print:hidden",
       isDark
         ? "bg-slate-950 border-slate-800 text-slate-50"
-        : "bg-mancity-pattern border-primary/20 text-primary-foreground"
+        : "bg-surface-container-low border-border/60 text-foreground"
     )}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-2 sm:px-4 gap-2 py-2 sm:py-1 min-w-0 max-w-full flex-wrap">
         <div className="flex items-center gap-1.5 sm:gap-4 md:gap-6 min-w-0 max-w-full w-full sm:w-auto">
@@ -44,21 +43,39 @@ export function MainHeader() {
           <SidebarTrigger 
             aria-label={t('navigation.toggleSidebar', { defaultValue: 'Toggle navigation menu' })}
             className={cn(
-              "md:hidden h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 rounded-md text-white hover:bg-white/20 active:bg-white/30 border border-white/20 shadow-sm flex items-center justify-center",
+              "md:hidden h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 rounded-md text-foreground hover:bg-surface-container active:bg-surface-container-high border border-border/80 shadow-sm flex items-center justify-center",
               isDark && "text-slate-100 hover:bg-slate-800 border-slate-700"
             )} 
           />
-          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0 max-w-full">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 max-w-full flex-wrap">
             <Link to="/dashboard" className="flex items-center gap-1.5 md:gap-2 group shrink-0 min-h-[44px] min-w-[44px] py-1">
-              <Shield className={cn(
-                "h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 transition-transform group-hover:scale-105 shrink-0",
-                isDark ? "text-emerald-400" : "text-primary-foreground"
-              )} />
-              <span className={cn(
-                "font-display tracking-tight text-xs sm:text-base md:text-lg font-bold truncate max-w-[100px] min-[420px]:max-w-[140px] sm:max-w-none",
-                isDark ? "text-white" : "text-primary-foreground"
-              )}>{t('appName')}</span>
+              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-sm">
+                <Shield className="h-4 w-4 transition-transform group-hover:scale-105" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className={cn(
+                  "font-display tracking-tight text-xs sm:text-base font-bold truncate max-w-[110px] min-[420px]:max-w-[150px] sm:max-w-none text-primary",
+                  isDark && "text-white"
+                )}>{t('appName')}</span>
+                <span className="hidden lg:inline text-xs text-muted-foreground font-medium leading-none">
+                  {t('header.subTitle')}
+                </span>
+              </div>
             </Link>
+
+            {/* Compliance Status Badge */}
+            <div className="hidden min-[480px]:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container/40 border border-secondary/20 text-secondary text-xs font-semibold">
+              <span className="w-2 h-2 rounded-full bg-secondary" />
+              <span className="text-foreground/80 font-medium">{t('header.complianceStatus')}:</span>
+              <span className="font-bold text-secondary">{t('header.statusActive')}</span>
+            </div>
+
+            {/* Cycle Indicator Badge */}
+            <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container border border-border/60 text-muted-foreground text-xs font-medium">
+              <span className="text-foreground/70 font-semibold">{t('header.bumnHolding')}</span>
+              <span>•</span>
+              <span>{t('header.assessmentCycle')}</span>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-2 md:gap-3 min-w-0 max-w-full flex-wrap w-full sm:w-auto justify-end shrink-0">
@@ -74,8 +91,8 @@ export function MainHeader() {
                 aria-label={t('actions.openAccountMenu', { defaultValue: 'User account menu' })}
                 className="relative cursor-pointer hover:opacity-90 transition-opacity p-0.5 rounded-full min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border-2 border-white/20 shadow-sm ring-1 ring-black/5">
-                  <AvatarFallback className="bg-slate-900 text-white font-bold text-xs">
+                <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border-2 border-border/60 shadow-sm ring-1 ring-black/5">
+                  <AvatarFallback className="bg-primary text-primary-foreground font-bold text-xs">
                     {currentRole.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'US'}
                   </AvatarFallback>
                 </Avatar>
@@ -84,7 +101,7 @@ export function MainHeader() {
                     "absolute -bottom-0.5 -right-1 text-xs px-1 min-w-[18px] h-[18px] rounded-full flex items-center justify-center border font-bold shadow-sm select-none",
                     isDark
                       ? "bg-slate-900 border-slate-700 text-slate-200"
-                      : "bg-white border-slate-300 text-slate-900"
+                      : "bg-surface border-border text-foreground"
                   )}
                   title={`Role: ${currentRole}`}
                 >

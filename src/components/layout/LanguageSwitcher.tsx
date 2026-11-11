@@ -29,7 +29,9 @@ export function LanguageSwitcher() {
           aria-label={t('common:actions.switchLanguage', { defaultValue: 'Switch language' })}
           className={cn(
             "h-11 w-11 sm:h-9 sm:w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0",
-            !isDark && "text-white/70 hover:text-white hover:bg-white/10"
+            isDark 
+              ? "text-slate-300 hover:text-white hover:bg-slate-800" 
+              : "text-muted-foreground hover:text-foreground hover:bg-surface-container"
           )}
         >
           <Languages className="h-4 w-4" aria-hidden="true" />

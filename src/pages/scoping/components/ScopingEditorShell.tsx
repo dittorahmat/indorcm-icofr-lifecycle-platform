@@ -157,6 +157,12 @@ export function ScopingEditor({ simulation, onBack }: ScopingEditorProps) {
               onOpenWorkflow={() => setIsWorkflowOpen(true)}
               scopingCompliance={scopingCompliance}
               isRecalculating={isRecalculating}
+              onSaveJustification={(justification) => {
+                mutations.save.mutate({
+                  ...simState,
+                  materialityJustification: justification
+                });
+              }}
             />
           </div>
         </div>

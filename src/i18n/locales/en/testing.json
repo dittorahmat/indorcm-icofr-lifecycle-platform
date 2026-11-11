@@ -28,7 +28,11 @@
     "eucP4": "Access Control Validation (Password protected)",
     "eucP5": "Change Control Documentation Review",
     "comments": "TOD Comments",
-    "placeholder": "Enter TOD results and walkthrough notes..."
+    "placeholder": "Enter TOD results and walkthrough notes...",
+    "sixPillarsTitle": "Control Design Evaluation: 6-Pillar Walkthrough TOD",
+    "regulationBadge": "APPENDIX 8 SK-5",
+    "complianceNoteTitle": "Regulatory Compliance Note (Appendix 8 SK-5)",
+    "complianceNoteBody": "The 6-pillar design evaluation must ensure the control is designed adequately and precisely to prevent or detect material misstatements in financial reporting assertions on a timely basis."
   },
   "toe": {
     "sampling": "Sampling Details",
@@ -80,7 +84,7 @@
     "belowMinJustificationRequired": "Mandatory justification is required as the sample size is below Table 22 reference.",
     "samplingViolation": "TABLE 22 VIOLATION (SK-5)",
     "samplingWarning": "Sample size is below Table 22 minimum standard (min: {{min}}). You must provide a deviation justification."
-    },
+  },
   "coolingOff": {
     "violation": "COOLING-OFF VIOLATION (BAB II)",
     "restricted": "Access Restricted (Chapter II point d.2)",
@@ -107,7 +111,11 @@
     "status": "Status",
     "comments": "Sample Notes",
     "empty": "No samples yet. Click 'Add Sample' to start.",
-    "commentPlaceholder": "Notes for this sample..."
+    "commentPlaceholder": "Notes for this sample...",
+    "badgeRegulation": "Appendix 7 & 9 SK-5",
+    "remove": "Remove sample",
+    "attributesLegend": "Transaction Compliance Attributes (Appendix 7)",
+    "legendTitle": "Appendix 7 Legend:"
   },
   "pillars": {
     "objective": "Objective Achievement",
@@ -124,6 +132,42 @@
       "reliability": "Is the IPE/EUC used reliable and accurate?",
       "coverage": "Does the control cover the entire reporting period?",
       "evidence": "Is supporting evidence available and sufficient?"
+    },
+    "subLabels": {
+      "objective": "Pillar 1: Precision mitigating material misstatement",
+      "timing": "Pillar 2: Frequency and consistency of execution",
+      "authority": "Pillar 3: Segregation of duties & competence",
+      "reliability": "Pillar 4: IPE/EUC reliability & data integrity",
+      "coverage": "Pillar 5: Completeness of transactions & financial accounts",
+      "evidence": "Pillar 6: Audit trail and evidence traceability"
     }
+  },
+  "banner": {
+    "badgeRegulation": "Mandat SK-5 / BPKP-2024",
+    "regNo": "Lampiran 8 (TOD) & Lampiran 9 (TOE)",
+    "auditCycle": "Audit Cycle FY {{year}}",
+    "title": "Audit Testing Working Paper: Design & Operational Effectiveness",
+    "subtitle": "Integrated audit working papers for TOD 6-pillar design evaluation (Appendix 8) and TOE transaction operating effectiveness (Appendix 9) based on SK-5/DKU.MBU/11/2024 standards.",
+    "testedLabel": "Controls Tested",
+    "controlsUnit": "Controls",
+    "coverage": "Coverage",
+    "mandateStatus": "PIPK Audit Scope",
+    "methodologyLabel": "Verified Methodology:",
+    "method1": "6-Pillar Walkthrough TOD",
+    "method2": "Attribute Sampling TOE (Appendix 7)",
+    "method3": "Three Lines Model Governance"
+  },
+  "summary": {
+    "totalTested": "Total Controls Tested",
+    "controlsUnit": "Controls",
+    "testedNote": "Sample Testing Scope",
+    "effective": "Effective (Passed Test)",
+    "effectiveNote": "TOD & TOE Effective",
+    "deviations": "Deviations / Deficiencies",
+    "casesUnit": "Findings",
+    "deviationNote": "Mandatory DoD Remediation",
+    "line2Status": "Line 2 Verification",
+    "validated": "Validated",
+    "line2Note": "Three Lines Model Ready"
   }
 }

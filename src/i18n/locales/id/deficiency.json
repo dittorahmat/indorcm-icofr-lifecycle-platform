@@ -249,5 +249,39 @@
     "severityUpdated": "Tingkat keparahan defisiensi diperbarui berdasarkan asesmen DoD.",
     "aggregateSaved": "Analisis defisiensi agregat tersimpan (Lampiran 10).",
     "workflowUpdated": "Status alur kerja diperbarui."
+  },
+  "banner": {
+    "badgeRegulation": "Mandat Lampiran 10 SK-5",
+    "regNo": "SK-5/DKU.MBU/11/2024 Bab VII",
+    "auditOversight": "Pengawasan Komite Audit & BPKP",
+    "title": "Manajemen Temuan & Remediasi Defisiensi Pengendalian",
+    "subtitle": "Kompilasi defisiensi pengendalian internal laporan keuangan terverifikasi Tiga Lini, model Degree of Deficiency (DoD Lampiran 10), pelacakan Corrective Action Plan (CAP), dan re-testing oleh SPI.",
+    "totalFindings": "Total Temuan",
+    "findingsUnit": "Kasus",
+    "protocolLabel": "Protokol Pelaporan:",
+    "protocolMW": "Material Weakness -> Dewan Komisaris & Komite Audit",
+    "protocolCAP": "CAP Remediasi Mandatori 30 Hari"
+  },
+  "matrixCards": {
+    "materialWeakness": "Material Weakness",
+    "mwImpact": "Berdampak Opini LK",
+    "significantDeficiency": "Significant Deficiency",
+    "sdImpact": "Lapor Komite Audit",
+    "controlDeficiency": "Control Deficiency",
+    "cdImpact": "Tingkat Operasional",
+    "capActive": "Remediasi Berjalan (CAP)",
+    "findingsUnit": "Temuan",
+    "capNote": "Sedang Dilakukan Perbaikan"
+  },
+  "toolbar": {
+    "tableMode": "Tabel CAP"
+  },
+  "captable": {
+    "noPlan": "Belum Ada CAP",
+    "resolved": "Selesai",
+    "inApproval": "Approval",
+    "inReview": "Review L2",
+    "inProgress": "Proses Remediasi",
+    "empty": "Tidak ada defisiensi yang sesuai dengan filter."
   }
 }

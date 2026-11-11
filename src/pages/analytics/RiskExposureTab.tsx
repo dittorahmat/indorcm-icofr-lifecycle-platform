@@ -51,7 +51,7 @@ export function RiskExposureTab() {
         <div className="w-full h-80 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0">
           <ResponsiveContainer width="100%" height="100%" minWidth={480}>
             <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" />
               <XAxis
                 type="number"
                 dataKey="x"
@@ -60,6 +60,8 @@ export function RiskExposureTab() {
                 tickCount={6}
                 unit=" L"
                 fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <YAxis
                 type="number"
@@ -69,6 +71,8 @@ export function RiskExposureTab() {
                 tickCount={6}
                 unit=" I"
                 fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <ZAxis type="number" dataKey="z" range={[80, 450]} />
               <Tooltip cursor={{ strokeDasharray: '3 3' }} />

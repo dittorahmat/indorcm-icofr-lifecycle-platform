@@ -49,7 +49,7 @@ export function AnalyticsPage() {
           title={t('title')}
           description={t('subtitle')}
           badge={
-            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+            <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-700">
               {t('liveEngine')}
             </span>
           }

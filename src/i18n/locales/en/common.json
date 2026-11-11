@@ -158,6 +158,14 @@
     "testSuccess": "Test email sent successfully! Check your inbox.",
     "testError": "Failed to send test email"
   },
+  "header": {
+    "complianceStatus": "Compliance Status",
+    "statusActive": "ACTIVE",
+    "assessmentCycle": "Q4 Assessment / Audit Cycle",
+    "bumnHolding": "BUMN Holding",
+    "subTitle": "Internal Control over Financial Reporting System",
+    "mandate": "SK-5 BPKP Mandate"
+  },
   "webhookSettings": {
     "title": "Webhook & Multi-Channel Integrations",
     "description": "Connect team channels (Slack, Microsoft Teams, Discord, n8n) for automated instant compliance notifications.",
