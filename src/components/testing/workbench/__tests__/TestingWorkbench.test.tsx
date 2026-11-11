@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
+import { TestingHeaderBanner } from '../TestingHeaderBanner';
 import { TestingSummaryMetrics } from '../TestingSummaryMetrics';
 import { TestingControlRow } from '../TestingControlRow';
 import type { Control, Deficiency } from '@shared/types';
@@ -12,6 +13,78 @@ vi.mock('@/components/testing/ControlTestCard', () => ({
 }));
 
 describe('TestingWorkbench', () => {
+  describe('TestingHeaderBanner', () => {
+    it('renders Light Sovereign card with mandate badges, headline, metrics pill, and methodology tags', () => {
+      const { container } = render(
+        <I18nextProvider i18n={i18n}>
+          <TestingHeaderBanner
+            workingYear="2024"
+            totalControls={50}
+            testedCount={35}
+          />
+        </I18nextProvider>
+      );
+
+      // Verify mandate and metadata badges
+      expect(screen.getByText(/Mandat SK-5 \/ BPKP-2024/i)).toBeInTheDocument();
+      expect(screen.getByText(/Lampiran 8 \(TOD\) & Lampiran 9 \(TOE\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/(Siklus Audit FY 2024|Audit Cycle FY 2024)/i)).toBeInTheDocument();
+
+      // Verify title & subtitle (using flexible matchers across i18n locales)
+      expect(
+        screen.getByText(/(Kertas Kerja Pengujian|Audit Testing Working Paper)/i)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/(Kertas kerja audit terintegrasi|Integrated audit working papers)/i)
+      ).toBeInTheDocument();
+
+      // Verify metrics pill
+      expect(screen.getByText(/(Pengendalian Diuji|Controls Tested)/i)).toBeInTheDocument();
+      expect(screen.getByText('35')).toBeInTheDocument();
+      expect(screen.getByText(/\/ 50/i)).toBeInTheDocument();
+      expect(screen.getByText(/70%/i)).toBeInTheDocument();
+      expect(screen.getByText(/PIPK/i)).toBeInTheDocument();
+
+      // Verify methodology tags
+      expect(screen.getByText(/(Metodologi Terverifikasi:|Verified Methodology:)/i)).toBeInTheDocument();
+      expect(screen.getByText(/(6-Pilar Walkthrough TOD|6-Pillar Walkthrough TOD)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Attribute Sampling TOE/i)).toBeInTheDocument();
+      expect(screen.getByText(/Three Lines Model Governance/i)).toBeInTheDocument();
+
+      // Verify Light Sovereign styling classes on container
+      const rootDiv = container.firstChild as HTMLElement;
+      expect(rootDiv.className).toContain('bg-white');
+      expect(rootDiv.className).toContain('dark:bg-card');
+      expect(rootDiv.className).toContain('text-foreground');
+      expect(rootDiv.className).toContain('border-l-4');
+      expect(rootDiv.className).toContain('border-l-secondary');
+
+      // Anti-slop: dark containers and glow circles removed
+      expect(rootDiv.className).not.toContain('bg-primary-container');
+      const html = container.innerHTML;
+      expect(html).not.toContain('bg-primary-container');
+      expect(html).not.toContain('blur-3xl');
+      expect(html).not.toContain('blur-2xl');
+      expect(html).not.toContain('text-[8px]');
+      expect(html).not.toContain('text-[9px]');
+      expect(html).not.toContain('text-[10px]');
+      expect(html).not.toContain('text-[11px]');
+    });
+
+    it('handles 0 controls safely with 0% coverage and default props', () => {
+      render(
+        <I18nextProvider i18n={i18n}>
+          <TestingHeaderBanner />
+        </I18nextProvider>
+      );
+
+      expect(screen.getByText('0')).toBeInTheDocument();
+      expect(screen.getByText(/\/ 0/i)).toBeInTheDocument();
+      expect(screen.getByText(/0%/i)).toBeInTheDocument();
+      expect(screen.getByText(/(Siklus Audit FY 2024|Audit Cycle FY 2024)/i)).toBeInTheDocument();
+    });
+  });
+
   describe('TestingSummaryMetrics', () => {
     it('renders tested count, effective count, deviations, and L2 validation metrics', () => {
       render(

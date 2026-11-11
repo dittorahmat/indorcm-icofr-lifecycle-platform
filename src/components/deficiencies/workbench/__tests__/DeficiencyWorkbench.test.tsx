@@ -3,11 +3,85 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/i18n/config';
+import { DeficiencyHeaderBanner } from '../DeficiencyHeaderBanner';
 import { SeverityMatrixCards } from '../SeverityMatrixCards';
 import { CAPTrackingTable } from '../CAPTrackingTable';
 import type { Deficiency, ActionPlan } from '@shared/types';
 
 describe('DeficiencyWorkbench', () => {
+  describe('DeficiencyHeaderBanner', () => {
+    it('renders Light Sovereign card with mandate badges, headline, metrics pill, and protocol tags', () => {
+      const { container } = render(
+        <I18nextProvider i18n={i18n}>
+          <DeficiencyHeaderBanner
+            totalDeficiencies={14}
+            materialWeaknessCount={2}
+            significantDeficiencyCount={4}
+            controlDeficiencyCount={8}
+          />
+        </I18nextProvider>
+      );
+
+      // Verify mandate and metadata badges
+      expect(screen.getByText(/Mandat Lampiran 10 SK-5/i)).toBeInTheDocument();
+      expect(screen.getByText(/SK-5\/DKU\.MBU\/11\/2024 Bab VII/i)).toBeInTheDocument();
+      expect(screen.getByText(/(Pengawasan Komite Audit & BPKP|Audit Committee & BPKP Oversight)/i)).toBeInTheDocument();
+
+      // Verify headline & subtitle
+      expect(
+        screen.getByText(/(Manajemen Temuan & Remediasi|Control Deficiency & Remediation)/i)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/(Kompilasi defisiensi pengendalian internal|Compilation of verified internal control deficiencies)/i)
+      ).toBeInTheDocument();
+
+      // Verify metrics pill
+      expect(screen.getByText(/(Total Temuan|Total Findings)/i)).toBeInTheDocument();
+      expect(screen.getByText('14')).toBeInTheDocument();
+      expect(screen.getByText(/(Kasus|Cases)/i)).toBeInTheDocument();
+      expect(screen.getByText(/2 MW/i)).toBeInTheDocument();
+      expect(screen.getByText(/4 SD • 8 CD/i)).toBeInTheDocument();
+
+      // Verify protocol notes
+      expect(screen.getByText(/(Protokol Pelaporan:|Reporting Protocols:)/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Material Weakness ->/i)
+      ).toBeInTheDocument();
+      expect(screen.getByText(/30/i)).toBeInTheDocument();
+
+      // Verify Light Sovereign styling classes on container
+      const rootDiv = container.firstChild as HTMLElement;
+      expect(rootDiv.className).toContain('bg-white');
+      expect(rootDiv.className).toContain('dark:bg-card');
+      expect(rootDiv.className).toContain('text-foreground');
+      expect(rootDiv.className).toContain('border-l-4');
+      expect(rootDiv.className).toContain('border-l-secondary');
+
+      // Anti-slop: dark containers and glow circles removed
+      expect(rootDiv.className).not.toContain('bg-primary-container');
+      const html = container.innerHTML;
+      expect(html).not.toContain('bg-primary-container');
+      expect(html).not.toContain('blur-3xl');
+      expect(html).not.toContain('blur-2xl');
+      expect(html).not.toContain('text-[8px]');
+      expect(html).not.toContain('text-[9px]');
+      expect(html).not.toContain('text-[10px]');
+      expect(html).not.toContain('text-[11px]');
+    });
+
+    it('handles 0 findings safely with default props', () => {
+      render(
+        <I18nextProvider i18n={i18n}>
+          <DeficiencyHeaderBanner />
+        </I18nextProvider>
+      );
+
+      expect(screen.getByText('0')).toBeInTheDocument();
+      expect(screen.getByText(/0 MW/i)).toBeInTheDocument();
+      expect(screen.getByText(/0 SD • 0 CD/i)).toBeInTheDocument();
+    });
+  });
+
   describe('SeverityMatrixCards', () => {
     it('renders Material Weakness, Significant Deficiency, and Control Deficiency counts', () => {
       const handleSelectSeverity = vi.fn();
