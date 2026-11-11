@@ -70,7 +70,7 @@ export function RCMCycleAndMetrics({
               >
                 <div className="flex items-center justify-between">
                   <span
-                    className={`font-mono text-[10px] font-bold uppercase tracking-wider ${
+                    className={`font-mono text-xs font-bold uppercase tracking-wider ${
                       isSelected ? 'text-primary-fixed' : 'text-on-surface-variant'
                     }`}
                   >
@@ -86,7 +86,7 @@ export function RCMCycleAndMetrics({
                   {cycle.name}
                 </span>
                 <span
-                  className={`text-[11px] truncate mt-0.5 ${
+                  className={`text-xs truncate mt-0.5 ${
                     isSelected ? 'text-surface-container-high' : 'text-on-surface-variant'
                   }`}
                 >
@@ -130,7 +130,7 @@ export function RCMCycleAndMetrics({
           <div className="bg-surface-container-low p-3 rounded-lg border border-slate-100 flex flex-col justify-between">
             <div className="flex items-center justify-between text-on-surface-variant">
               <span className="text-xs font-semibold">{t('explorer.stats.keyControls', { defaultValue: 'Key Controls (KC)' })}</span>
-              <span className="text-[10px] font-bold px-1 py-0.2 rounded bg-amber-100 text-amber-800">KC</span>
+              <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">KC</span>
             </div>
             <div className="flex items-baseline gap-1.5 mt-2">
               <span className="font-display text-xl sm:text-2xl font-bold text-primary">{keyControlsCount}</span>
@@ -144,7 +144,7 @@ export function RCMCycleAndMetrics({
           <div className="bg-surface-container-low p-3 rounded-lg border border-slate-100 flex flex-col justify-between">
             <div className="flex items-center justify-between text-on-surface-variant">
               <span className="text-xs font-semibold">{t('explorer.stats.nonKeyControls', { defaultValue: 'Non-Key' })}</span>
-              <span className="text-[10px] font-medium text-slate-500">Penyokong</span>
+              <span className="text-xs font-medium text-slate-500">Penyokong</span>
             </div>
             <div className="flex items-baseline gap-1.5 mt-2">
               <span className="font-display text-xl sm:text-2xl font-bold text-primary">{nonKeyCount}</span>
@@ -204,7 +204,7 @@ export function RCMCycleAndMetrics({
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="font-display text-sm font-bold text-primary">{prevPercent}%</span>
-              <span className="text-[10px] text-on-surface-variant">Prev.</span>
+              <span className="text-xs text-on-surface-variant font-medium">Prev.</span>
             </div>
           </div>
 

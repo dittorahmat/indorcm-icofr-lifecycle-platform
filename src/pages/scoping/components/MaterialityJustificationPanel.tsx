@@ -143,7 +143,7 @@ export function MaterialityJustificationPanel({
             className="text-xs resize-y bg-surface-container-low border-border/40 focus:bg-background rounded-lg min-h-[80px]"
           />
           <div className="flex items-center justify-between text-xs text-muted-foreground mt-0.5">
-            <span className="italic">{t('justificationPanel.antiDeadlockHint')}</span>
+            <span className="text-muted-foreground font-normal">{t('justificationPanel.antiDeadlockHint')}</span>
             <span className="font-mono">{notes.length} {t('justificationPanel.characters')}</span>
           </div>
         </div>

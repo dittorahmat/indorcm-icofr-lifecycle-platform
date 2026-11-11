@@ -115,7 +115,7 @@ export function RCMList() {
                 >
                   {tab.icon && <tab.icon className="h-4 w-4 shrink-0 text-secondary" />}
                   <span>{tab.label}</span>
-                  <Badge className="bg-slate-200/50 text-slate-500 group-data-[state=active]:bg-secondary/15 group-data-[state=active]:text-secondary border-none px-1.5 py-0 min-w-[20px] h-5 flex items-center justify-center font-mono text-[11px]">
+                  <Badge className="bg-slate-200/50 text-slate-500 group-data-[state=active]:bg-secondary/15 group-data-[state=active]:text-secondary border-none px-1.5 py-0 min-w-[20px] h-5 flex items-center justify-center font-mono text-xs">
                     {tab.count}
                   </Badge>
                 </TabsTrigger>

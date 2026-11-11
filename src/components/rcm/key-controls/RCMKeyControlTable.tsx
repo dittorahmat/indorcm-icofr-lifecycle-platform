@@ -70,7 +70,7 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                       </span>
                       <span
                         className={cn(
-                          'w-fit text-[10px] font-bold px-1.5 py-0.5 rounded',
+                          'w-fit text-xs font-bold px-1.5 py-0.5 rounded',
                           isHigh
                             ? 'bg-rose-100 text-rose-800'
                             : riskRating.toLowerCase() === 'medium'
@@ -80,7 +80,7 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                       >
                         {riskRating.toUpperCase()} RISK
                       </span>
-                      <p className="text-[11px] text-on-surface-variant line-clamp-2 mt-0.5 leading-snug">
+                      <p className="text-xs text-on-surface-variant line-clamp-2 mt-0.5 leading-snug">
                         {item.riskDescription || '-'}
                       </p>
                     </div>
@@ -93,7 +93,7 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                         {item.fsliName || item.affectedFsliItem || '-'}
                       </span>
                       {item.noGL && (
-                        <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-surface-container text-slate-600 w-fit">
+                        <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-surface-container text-slate-600 w-fit">
                           GL {item.noGL}
                         </span>
                       )}
@@ -107,12 +107,12 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                         {item.controlCode || 'C-CTRL'}
                       </span>
                       {isKey ? (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-bold text-[10px] w-fit shadow-2xs">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-bold text-xs w-fit shadow-2xs">
                           <Star className="h-3 w-3 text-amber-600 fill-amber-500" />
                           KEY CONTROL
                         </span>
                       ) : (
-                        <span className="text-[10px] text-slate-400 font-medium">Non-Key</span>
+                        <span className="text-xs text-slate-400 font-medium">Non-Key</span>
                       )}
                     </div>
                   </td>
@@ -123,11 +123,11 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                       <span className="font-semibold text-primary leading-snug">
                         {item.mappedControlName || item.baseControlName || '-'}
                       </span>
-                      <p className="text-[11px] text-on-surface-variant line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed">
                         {item.mappedControlDescription || item.baseControlDescription || '-'}
                       </p>
                       {item.executorRole && (
-                        <span className="text-[10px] text-slate-500 mt-0.5">
+                        <span className="text-xs text-slate-500 mt-0.5">
                           PIC: <span className="font-medium text-slate-700">{item.executorRole}</span>
                         </span>
                       )}
@@ -140,7 +140,7 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                       <span className="font-semibold text-slate-900">
                         {item.processName || item.parentProcessName || '-'}
                       </span>
-                      <span className="text-[11px] text-on-surface-variant line-clamp-2">
+                      <span className="text-xs text-on-surface-variant line-clamp-2">
                         {item.subProcessName || '-'}
                       </span>
                     </div>
@@ -148,7 +148,7 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
 
                   {/* Type & Nature */}
                   <td className="py-3 px-4 align-top">
-                    <div className="flex flex-col gap-0.5 text-[11px]">
+                    <div className="flex flex-col gap-0.5 text-xs">
                       <span
                         className={cn(
                           'font-semibold',
@@ -160,7 +160,7 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                       <span className="text-on-surface-variant">
                         {item.controlNature || 'Manual'}
                       </span>
-                      <span className="font-mono text-[10px] text-slate-500">
+                      <span className="font-mono text-xs text-slate-500">
                         {item.frequency || 'Monthly'}
                       </span>
                     </div>
@@ -169,10 +169,10 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                   {/* Automation & App */}
                   <td className="py-3 px-4 align-top">
                     <div className="flex flex-col gap-1">
-                      <span className="font-mono text-[11px] font-semibold text-primary px-1.5 py-0.5 rounded bg-surface-container w-fit">
+                      <span className="font-mono text-xs font-semibold text-primary px-1.5 py-0.5 rounded bg-surface-container w-fit">
                         {item.supportingApp || item.itApplication || 'ERP / Core'}
                       </span>
-                      <span className="text-[10px] text-slate-500">
+                      <span className="text-xs text-slate-500">
                         {item.automatedSubNature || 'Automated Logic'}
                       </span>
                     </div>
@@ -183,26 +183,26 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                     {hasBpmLink ? (
                       <Link
                         to={bpmTarget}
-                        className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-secondary bg-secondary/10 border border-secondary/20 hover:bg-secondary/20 px-2 py-1 rounded transition-colors"
+                        className="inline-flex items-center gap-1 font-mono text-xs font-bold text-secondary bg-secondary/10 border border-secondary/20 hover:bg-secondary/20 px-2 py-1 rounded transition-colors"
                         title={t('explorer.table.openBpmTooltip', { defaultValue: 'Buka Simpul BPM' })}
                       >
                         <span>{item.nodeId ? (item.nodeId.length > 12 ? 'BPM Node' : item.nodeId) : (bpmCode || 'BPM')}</span>
                         <ExternalLink className="h-3 w-3 shrink-0" />
                       </Link>
                     ) : (
-                      <span className="text-slate-400 font-mono text-[11px]">-</span>
+                      <span className="text-slate-400 font-mono text-xs">-</span>
                     )}
                   </td>
 
                   {/* TOD Design Status */}
                   <td className="py-3 px-4 align-top text-center">
                     {item.conclusion === 'Effective' || !item.conclusion ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container font-bold text-[10px]">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container font-bold text-xs">
                         <CheckCircle className="h-3 w-3" />
                         EFFECTIVE
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold text-[10px]">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold text-xs">
                         <AlertCircle className="h-3 w-3" />
                         INEFFECTIVE
                       </span>
