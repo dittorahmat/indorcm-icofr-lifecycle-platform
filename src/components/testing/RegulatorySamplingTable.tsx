@@ -4,7 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash2, CheckCircle2, XCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Trash2, CheckCircle2, XCircle, FileSpreadsheet, ShieldCheck } from 'lucide-react';
 import { TestFormValues } from './test-schema';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +15,13 @@ interface RegulatorySamplingTableProps {
   t: any;
   isReadOnly?: boolean;
 }
+
+const ATTRIBUTES = [
+  { key: 'attrA' as const, label: 'Attr A: Otomatis' },
+  { key: 'attrB' as const, label: 'Attr B: Lengkap' },
+  { key: 'attrC' as const, label: 'Attr C: Bukti' },
+  { key: 'attrD' as const, label: 'Attr D: Wewenang' },
+];
 
 export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySamplingTableProps) {
   const { fields, append, remove, update } = useFieldArray({
@@ -37,9 +45,9 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
     const field = fields[index];
     const newValue = !field[attr];
     
-    // Calculate new status: if any attribute becomes false, status is Fail
-    const otherAttrs = ['attrA', 'attrB', 'attrC', 'attrD'].filter(a => a !== attr) as ('attrA' | 'attrB' | 'attrC' | 'attrD')[];
-    const hasFail = !newValue || otherAttrs.some(a => !field[a]);
+    // Calculate new status: if any attribute becomes false, status is Fail (Zero Tolerance)
+    const otherAttrs = (['attrA', 'attrB', 'attrC', 'attrD'] as const).filter((a) => a !== attr);
+    const hasFail = !newValue || otherAttrs.some((a) => !field[a]);
     
     update(index, {
       ...field,
@@ -50,20 +58,27 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
 
   return (
     <div className="space-y-4 min-w-0 max-w-full">
+      {/* Table Header with Regulation & Action */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap gap-2">
-        <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-2 text-slate-800 min-w-0">
-          <span className="truncate">{t('sampling.title')}</span> 
-          <span className="text-xs font-semibold text-slate-500 shrink-0">(Lampiran 7)</span>
-        </h3>
+        <div className="flex items-center gap-2">
+          <FileSpreadsheet className="h-4 w-4 text-secondary shrink-0" />
+          <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-2 text-primary min-w-0">
+            <span className="truncate">{t('sampling.title', { defaultValue: 'Lembar Uji Bukti Sampel Transaksi' })}</span> 
+          </h3>
+          <Badge variant="outline" className="text-xs font-bold border-secondary/30 text-secondary bg-secondary/10 px-2 py-0.5 shrink-0">
+            {t('sampling.badgeRegulation', { defaultValue: 'Lampiran 7 & 9 SK-5' })}
+          </Badge>
+        </div>
+
         {!isReadOnly && (
           <Button 
             type="button" 
             variant="outline" 
             size="sm" 
             onClick={addSample} 
-            className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-semibold gap-1.5 border-slate-200 w-full sm:w-auto justify-center"
+            className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-wider gap-1.5 border-slate-200 bg-white hover:bg-slate-50 w-full sm:w-auto justify-center rounded-lg shadow-xs"
           >
-            <Plus className="h-4 w-4 shrink-0" /> {t('sampling.addSample')}
+            <Plus className="h-4 w-4 shrink-0 text-secondary" /> {t('sampling.addSample', { defaultValue: 'Tambah Sampel' })}
           </Button>
         )}
       </div>
@@ -71,26 +86,26 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
       {/* MOBILE VIEW: Stacked Touch Cards (< md) */}
       <div className="block md:hidden space-y-3">
         {fields.length === 0 ? (
-          <div className="p-6 bg-slate-50 border border-dashed border-slate-200 rounded-lg text-center text-slate-500 text-xs font-medium">
-            {t('sampling.empty')}
+          <div className="p-6 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-center text-slate-500 text-xs font-medium">
+            {t('sampling.empty', { defaultValue: 'Belum ada sampel. Klik "Tambah Sampel" untuk memulai pengujian.' })}
           </div>
         ) : (
           fields.map((field, index) => (
             <div 
               key={field.id}
               className={cn(
-                "p-3.5 rounded-lg border bg-white shadow-xs space-y-3",
-                field.status === 'Fail' ? "border-red-200 bg-red-50/20" : "border-slate-200"
+                "p-4 rounded-xl border bg-white shadow-xs space-y-3",
+                field.status === 'Fail' ? "border-rose-200 bg-rose-50/20" : "border-slate-200"
               )}
             >
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-md bg-slate-100 text-slate-700 font-mono text-xs font-bold flex items-center justify-center border border-slate-200">
+                  <span className="h-6 w-6 rounded-md bg-surface-container text-primary font-mono text-xs font-bold flex items-center justify-center border border-outline-variant/30">
                     {index + 1}
                   </span>
                   <div className={cn(
                     "flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold uppercase",
-                    field.status === 'Pass' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    field.status === 'Pass' ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
                   )}>
                     {field.status === 'Pass' ? <CheckCircle2 className="h-3.5 w-3.5" /> : <XCircle className="h-3.5 w-3.5" />}
                     {field.status}
@@ -98,13 +113,13 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                 </div>
 
                 {!isReadOnly && (
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="sm" 
-                    aria-label={t('sampling.remove', { defaultValue: 'Remove sample' })}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
                     onClick={() => remove(index)}
-                    className="h-11 w-11 min-h-[44px] min-w-[44px] p-0 text-slate-400 hover:text-destructive hover:bg-red-50 shrink-0"
+                    aria-label={t('sampling.remove', { defaultValue: 'Hapus sampel' })}
+                    className="h-9 w-9 text-slate-400 hover:text-rose-600 shrink-0"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -112,44 +127,39 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">
-                  {t('sampling.ref')}
+                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">
+                  {t('sampling.ref', { defaultValue: 'Ref. Bukti Dokumen (PO/Invoice/Voucher)' })}
                 </label>
                 <Input 
                   value={field.sampleRef} 
                   onChange={(e) => update(index, { ...field, sampleRef: e.target.value })}
                   disabled={isReadOnly}
-                  className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-base sm:text-xs font-medium bg-slate-50/50"
-                  placeholder="e.g. VOU-001"
+                  className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-base sm:text-xs font-medium bg-slate-50/50 rounded-lg"
+                  placeholder="e.g. PO-4500982601 / INV-2024-001"
                 />
               </div>
 
               {/* Attributes 4-Pillar Grid */}
               <div className="pt-2 border-t border-slate-100">
                 <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
-                  Atribut Kepatuhan (Lampiran 7)
+                  {t('sampling.attributesLegend', { defaultValue: 'Atribut Kepatuhan Transaksi (Lampiran 7)' })}
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {[
-                    { key: 'attrA', label: 'Attr A: Otomatis' },
-                    { key: 'attrB', label: 'Attr B: Lengkap' },
-                    { key: 'attrC', label: 'Attr C: Bukti' },
-                    { key: 'attrD', label: 'Attr D: Wewenang' },
-                  ].map((attr) => (
+                  {ATTRIBUTES.map((attr) => (
                     <label 
                       key={attr.key}
                       className={cn(
-                        "flex items-center gap-2.5 p-2.5 min-h-[40px] rounded-md border text-xs font-semibold cursor-pointer select-none transition-colors",
-                        (field as any)[attr.key] 
+                        "flex items-center gap-2.5 p-2.5 min-h-[40px] rounded-lg border text-xs font-semibold cursor-pointer select-none transition-colors",
+                        field[attr.key] 
                           ? "bg-slate-50 border-slate-300 text-slate-800" 
-                          : "bg-red-50/40 border-red-200 text-red-700"
+                          : "bg-rose-50 border-rose-200 text-rose-800"
                       )}
                     >
                       <Checkbox 
-                        checked={(field as any)[attr.key]} 
-                        onCheckedChange={() => toggleAttribute(index, attr.key as any)}
+                        checked={Boolean(field[attr.key])} 
+                        onCheckedChange={() => toggleAttribute(index, attr.key)}
                         disabled={isReadOnly}
-                        className="h-4 w-4 shrink-0"
+                        className="h-4 w-4 shrink-0 data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                       />
                       <span className="truncate">{attr.label}</span>
                     </label>
@@ -158,15 +168,15 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">
-                  {t('sampling.comments')}
+                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">
+                  {t('sampling.comments', { defaultValue: 'Catatan Auditor & Hasil Verifikasi' })}
                 </label>
                 <Input 
                   value={field.comments || ''} 
                   onChange={(e) => update(index, { ...field, comments: e.target.value })}
                   disabled={isReadOnly}
-                  className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-base sm:text-xs"
-                  placeholder={t('sampling.commentPlaceholder')}
+                  className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-base sm:text-xs rounded-lg"
+                  placeholder={t('sampling.commentPlaceholder', { defaultValue: 'Hasil verifikasi transaksi & dokumen pendukung...' })}
                 />
               </div>
             </div>
@@ -174,75 +184,85 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
         )}
       </div>
 
-      {/* DESKTOP VIEW: Table (>= md) */}
-      <div className="hidden md:block border rounded-md overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white">
-        <Table className="min-w-[720px]">
-          <TableHeader className="bg-muted/50">
+      {/* DESKTOP VIEW: Table (>= md) with safe horizontal scroll */}
+      <div className="hidden md:block border border-slate-200 rounded-xl overflow-x-auto max-w-full touch-pan-x overscroll-x-contain bg-white shadow-xs">
+        <Table className="min-w-[760px]">
+          <TableHeader className="bg-slate-50/70 border-b border-slate-200">
             <TableRow>
-              <TableHead className="w-[50px] text-center text-xs uppercase font-bold">No</TableHead>
-              <TableHead className="text-xs uppercase font-bold">{t('sampling.ref')}</TableHead>
-              <TableHead className="w-[80px] text-center text-xs uppercase font-bold">Attr A</TableHead>
-              <TableHead className="w-[80px] text-center text-xs uppercase font-bold">Attr B</TableHead>
-              <TableHead className="w-[80px] text-center text-xs uppercase font-bold">Attr C</TableHead>
-              <TableHead className="w-[80px] text-center text-xs uppercase font-bold">Attr D</TableHead>
-              <TableHead className="w-[100px] text-center text-xs uppercase font-bold">{t('sampling.status')}</TableHead>
-              <TableHead className="text-xs uppercase font-bold">{t('sampling.comments')}</TableHead>
+              <TableHead className="w-[50px] text-center text-xs uppercase font-bold text-slate-700">No</TableHead>
+              <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[180px]">
+                {t('sampling.ref', { defaultValue: 'Ref. Bukti Dokumen' })}
+              </TableHead>
+              <TableHead className="w-[80px] text-center text-xs uppercase font-bold text-slate-700">Attr A</TableHead>
+              <TableHead className="w-[80px] text-center text-xs uppercase font-bold text-slate-700">Attr B</TableHead>
+              <TableHead className="w-[80px] text-center text-xs uppercase font-bold text-slate-700">Attr C</TableHead>
+              <TableHead className="w-[80px] text-center text-xs uppercase font-bold text-slate-700">Attr D</TableHead>
+              <TableHead className="w-[100px] text-center text-xs uppercase font-bold text-slate-700">
+                {t('sampling.status', { defaultValue: 'Hasil' })}
+              </TableHead>
+              <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[200px]">
+                {t('sampling.comments', { defaultValue: 'Catatan Auditor' })}
+              </TableHead>
               {!isReadOnly && <TableHead className="w-[50px]"></TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {fields.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isReadOnly ? 8 : 9} className="h-24 text-center text-muted-foreground text-xs font-normal">
-                  {t('sampling.empty')}
+                <TableCell colSpan={isReadOnly ? 8 : 9} className="h-24 text-center text-slate-400 text-xs font-normal">
+                  {t('sampling.empty', { defaultValue: 'Belum ada sampel. Klik "Tambah Sampel" untuk memulai pengujian.' })}
                 </TableCell>
               </TableRow>
             ) : (
               fields.map((field, index) => (
-                <TableRow key={field.id} className={cn(field.status === 'Fail' && "bg-red-50/30")}>
-                  <TableCell className="text-center font-mono text-xs">{index + 1}</TableCell>
+                <TableRow key={field.id} className={cn(field.status === 'Fail' && "bg-rose-50/40")}>
+                  <TableCell className="text-center font-mono text-xs font-semibold text-slate-600">{index + 1}</TableCell>
                   <TableCell>
                     <Input 
                       value={field.sampleRef} 
                       onChange={(e) => update(index, { ...field, sampleRef: e.target.value })}
                       disabled={isReadOnly}
-                      className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs font-medium"
-                      placeholder="e.g. VOU-001"
+                      className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs font-medium rounded-lg"
+                      placeholder="e.g. PO-4500982601"
                     />
                   </TableCell>
                   <TableCell className="text-center">
                     <Checkbox 
-                      checked={field.attrA} 
+                      checked={Boolean(field.attrA)} 
                       onCheckedChange={() => toggleAttribute(index, 'attrA')}
                       disabled={isReadOnly}
+                      className="data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                     />
                   </TableCell>
                   <TableCell className="text-center">
                     <Checkbox 
-                      checked={field.attrB} 
+                      checked={Boolean(field.attrB)} 
                       onCheckedChange={() => toggleAttribute(index, 'attrB')}
                       disabled={isReadOnly}
+                      className="data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                     />
                   </TableCell>
                   <TableCell className="text-center">
                     <Checkbox 
-                      checked={field.attrC} 
+                      checked={Boolean(field.attrC)} 
                       onCheckedChange={() => toggleAttribute(index, 'attrC')}
                       disabled={isReadOnly}
+                      className="data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                     />
                   </TableCell>
                   <TableCell className="text-center">
                     <Checkbox 
-                      checked={field.attrD} 
+                      checked={Boolean(field.attrD)} 
                       onCheckedChange={() => toggleAttribute(index, 'attrD')}
                       disabled={isReadOnly}
+                      className="data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                     />
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-center">
                       <div className={cn(
-                        "flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold uppercase",
-                        field.status === 'Pass' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                        "flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-bold uppercase",
+                        field.status === 'Pass' ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
                       )}>
                         {field.status === 'Pass' ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
                         {field.status}
@@ -254,8 +274,8 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                       value={field.comments || ''} 
                       onChange={(e) => update(index, { ...field, comments: e.target.value })}
                       disabled={isReadOnly}
-                      className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs"
-                      placeholder={t('sampling.commentPlaceholder')}
+                      className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs rounded-lg"
+                      placeholder={t('sampling.commentPlaceholder', { defaultValue: 'Catatan untuk sampel ini...' })}
                     />
                   </TableCell>
                   {!isReadOnly && (
@@ -265,8 +285,8 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                         variant="ghost" 
                         size="icon" 
                         onClick={() => remove(index)}
-                        aria-label={t('sampling.remove', { defaultValue: 'Remove sample' })}
-                        className="h-11 w-11 md:h-9 md:w-9 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 text-muted-foreground hover:text-destructive shrink-0"
+                        aria-label={t('sampling.remove', { defaultValue: 'Hapus sampel' })}
+                        className="h-11 w-11 md:h-9 md:w-9 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 text-slate-400 hover:text-rose-600 shrink-0"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -280,8 +300,11 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
       </div>
       
       {fields.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-muted-foreground bg-muted/20 p-2.5 rounded-md border border-dashed">
-          <p className="font-bold uppercase tracking-tight text-blue-700">Lampiran 7 Legend:</p>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-slate-600 bg-surface-container-low p-3 rounded-lg border border-dashed border-slate-300">
+          <p className="font-bold uppercase tracking-tight text-secondary flex items-center gap-1">
+            <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+            <span>{t('sampling.legendTitle', { defaultValue: 'Lampiran 7 Legend:' })}</span>
+          </p>
           <p><strong>Attr A:</strong> Otomatisitas</p>
           <p><strong>Attr B:</strong> Populasi Lengkap</p>
           <p><strong>Attr C:</strong> Bukti Memadai</p>
