@@ -16,7 +16,7 @@ import {
 const CONFIGURED_NAMESPACES = [
   'common', 'sidebar', 'scoping', 'dashboard', 'reports', 'knowledge', 'bpm',
   'deficiency', 'testing', 'risklibrary', 'rcm', 'csa_hub', 'ai', 'workflow',
-  'auth', 'admin',
+  'auth', 'admin', 'analytics',
 ] as const;
 
 const CONFIG_SOURCE = readFileSync(resolve(process.cwd(), 'src/i18n/config.ts'), 'utf-8');

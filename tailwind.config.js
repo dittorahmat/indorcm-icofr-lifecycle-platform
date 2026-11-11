@@ -99,7 +99,9 @@ export default {
   			},
   			primary: {
   				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
+  				foreground: 'hsl(var(--primary-foreground))',
+  				container: 'hsl(var(--primary-container))',
+  				'on-container': 'hsl(var(--primary-on-container))'
   			},
   			border: 'hsl(var(--border))',
   			ring: 'hsl(var(--ring))',
@@ -113,7 +115,19 @@ export default {
   			},
   			secondary: {
   				DEFAULT: 'hsl(var(--secondary))',
-  				foreground: 'hsl(var(--secondary-foreground))'
+  				foreground: 'hsl(var(--secondary-foreground))',
+  				container: 'hsl(var(--secondary-container))',
+  				'on-container': 'hsl(var(--secondary-on-container))'
+  			},
+  			surface: {
+  				DEFAULT: 'hsl(var(--surface))',
+  				container: {
+  					lowest: 'hsl(var(--surface-container-lowest))',
+  					low: 'hsl(var(--surface-container-low))',
+  					DEFAULT: 'hsl(var(--surface-container))',
+  					high: 'hsl(var(--surface-container-high))',
+  					highest: 'hsl(var(--surface-container-highest))'
+  				}
   			},
   			accent: {
   				DEFAULT: 'hsl(var(--accent))',

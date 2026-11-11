@@ -1,6 +1,99 @@
 {
   "title": "Dashboard",
   "description": "Ikhtisar kepatuhan dan status ICOFR.",
+  "executiveBanner": {
+    "badgeMandat": "Mandat SK BUMN & BPKP",
+    "regNo": "No. Reg: PIPK-BUMN/2024/Q4-REV",
+    "fiscalYearAudited": "Tahun Buku {{year}} (Audited Cycle)",
+    "headline": "Executive Dashboard Pengendalian Intern Pelaporan Keuangan (ICOFR)",
+    "subheadline": "Evaluasi komprehensif efektivitas sistem pengendalian intern atas keandalan penyusunan laporan keuangan konsolidasian BUMN & entitas anak.",
+    "kesimpulanOpiniTitle": "Kesimpulan Opini Manajemen",
+    "opiniDefault": "EFEKTIF DENGAN CATATAN",
+    "opiniSub": "(Substantially Effective System)",
+    "maturityScoreTitle": "Maturity Score",
+    "maturityLevel": "Level {{level}}",
+    "cutoffDate": "Cut-Off: 31 Des {{year}}"
+  },
+  "statCards": {
+    "card1": {
+      "title": "Status Keseluruhan ICOFR",
+      "statusEffective": "Efektif",
+      "testedRatio": "{{tested}} dari {{total}} Teruji",
+      "minorDeviations": "{{count}} Deviasi Minor"
+    },
+    "card2": {
+      "title": "Tingkat Transaksi (TLC) Efektif",
+      "statusOnTrack": "On-Track",
+      "tlcTestedLabel": "TLC Key Controls",
+      "csaSyncLabel": "Sinkronisasi CSA"
+    },
+    "card3": {
+      "title": "Entity Level (ELC) & ITGC",
+      "elcHigh": "Tinggi",
+      "elcLabel": "ELC: {{percent}}%",
+      "itgcLabel": "ITGC: {{percent}}%"
+    },
+    "card4": {
+      "title": "Defisiensi & Remediasi",
+      "statusOverdue": "Overdue",
+      "slaOverdueNote": "SLA Melebihi Batas Max 14 Hari",
+      "totalCap": "Total: {{total}} CAP ({{open}} Open)"
+    }
+  },
+  "riskHeatmap": {
+    "title": "Matriks Risiko Dampak vs Keterjadian (Heatmap 5x5)",
+    "subtitle": "Pemetaan salah saji material dan fraud per siklus bisnis utama BUMN",
+    "bpkpStandard": "Standar Pedoman BPKP",
+    "axisLabel": "Kemungkinan \\ Dampak",
+    "l5": "5 - Hampir Pasti",
+    "l4": "4 - Kemungkinan Besar",
+    "l3": "3 - Mungkin",
+    "l2": "2 - Jarang Terjadi",
+    "l1": "1 - Sangat Jarang",
+    "i1": "1 - Tidak Signifikan",
+    "i2": "2 - Minor",
+    "i3": "3 - Moderat",
+    "i4": "4 - Mayor",
+    "i5": "5 - Katastropik",
+    "priorityCycleTitle": "Siklus Prioritas"
+  },
+  "deficiencySummary": {
+    "title": "Klasifikasi & Tipologi Defisiensi",
+    "subtitle": "Breakdown temuan berdasarkan rancangan (DoD) vs operasional (DoO)",
+    "dodLabel": "Deficiency of Design (DoD)",
+    "dooLabel": "Deficiency of Operation (DoO)",
+    "cases": "Kasus",
+    "typologyNote": "Mayoritas defisiensi terletak pada kepatuhan eksekusi kontrol otorisasi berjenjang (DoO).",
+    "mwTitle": "Material Weakness (MW)",
+    "mwDescription": "Berdampak material terhadap opini LK",
+    "mwUnit": "Entitas Anak",
+    "sdTitle": "Significant Deficiency (SD)",
+    "sdDescription": "Memerlukan perhatian Dewan Komisaris",
+    "sdUnit": "Temuan Aktif",
+    "cdTitle": "Control Deficiency (CD)",
+    "cdDescription": "Deviasi operasional tingkat unit kerja",
+    "cdUnit": "Self-Correction",
+    "frameworkNote": "Evaluasi Berdasarkan COSO Internal Control 2013 Framework",
+    "downloadLog": "Unduh Log Defisiensi"
+  },
+  "subsidiaryTable": {
+    "title": "Monitoring Status Siklus ICOFR per Anak Perusahaan BUMN",
+    "subtitle": "Konsolidasi pemenuhan matriks kontrol risiko dan jadwal audit pengujian lapangan",
+    "filterCluster": "Filter Klaster",
+    "allSectors": "Semua Sektor BUMN",
+    "refreshSync": "Refresh Data Sinkronisasi",
+    "colSubsidiary": "Entitas Anak Perusahaan",
+    "colProgress": "Progress Testing",
+    "colControls": "Key Controls (Effective)",
+    "colDeficiencies": "Klasifikasi Defisiensi",
+    "colOpinion": "Opini Interim",
+    "colSignOff": "Target Sign-Off",
+    "colAction": "Aksi",
+    "opEffective": "Efektif",
+    "opSubstantiallyEffective": "Substantially Efektif",
+    "opNeedsImprovement": "Perlu Perbaikan",
+    "viewAria": "Lihat detail untuk"
+  },
   "kpis": {
     "controlCoverage": "Cakupan Kontrol",
     "openDeficiencies": "Defisiensi Terbuka",

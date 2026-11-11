@@ -27,6 +27,7 @@ const EXPECTED: Record<Capability, readonly UserRole[]> = {
   'csa:execute-assessment': ['Admin', 'Line 1'],
   'knowledge:manage-documents': ['Admin', 'Line 2'],
   'rcm:edit-verification-design': ['Admin', 'Line 2'],
+  'rcm:manage-controls': ['Admin', 'Line 2'],
   'admin:manage-users': ['Admin'],
 };
 

@@ -249,5 +249,39 @@
     "severityUpdated": "Deficiency severity updated based on DoD assessment.",
     "aggregateSaved": "Aggregate deficiency analysis saved (Lampiran 10).",
     "workflowUpdated": "Workflow status updated."
+  },
+  "banner": {
+    "badgeRegulation": "Mandat Lampiran 10 SK-5",
+    "regNo": "SK-5/DKU.MBU/11/2024 Bab VII",
+    "auditOversight": "Audit Committee & BPKP Oversight",
+    "title": "Control Deficiency & Remediation Management Workbench",
+    "subtitle": "Compilation of verified internal control deficiencies over financial reporting across Three Lines, Degree of Deficiency (DoD Appendix 10) assessment, Corrective Action Plan (CAP) tracking, and SPI re-testing.",
+    "totalFindings": "Total Findings",
+    "findingsUnit": "Cases",
+    "protocolLabel": "Reporting Protocols:",
+    "protocolMW": "Material Weakness -> Board of Commissioners & Audit Committee",
+    "protocolCAP": "Mandatory 30-Day Remediation CAP"
+  },
+  "matrixCards": {
+    "materialWeakness": "Material Weakness",
+    "mwImpact": "Impacts Audit Opinion",
+    "significantDeficiency": "Significant Deficiency",
+    "sdImpact": "Report to Audit Committee",
+    "controlDeficiency": "Control Deficiency",
+    "cdImpact": "Operational Level",
+    "capActive": "Remediation In Progress (CAP)",
+    "findingsUnit": "Findings",
+    "capNote": "Under Active Remediation"
+  },
+  "toolbar": {
+    "tableMode": "CAP Table"
+  },
+  "captable": {
+    "noPlan": "No CAP Plan",
+    "resolved": "Resolved",
+    "inApproval": "Approval",
+    "inReview": "Review L2",
+    "inProgress": "In Remediation",
+    "empty": "No deficiencies match the selected filters."
   }
 }

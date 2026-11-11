@@ -26,6 +26,7 @@ export type Capability =
   | 'csa:execute-assessment'
   | 'knowledge:manage-documents'
   | 'rcm:edit-verification-design'
+  | 'rcm:manage-controls'
   | 'admin:manage-users';
 
 /**
@@ -50,6 +51,7 @@ export const CAPABILITY_ROLES: Record<Capability, readonly UserRole[]> = {
   'csa:execute-assessment': ['Line 1', 'Admin'],
   'knowledge:manage-documents': ['Line 2', 'Admin'],
   'rcm:edit-verification-design': ['Line 2', 'Admin'],
+  'rcm:manage-controls': ['Line 2', 'Admin'],
   'admin:manage-users': ['Admin'],
 };
 

@@ -158,6 +158,14 @@
     "testSuccess": "Email uji berhasil dikirim! Silakan periksa kotak masuk Anda.",
     "testError": "Gagal mengirim email uji"
   },
+  "header": {
+    "complianceStatus": "Status Kepatuhan",
+    "statusActive": "AKTIF",
+    "assessmentCycle": "Penilaian Q4 / Siklus Audit",
+    "bumnHolding": "Holding BUMN",
+    "subTitle": "Sistem Pengendalian Internal Pelaporan Keuangan",
+    "mandate": "Mandat SK-5 BPKP"
+  },
   "webhookSettings": {
     "title": "Integrasi Webhook & Multi-Kanal",
     "description": "Hubungkan kanal komunikasi tim (Slack, Microsoft Teams, Discord, n8n) untuk notifikasi kepatuhan instan secara otomatis.",
