@@ -14,6 +14,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  CartesianGrid,
 } from 'recharts';
 import type { RemediationDODResponse } from './types';
 
@@ -96,8 +97,9 @@ export function RemediationDODTab() {
             <div className="w-full h-56 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0">
               <ResponsiveContainer width="100%" height="100%" minWidth={260}>
                 <BarChart data={severityBreakdown} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#64748b' }} interval={0} />
-                  <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} interval={0} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} />
                   <Tooltip />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                     {severityBreakdown.map((_, index) => (

@@ -1,12 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ShieldCheck, Calendar, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
-import type { SimulationStatus } from '@shared/types';
+import { SOVEREIGN_CARD_CONTAINER, SOVEREIGN_METRIC_CARD } from '@/components/ui/sovereign-banner';
 
 export interface ScopingHeaderBannerProps {
   workingYear: string;
-  simulationName?: string;
-  simulationStatus?: SimulationStatus | string;
   activeSnapshotFilename?: string;
   hasBenchmark?: boolean;
 }
@@ -19,7 +17,7 @@ export function ScopingHeaderBanner({
   const { t } = useTranslation('scoping');
 
   return (
-    <div className="relative overflow-hidden bg-white dark:bg-card text-foreground rounded-xl p-4 sm:p-6 shadow-xs border border-border/80 border-l-4 border-l-secondary">
+    <div className={SOVEREIGN_CARD_CONTAINER}>
       <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-4 sm:gap-6">
         <div className="flex flex-col gap-2 max-w-3xl min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -46,7 +44,7 @@ export function ScopingHeaderBanner({
           </p>
         </div>
 
-        <div className="flex flex-wrap sm:flex-nowrap items-stretch gap-4 bg-slate-50 dark:bg-slate-900/40 p-3.5 sm:p-4 rounded-xl border border-border/60 shrink-0">
+        <div className={SOVEREIGN_METRIC_CARD}>
           <div className="flex flex-col justify-center min-w-0">
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5 text-secondary shrink-0" aria-hidden="true" />

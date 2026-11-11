@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ShieldCheck, Layers, Sparkles } from 'lucide-react';
 import { BUMN_CLUSTER_LIST } from './rcm-explorer-types';
 import type { BUMNCluster } from '@shared/types';
+import { SOVEREIGN_CARD_CONTAINER } from '@/components/ui/sovereign-banner';
 
 interface RCMExplorerHeaderBannerProps {
   workingYear?: string;
@@ -24,7 +25,7 @@ export function RCMExplorerHeaderBanner({
   const keyRatio = totalControls > 0 ? Math.round((totalKeyControls / totalControls) * 100) : 0;
 
   return (
-    <div className="relative overflow-hidden bg-white dark:bg-card text-foreground rounded-xl p-4 sm:p-6 shadow-xs border border-border/80 border-l-4 border-l-secondary">
+    <div className={SOVEREIGN_CARD_CONTAINER}>
       <div className="relative z-10 flex flex-col gap-4">
         {/* Top meta tags */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">

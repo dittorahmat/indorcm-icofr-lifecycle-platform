@@ -153,7 +153,7 @@ export function FiscalYearSelector() {
         >
           <div className="flex items-center gap-1 sm:gap-2">
             <Calendar className={cn("h-3.5 w-3.5 shrink-0 hidden sm:inline-block", isDark ? "text-slate-400" : "text-muted-foreground")} aria-hidden="true" />
-            <span className="inline sm:hidden font-mono tracking-tight font-semibold">FY {workingYear?.slice(-2) || workingYear}</span>
+            <span className="inline sm:hidden font-mono tracking-tight font-semibold">{workingYear ? `FY ${workingYear.slice(-2)}` : 'FY'}</span>
             <span className="hidden sm:inline">
               <SelectValue placeholder="Year" />
             </span>

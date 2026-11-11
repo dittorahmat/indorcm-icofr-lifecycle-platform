@@ -46,6 +46,12 @@ describe('Executive Dashboard Sovereign Governance Components', () => {
     expect(html).not.toContain('text-[9px]');
     expect(html).not.toContain('text-[10px]');
     expect(html).not.toContain('text-[11px]');
+
+    // Light Sovereign styling assertions
+    const rootDiv = container.firstChild as HTMLElement;
+    expect(rootDiv.className).toContain('bg-white');
+    expect(rootDiv.className).toContain('border-l-secondary');
+    expect(rootDiv.className).toContain('border-l-4');
   });
 
   it('renders ExecutiveStatCards with 4 primary executive metrics', () => {

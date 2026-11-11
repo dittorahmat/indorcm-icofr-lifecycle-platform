@@ -8,6 +8,7 @@ import { LanguageSwitcher } from '../LanguageSwitcher';
 import { NotificationBell } from '../NotificationBell';
 
 const mockUseTheme = vi.fn();
+let mockWorkingYear: string | undefined = '2026';
 
 vi.mock('@/hooks/use-theme', () => ({
   useTheme: () => mockUseTheme(),
@@ -23,7 +24,7 @@ vi.mock('@/hooks/use-confirm', () => ({
 
 vi.mock('@/store/useFiscalYearStore', () => ({
   useFiscalYearStore: () => ({
-    workingYear: '2026',
+    workingYear: mockWorkingYear,
     setWorkingYear: vi.fn(),
     customYears: [],
     addCustomYear: vi.fn(),
@@ -59,6 +60,7 @@ function createWrapper() {
 describe('MainHeader components contrast calibration (#157)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockWorkingYear = '2026';
   });
 
   describe('FiscalYearSelector', () => {
@@ -85,6 +87,22 @@ describe('MainHeader components contrast calibration (#157)', () => {
       expect(trigger.className).toContain('bg-slate-800');
       expect(trigger.className).toContain('text-slate-100');
       expect(trigger.className).toContain('border-slate-700');
+    });
+
+    it('safely renders mobile FY badge when workingYear is present vs fallback', () => {
+      mockUseTheme.mockReturnValue({ isDark: false });
+      const Wrapper = createWrapper();
+      const { unmount } = render(<FiscalYearSelector />, { wrapper: Wrapper });
+
+      // When workingYear is '2026', mobile span renders 'FY 26'
+      expect(screen.getByText('FY 26')).toBeInTheDocument();
+      unmount();
+
+      // When workingYear is undefined/empty, mobile span safely falls back to 'FY'
+      mockWorkingYear = undefined;
+      render(<FiscalYearSelector />, { wrapper: Wrapper });
+      expect(screen.getByText('FY')).toBeInTheDocument();
+      expect(screen.queryByText(/FY undefined/i)).not.toBeInTheDocument();
     });
   });
 
