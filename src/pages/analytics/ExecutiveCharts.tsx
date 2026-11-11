@@ -52,11 +52,11 @@ export function ExecutiveCharts({ data }: ExecutiveChartsProps) {
         <div className="flex justify-center items-center space-x-6 text-xs mt-3">
           <div className="flex items-center space-x-2">
             <span className="w-3 h-3 rounded-full bg-emerald-600"></span>
-            <span className="text-slate-600">{t('overview.effective')}</span>
+            <span className="text-slate-700 dark:text-slate-300 font-semibold">{t('overview.effective')}</span>
           </div>
           <div className="flex items-center space-x-2">
             <span className="w-3 h-3 rounded-full bg-rose-600"></span>
-            <span className="text-slate-600">{t('overview.deficient')}</span>
+            <span className="text-slate-700 dark:text-slate-300 font-semibold">{t('overview.deficient')}</span>
           </div>
         </div>
       </div>

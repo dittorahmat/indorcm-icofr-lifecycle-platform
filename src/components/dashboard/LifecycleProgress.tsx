@@ -94,7 +94,7 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
                     ? "bg-slate-900 text-white border-slate-900 shadow-xs" 
                     : isCurrent
                     ? "bg-white text-slate-900 border-slate-900 ring-2 ring-slate-900/10 shadow-xs"
-                    : "bg-slate-50 text-slate-400 border-slate-200"
+                    : "bg-slate-50 text-slate-600 dark:text-slate-400 border-slate-200 font-medium"
                 )}
               >
                 <span className={cn(
@@ -133,7 +133,7 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
                 "h-8 w-8 rounded-full flex items-center justify-center transition-all duration-500 border-2",
                 isCompleted ? "bg-slate-900 border-slate-900 text-white" : 
                 isCurrent ? "bg-white border-slate-900 text-slate-900 ring-4 ring-slate-100" :
-                "bg-white border-slate-200 text-slate-300"
+                "bg-white border-slate-200 text-slate-600 dark:text-slate-400 font-medium"
               )}>
                 {isCompleted ? (
                   <Check className="h-4 w-4" />
@@ -144,7 +144,7 @@ export function LifecycleProgress({ currentStage = 'evaluasi', workingYear = '20
               <div className="text-center">
                 <p className={cn(
                   "text-xs font-bold uppercase tracking-tight",
-                  isCurrent ? "text-slate-900" : "text-slate-400"
+                  isCurrent ? "text-slate-900" : "text-slate-600 dark:text-slate-400"
                 )}>
                   {t(stage.label)}
                 </p>

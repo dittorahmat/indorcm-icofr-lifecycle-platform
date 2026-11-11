@@ -16,11 +16,11 @@ export function ExecutiveKpiCards({ data }: ExecutiveKpiCardsProps) {
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs relative overflow-hidden">
         <div className="flex justify-between items-start">
           <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <p className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               {t('kpi.totalRisk')}
             </p>
             <h3 className="text-3xl font-extrabold text-slate-800 mt-1">
-              {data.totalRisks} <span className="text-base font-medium text-slate-500">{t('kpi.riskUnit')}</span>
+              {data.totalRisks} <span className="text-base font-medium text-slate-600 dark:text-slate-400">{t('kpi.riskUnit')}</span>
             </h3>
           </div>
           <div className="p-2.5 bg-sky-100 text-sky-700 rounded-xl">
@@ -29,7 +29,7 @@ export function ExecutiveKpiCards({ data }: ExecutiveKpiCardsProps) {
         </div>
         <div className="mt-4 flex items-center justify-between text-xs">
           <span className="text-rose-600 font-semibold">{t('kpi.highSeverity')}</span>
-          <span className="text-slate-400">{t('kpi.mediumSeverity')}</span>
+          <span className="text-slate-600 dark:text-slate-400 font-medium">{t('kpi.mediumSeverity')}</span>
         </div>
       </div>
 
@@ -37,7 +37,7 @@ export function ExecutiveKpiCards({ data }: ExecutiveKpiCardsProps) {
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs relative overflow-hidden">
         <div className="flex justify-between items-start">
           <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <p className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               {t('kpi.toePassRate')}
             </p>
             <h3 className="text-3xl font-extrabold text-emerald-600 mt-1">
@@ -62,11 +62,11 @@ export function ExecutiveKpiCards({ data }: ExecutiveKpiCardsProps) {
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs relative overflow-hidden">
         <div className="flex justify-between items-start">
           <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <p className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               {t('kpi.csaHealthScore')}
             </p>
             <h3 className="text-3xl font-extrabold text-purple-600 mt-1">
-              {data.csaHealthScore} <span className="text-sm font-medium text-slate-400">/ 5.0</span>
+              {data.csaHealthScore} <span className="text-sm font-medium text-slate-600 dark:text-slate-400">/ 5.0</span>
             </h3>
           </div>
           <div className="p-2.5 bg-purple-100 text-purple-700 rounded-xl">
@@ -75,7 +75,7 @@ export function ExecutiveKpiCards({ data }: ExecutiveKpiCardsProps) {
         </div>
         <div className="mt-4 flex items-center justify-between text-xs">
           <span className="text-purple-700 font-semibold">{t('kpi.complianceRate')}</span>
-          <span className="text-slate-500 font-bold">{data.complianceRate}%</span>
+          <span className="text-slate-700 dark:text-slate-300 font-bold">{data.complianceRate}%</span>
         </div>
       </div>
 
@@ -83,7 +83,7 @@ export function ExecutiveKpiCards({ data }: ExecutiveKpiCardsProps) {
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs relative overflow-hidden">
         <div className="flex justify-between items-start">
           <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <p className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               {t('kpi.openDeficiencies')}
             </p>
             <h3 className="text-3xl font-extrabold text-slate-800 mt-1">
@@ -95,7 +95,7 @@ export function ExecutiveKpiCards({ data }: ExecutiveKpiCardsProps) {
           </div>
         </div>
         <div className="mt-4 flex items-center justify-between text-xs">
-          <span className="text-slate-500">{t('kpi.materialWeakness')}:</span>
+          <span className="text-slate-600 dark:text-slate-400 font-medium">{t('kpi.materialWeakness')}:</span>
           <span className="font-bold text-emerald-600">
             {data.materialWeaknesses > 0 ? `${data.materialWeaknesses}` : t('kpi.noMw')}
           </span>

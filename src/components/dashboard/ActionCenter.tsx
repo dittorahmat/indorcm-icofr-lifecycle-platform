@@ -44,7 +44,7 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
           </div>
           <div className="text-right shrink-0 min-w-[56px]">
             <div className="text-xs font-bold text-slate-900">{csaCompletion}%</div>
-            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('actionCenter.status.complete', { defaultValue: 'Complete' })}</div>
+            <div className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">{t('actionCenter.status.complete', { defaultValue: 'Complete' })}</div>
           </div>
         </button>
 
@@ -74,7 +74,7 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
           className="w-full flex items-center gap-3 sm:gap-4 p-4 sm:p-5 hover:bg-slate-50 transition-colors text-left group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[52px]"
           onClick={() => navigate('/reports')}
         >
-          <div className="h-10 w-10 shrink-0 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center group-hover:bg-mancity-pattern group-hover:text-primary-foreground transition-all duration-300 shadow-sm border border-slate-200">
+          <div className="h-10 w-10 shrink-0 rounded-xl bg-slate-100 text-slate-600 dark:text-slate-400 flex items-center justify-center group-hover:bg-mancity-pattern group-hover:text-primary-foreground transition-all duration-300 shadow-sm border border-slate-200">
             <FileText className="h-5 w-5" aria-hidden="true" />
           </div>
           <div className="flex-1 min-w-0 pr-1">
@@ -82,7 +82,7 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
             <p className="text-xs text-slate-500 font-medium mt-1 line-clamp-2 sm:line-clamp-1">{t('actionCenter.reports.description')}</p>
           </div>
           <div className="text-right shrink-0 min-w-[24px]">
-             <ArrowUpRight className="h-4 w-4 text-slate-300 group-hover:text-slate-900 transition-colors ml-auto" aria-hidden="true" />
+             <ArrowUpRight className="h-4 w-4 text-slate-600 dark:text-slate-400 group-hover:text-slate-900 transition-colors ml-auto" aria-hidden="true" />
           </div>
         </button>
       </CardContent>
