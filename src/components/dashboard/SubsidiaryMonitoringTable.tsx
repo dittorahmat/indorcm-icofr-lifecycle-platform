@@ -4,20 +4,23 @@ import { CheckCircle2, ChevronRight, Filter, RefreshCw, ShieldAlert } from 'luci
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
+export type SubsidiaryTestingPhase = 'Fase 1' | 'Fase 2' | 'Fase 3' | 'Fase 4' | 'Delayed' | 'Completed';
+export type SubsidiaryInterimOpinion = 'Effective' | 'Substantially Effective' | 'Needs Improvement';
+
 export interface SubsidiaryMonitoringItem {
   id: string;
   code: string;
   name: string;
   cluster: string;
   testingProgress: number; // e.g. 96
-  phase: string; // e.g. 'Fase 4'
+  phase: SubsidiaryTestingPhase | string; // e.g. 'Fase 4'
   effectiveControls: number;
   totalControls: number;
   effectivePercentage: number;
   mwCount?: number;
   sdCount: number;
   cdCount: number;
-  interimOpinion: 'Effective' | 'Substantially Effective' | 'Needs Improvement';
+  interimOpinion: SubsidiaryInterimOpinion;
   targetSignOff: string;
 }
 

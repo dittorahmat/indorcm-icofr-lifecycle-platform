@@ -81,7 +81,7 @@ export function RCMExplorerHeaderBanner({
               <span className="text-xs font-bold text-secondary-fixed px-2 py-0.5 rounded bg-secondary/25">
                 {keyRatio}% {t('explorer.banner.priority', { defaultValue: 'Prioritas' })}
               </span>
-              <span className="text-[11px] text-on-primary-container mt-1">
+              <span className="text-xs text-on-primary-container mt-1">
                 {t('explorer.banner.targetDesc', { defaultValue: 'Mandatori Pengujian' })}
               </span>
             </div>
@@ -120,7 +120,7 @@ export function RCMExplorerHeaderBanner({
                       : 'bg-surface-container-lowest/15 text-primary-fixed hover:bg-surface-container-lowest/25'
                   }`}
                 >
-                  <span className="font-mono text-[10px] px-1 py-0.2 rounded bg-black/20 text-white/90">
+                  <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-black/20 text-white/90">
                     {cl.code}
                   </span>
                   <span>{t(cl.nameKey, { defaultValue: cl.defaultName })}</span>

@@ -61,7 +61,7 @@ export function RCMControlDetailModal({ item, isOpen, onClose }: RCMControlDetai
                 <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
                 {t('explorer.detail.riskTitle', { defaultValue: 'Titik Risiko Terkait' })}
               </span>
-              <span className="font-mono text-[11px] text-slate-500">{item.rcmId || 'R-ICOFR'}</span>
+              <span className="font-mono text-xs text-slate-500">{item.rcmId || 'R-ICOFR'}</span>
             </div>
             <p className="text-on-surface-variant leading-relaxed">
               {item.riskDescription || '-'}
@@ -81,27 +81,27 @@ export function RCMControlDetailModal({ item, isOpen, onClose }: RCMControlDetai
           {/* Grid Metadata */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div className="space-y-0.5">
-              <span className="text-on-surface-variant text-[11px]">Proses / Sub-Proses</span>
+              <span className="text-on-surface-variant text-xs">Proses / Sub-Proses</span>
               <p className="font-semibold text-primary">{item.processName || '-'} / {item.subProcessName || '-'}</p>
             </div>
             <div className="space-y-0.5">
-              <span className="text-on-surface-variant text-[11px]">Akun Signifikan (FSLI)</span>
+              <span className="text-on-surface-variant text-xs">Akun Signifikan (FSLI)</span>
               <p className="font-semibold text-primary">{item.fsliName || '-'} (GL: {item.noGL || '-'})</p>
             </div>
             <div className="space-y-0.5">
-              <span className="text-on-surface-variant text-[11px]">Pelaksana / PIC</span>
+              <span className="text-on-surface-variant text-xs">Pelaksana / PIC</span>
               <p className="font-semibold text-primary">{item.executorRole || item.executingFunction || '-'}</p>
             </div>
             <div className="space-y-0.5">
-              <span className="text-on-surface-variant text-[11px]">Frekuensi & Sifat</span>
+              <span className="text-on-surface-variant text-xs">Frekuensi & Sifat</span>
               <p className="font-semibold text-primary">{item.frequency || 'Bulanan'} • {item.controlNature || 'Manual'}</p>
             </div>
             <div className="space-y-0.5">
-              <span className="text-on-surface-variant text-[11px]">Aplikasi Pendukung</span>
+              <span className="text-on-surface-variant text-xs">Aplikasi Pendukung</span>
               <p className="font-semibold text-primary">{item.supportingApp || item.itApplication || 'ERP Standard'}</p>
             </div>
             <div className="space-y-0.5">
-              <span className="text-on-surface-variant text-[11px]">Simpul BPM Terkait</span>
+              <span className="text-on-surface-variant text-xs">Simpul BPM Terkait</span>
               <p className="font-mono font-semibold text-secondary">{item.nodeId || item.bpmCode || '-'}</p>
             </div>
           </div>
@@ -137,14 +137,14 @@ function PillarBadge({ label, value }: { label: string; value?: string | null })
   const isSatisfied = Boolean(value && value.trim().length > 0);
   return (
     <div className="p-2 rounded bg-surface-container-low border border-slate-100 flex flex-col justify-between">
-      <span className="text-[10px] text-on-surface-variant truncate">{label}</span>
+      <span className="text-xs text-on-surface-variant truncate">{label}</span>
       <div className="flex items-center gap-1 mt-1">
         {isSatisfied ? (
           <CheckCircle className="h-3 w-3 text-secondary shrink-0" />
         ) : (
           <span className="w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0" />
         )}
-        <span className={`text-[11px] font-bold ${isSatisfied ? 'text-secondary' : 'text-slate-400'}`}>
+        <span className={`text-xs font-bold ${isSatisfied ? 'text-secondary' : 'text-slate-400'}`}>
           {isSatisfied ? 'Terpenuhi' : 'Belum Ada'}
         </span>
       </div>
