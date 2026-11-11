@@ -17,7 +17,7 @@ const baseInput = {
 describe('buildCsaRecordSummaryRows', () => {
   it('includes the Process ID row when bpmProcessId is provided', () => {
     const rows = buildCsaRecordSummaryRows(baseInput);
-    expect(rows).toHaveLength(6);
+    expect(rows).toHaveLength(9);
     expect(rows[0]).toEqual({ Field: 'Process Name', Value: 'Procure to Pay' });
     expect(rows[1]).toEqual({ Field: 'Process ID', Value: 'BPM-01' });
     expect(rows[3]).toEqual({ Field: 'Assessment Date', Value: '2025-06-30 10:00' });
@@ -25,7 +25,7 @@ describe('buildCsaRecordSummaryRows', () => {
 
   it('skips the Process ID row when bpmProcessId is absent (CSAPage parity)', () => {
     const rows = buildCsaRecordSummaryRows({ ...baseInput, bpmProcessId: undefined });
-    expect(rows).toHaveLength(5);
+    expect(rows).toHaveLength(8);
     expect(rows.find((r) => r.Field === 'Process ID')).toBeUndefined();
   });
 
@@ -36,7 +36,7 @@ describe('buildCsaRecordSummaryRows', () => {
       comments: null,
     });
     expect(rows[0]).toEqual({ Field: 'Process Name', Value: 'N/A' });
-    expect(rows[rows.length - 1]).toEqual({ Field: 'Comments', Value: '' });
+    expect(rows.find((r) => r.Field === 'Comments')).toEqual({ Field: 'Comments', Value: '' });
   });
 });
 
