@@ -40,6 +40,7 @@
     "check:no-window-print": "node scripts/check-no-window-print.mjs",
     "check:number-inputs": "node scripts/check-number-inputs.mjs",
     "check:font-slop": "node scripts/check-font-slop.mjs",
+    "check:contrast": "node scripts/check-contrast-slop.mjs",
     "check:worktree": "node scripts/check-worktree-isolation.mjs",
     "sync:skills": "node scripts/sync-skills.mjs",
     "check:period-queries": "node scripts/check-period-queries.mjs",

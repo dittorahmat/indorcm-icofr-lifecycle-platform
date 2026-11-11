@@ -30,7 +30,7 @@ export function RCMControlDetailModal({ item, isOpen, onClose }: RCMControlDetai
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto p-4 sm:p-6 bg-surface-container-lowest">
         <DialogHeader className="pb-3 border-b border-slate-100">
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-primary-container text-on-primary">
+            <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-surface-container text-foreground border border-border/80">
               {item.controlCode || 'C-CTRL'}
             </span>
             {isKey && (

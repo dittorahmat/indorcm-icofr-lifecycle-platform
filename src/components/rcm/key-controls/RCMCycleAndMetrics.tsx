@@ -64,14 +64,14 @@ export function RCMCycleAndMetrics({
                 onClick={() => onSelectCycle(cycle.code)}
                 className={`flex flex-col p-2.5 rounded-lg text-left transition-all border ${
                   isSelected
-                    ? 'bg-primary-container text-on-primary border-secondary shadow-sm ring-2 ring-secondary/40'
+                    ? 'bg-secondary text-secondary-foreground border-secondary shadow-sm ring-2 ring-secondary/40'
                     : 'bg-surface-container-low hover:bg-surface-container border-transparent text-on-surface'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span
                     className={`font-mono text-xs font-bold uppercase tracking-wider ${
-                      isSelected ? 'text-primary-fixed' : 'text-on-surface-variant'
+                      isSelected ? 'text-secondary-foreground' : 'text-on-surface-variant'
                     }`}
                   >
                     {cycle.num === '00' ? 'ALL' : `SIKLUS ${cycle.num}`}
