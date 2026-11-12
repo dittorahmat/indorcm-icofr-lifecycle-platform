@@ -121,6 +121,10 @@ STASH_REF=""
 if [ "$MODE" != "force" ]; then
     STASHED=0
     STASH_REF=""
+    # Normalisasi line-ending / index attribute drift (misal file CRLF vs LF setelah update .gitattributes)
+    git add --renormalize . 2>/dev/null || true
+    git checkout -- . 2>/dev/null || true
+
     if ! git diff --quiet || ! git diff --cached --quiet; then
         log "Working tree kotor, auto-stash sebagai backup:"
         git status --short
@@ -134,9 +138,14 @@ if [ "$MODE" != "force" ]; then
     fi
 
     if ! git pull --ff-only origin main; then
-        log "FATAL: git pull --ff-only gagal (kemungkinan ada commit lokal di server). Periksa manual: git log --oneline -5; git status"
-        [ "$STASHED" = "1" ] && git stash pop || true
-        exit 1
+        log "WARN: git pull --ff-only gagal pertama kali, mencoba auto-renormalize dan checkout..."
+        git add --renormalize . 2>/dev/null || true
+        git checkout -- . 2>/dev/null || true
+        if ! git pull --ff-only origin main; then
+            log "FATAL: git pull --ff-only gagal (kemungkinan ada commit lokal di server). Periksa manual: git log --oneline -5; git status"
+            [ "$STASHED" = "1" ] && git stash pop || true
+            exit 1
+        fi
     fi
 fi
 NEW_REV="$(git rev-parse HEAD)"
