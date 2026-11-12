@@ -47,6 +47,7 @@ describe('countSmells', () => {
       'const same = a !== b;',
       'const diff = a != b;',
       "toast('Done!');",
+      'const prompt = `\nKotak ini ADALAH HEADER SWIMLANE!\n`;',
       'const url = "https://example.test/path";',
       '// handle the null case!',
       '/* also not! */',

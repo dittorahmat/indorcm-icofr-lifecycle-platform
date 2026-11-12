@@ -383,4 +383,39 @@ describe('ocr-layout - flow chart with a sign-off table (no real swimlanes)', ()
     const lanes = layoutOcrDiagram(raw).nodes.filter((node) => node.type === 'swimlane');
     expect(lanes.map((lane) => lane.label)).toEqual(['Disusun Oleh (Lini 1)', 'Direview Oleh (Lini 2)', 'Disetujui Oleh (CFO)']);
   });
+
+  it('snaps unparented child nodes below top header swimlanes into their respective lanes', () => {
+    // Replicates ocr2.pdf scenario: 4 top header swimlanes ("Konsumen", "Administrasi", "Bank", "Developer")
+    // with no explicit parentId on process nodes below them.
+    const headerDiagram = {
+      nodes: [
+        { id: 'lane_konsumen', type: 'swimlane', label: 'Konsumen', department: 'Konsumen', position: { x: 50, y: 30 }, width: 200, height: 50 },
+        { id: 'lane_administrasi', type: 'swimlane', label: 'Administrasi', department: 'Administrasi', position: { x: 300, y: 30 }, width: 200, height: 50 },
+        { id: 'lane_bank', type: 'swimlane', label: 'Bank', department: 'Bank', position: { x: 550, y: 30 }, width: 200, height: 50 },
+        { id: 'lane_developer', type: 'swimlane', label: 'Developer', department: 'Developer', position: { x: 800, y: 30 }, width: 200, height: 50 },
+        { id: 'start_node', type: 'start', label: 'start', position: { x: 90, y: 80 } },
+        { id: 'booking_fee_1', type: 'activity', label: 'Booking Fee', position: { x: 80, y: 150 } },
+        { id: 'booking_fee_2', type: 'activity', label: 'Booking Fee', position: { x: 330, y: 100 } },
+        { id: 'wawancara', type: 'activity', label: 'Wawancara', position: { x: 580, y: 100 } },
+        { id: 'akad_kredit', type: 'activity', label: 'Akad Kredit', position: { x: 830, y: 100 } },
+      ] as OcrRawNode[],
+      edges: [
+        { id: 'e1', source: 'start_node', target: 'booking_fee_1' },
+        { id: 'e2', source: 'booking_fee_1', target: 'booking_fee_2' },
+      ] as OcrRawEdge[],
+    };
+
+    const result = layoutOcrDiagram(headerDiagram);
+    const startNode = result.nodes.find((n) => n.id === 'start_node');
+    const booking1 = result.nodes.find((n) => n.id === 'booking_fee_1');
+    const booking2 = result.nodes.find((n) => n.id === 'booking_fee_2');
+    const wawancara = result.nodes.find((n) => n.id === 'wawancara');
+    const akad = result.nodes.find((n) => n.id === 'akad_kredit');
+
+    expect(startNode?.parentId).toBe('lane_konsumen');
+    expect(booking1?.parentId).toBe('lane_konsumen');
+    expect(booking2?.parentId).toBe('lane_administrasi');
+    expect(wawancara?.parentId).toBe('lane_bank');
+    expect(akad?.parentId).toBe('lane_developer');
+  });
 });
