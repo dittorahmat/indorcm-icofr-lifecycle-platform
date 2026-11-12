@@ -121,11 +121,11 @@ STASH_REF=""
 if [ "$MODE" != "force" ]; then
     STASHED=0
     STASH_REF=""
-    # Normalisasi line-ending / index attribute drift (misal file CRLF vs LF setelah update .gitattributes)
-    git add --renormalize . 2>/dev/null || true
-    git checkout -- . 2>/dev/null || true
 
+    # 1. Amankan perubahan riil / uncommitted files terlebih dahulu ke backup stash
     if ! git diff --quiet || ! git diff --cached --quiet; then
+        # Cek apakah dirty state semata-mata karena drift CRLF/attributes
+        # Uji renormalize tanpa merusak uncommitted working tree
         log "Working tree kotor, auto-stash sebagai backup:"
         git status --short
         if git stash push -m "ci-auto-stash $(date -Is)"; then
@@ -137,15 +137,15 @@ if [ "$MODE" != "force" ]; then
         fi
     fi
 
+    # 2. Setelah kerjaan lokal aman di stash (atau working tree bersih), bersihkan phantom drift line-ending
+    git add --renormalize . 2>/dev/null || true
+    git checkout -- . 2>/dev/null || true
+
+    # 3. Tarik update terbaru secara fast-forward
     if ! git pull --ff-only origin main; then
-        log "WARN: git pull --ff-only gagal pertama kali, mencoba auto-renormalize dan checkout..."
-        git add --renormalize . 2>/dev/null || true
-        git checkout -- . 2>/dev/null || true
-        if ! git pull --ff-only origin main; then
-            log "FATAL: git pull --ff-only gagal (kemungkinan ada commit lokal di server). Periksa manual: git log --oneline -5; git status"
-            [ "$STASHED" = "1" ] && git stash pop || true
-            exit 1
-        fi
+        log "FATAL: git pull --ff-only gagal (kemungkinan ada commit lokal di server). Periksa manual: git log --oneline -5; git status"
+        [ "$STASHED" = "1" ] && git stash pop || true
+        exit 1
     fi
 fi
 NEW_REV="$(git rev-parse HEAD)"
