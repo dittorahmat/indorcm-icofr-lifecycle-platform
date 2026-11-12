@@ -52,6 +52,10 @@ interface ResolvedDiagram {
   allNodes: OcrRawNode[];
 }
 
+function getNodeCenterX(n: OcrRawNode): number {
+  return n.position.x + (n.width ? n.width / 2 : 0);
+}
+
 /**
  * Normalize parents: drop unknown lane references, snap orphans whose x falls
  * nearest a lane column, order lanes left-to-right, then bucket children.
@@ -102,14 +106,14 @@ function resolveDiagram(nodes: OcrRawNode[]): ResolvedDiagram {
       const firstLane = lanes[0];
       if (!firstLane) continue;
 
-      const nodeCenterX = n.position.x + (n.width ? n.width / 2 : 0);
+      const nodeCenterX = getNodeCenterX(n);
       let closest = firstLane.id;
-      const firstLaneCenterX = firstLane.position.x + (firstLane.width ? firstLane.width / 2 : 0);
+      const firstLaneCenterX = getNodeCenterX(firstLane);
       let minDistance = Math.abs(nodeCenterX - firstLaneCenterX);
       for (let i = 1; i < lanes.length; i += 1) {
         const lane = lanes[i];
         if (!lane) continue;
-        const laneCenterX = lane.position.x + (lane.width ? lane.width / 2 : 0);
+        const laneCenterX = getNodeCenterX(lane);
         const distance = Math.abs(nodeCenterX - laneCenterX);
         if (distance < minDistance) {
           minDistance = distance;
