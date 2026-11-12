@@ -35,7 +35,7 @@ export function MainHeader() {
       "sticky top-0 z-[100] w-full border-b transition-colors duration-300 shadow-sm print:hidden",
       isDark
         ? "bg-slate-950 border-slate-800 text-slate-50"
-        : "bg-surface-container-low border-border/60 text-foreground"
+        : "bg-surface-container-low border-b-2 border-b-primary/60 border-t-0 border-x-0 border-border/60 text-foreground"
     )}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-2 sm:px-4 gap-2 py-2 sm:py-1 min-w-0 max-w-full flex-wrap">
         <div className="flex items-center gap-1.5 sm:gap-4 md:gap-6 min-w-0 max-w-full w-full sm:w-auto">
