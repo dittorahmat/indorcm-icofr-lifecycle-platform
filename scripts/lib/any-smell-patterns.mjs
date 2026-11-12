@@ -26,11 +26,22 @@ export const SMELL_PATTERNS = [
   },
 ];
 
-/** Remove block comments and whitespace-prefixed line comments. */
+/** Remove block comments, whitespace-prefixed line comments, and string/template literals for non-null checks. */
 export function stripComments(text) {
   return text
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/(^|\s)\/\/[^\n]*/g, '$1');
+}
+
+/**
+ * Remove string and template literals so exclamation points in prose
+ * (e.g. `SWIMLANE!` or "Alert!") do not trigger non-null assertion patterns.
+ */
+export function stripLiterals(text) {
+  return text
+    .replace(/`[\s\S]*?`/g, '""')
+    .replace(/"(?:[^"\\]|\\.)*"/g, '""')
+    .replace(/'(?:[^'\\]|\\.)*'/g, "''");
 }
 
 /**
@@ -40,12 +51,16 @@ export function stripComments(text) {
  *   there (a test asserting the gate itself must be able to spell `row!.id`).
  */
 export function countSmells(text, { includeNonNull = true } = {}) {
-  const clean = stripComments(text);
+  const cleanComments = stripComments(text);
+  const cleanCode = stripLiterals(cleanComments);
   let total = 0;
   for (const { pattern, nonNull } of SMELL_PATTERNS) {
     if (nonNull && !includeNonNull) continue;
     pattern.lastIndex = 0;
-    total += (clean.match(pattern) || []).length;
+    // Non-null patterns run on cleanCode (strings stripped to avoid prose false positives);
+    // any / escape-cast patterns run on cleanComments (preserving any inside or outside).
+    const target = nonNull ? cleanCode : cleanComments;
+    total += (target.match(pattern) || []).length;
   }
   return total;
 }

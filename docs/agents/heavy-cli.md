@@ -44,7 +44,9 @@ killed the host, while the same `tsc` redirected to a file exited 0).
   runtime: cannot allocate memory` (observed 2026-10-13: 1313 modules
   transformed, then native OOM), it is container RAM, not code: validate
   bundling with `npx vite build --minify false` and treat CI as the final
-  build gate.
+  build gate. For backend services and pure utility changes (`worker/**`, `src/utils/**`),
+  rely on targeted fast verification (`npm run type-check` + `npx vitest run <file>` + `npm run lint`)
+  during iteration instead of repeatedly invoking full production bundling.
 - Orphaned Node/esbuild processes on Windows: previous failed CLI runs or MCP servers can leave detached node processes that hold virtual memory. Before heavy commands, inspect and clean zombies if memory is constrained:
   `Get-Process node | Where-Object { $_.Id -ne $PID } | ForEach-Object { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }`.
 - NEVER run two heavy commands in parallel (e.g. `build` + `test` at once) —

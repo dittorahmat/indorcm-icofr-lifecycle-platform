@@ -7,12 +7,23 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$Branch,
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory=$false)]
     [string]$Path,
+    [Parameter(Mandatory=$false)]
+    [ValidateSet(1, 2, 3)]
+    [int]$Slot,
     [string]$Base = "HEAD"
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $Path) {
+    if ($Slot) {
+        $Path = "..\icofr$Slot"
+    } else {
+        throw "Either -Path or -Slot (1, 2, or 3) must be provided."
+    }
+}
 
 Write-Host "Creating git worktree at $Path on branch $Branch from $Base..." -ForegroundColor Cyan
 git worktree add -b $Branch $Path $Base
