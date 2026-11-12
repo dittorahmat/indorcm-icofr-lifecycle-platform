@@ -3,7 +3,11 @@
 // Two engines, one selector: coordinate-anchored rows (default) keeps the source
 // drawing's geometry; the rank fallback (ocr-layout-rank.ts) preserves the legacy
 // output when coordinates are degenerate. Both return the same `EngineResult`.
-import { DEFAULT_SWIMLANE_DIMENSIONS } from './bpm-constants';
+import {
+  DEFAULT_SWIMLANE_DIMENSIONS,
+  OCR_TOP_HEADER_MAX_SPREAD_Y,
+  OCR_TOP_HEADER_MAX_START_Y,
+} from './bpm-constants';
 import { validateOcrResponse, deriveLabelFromId } from './ocr-validate';
 import type { OcrRawNode, OcrRawEdge, OcrLayoutWarning } from './ocr-validate';
 import { orderLanes } from './ocr-lane-geometry';
@@ -78,7 +82,10 @@ function resolveDiagram(nodes: OcrRawNode[]): ResolvedDiagram {
   // where flow nodes sit physically below them, as in multi-column BPM diagrams).
   const minLaneY = lanes.length > 0 ? Math.min(...lanes.map((l) => l.position.y)) : 0;
   const maxLaneY = lanes.length > 0 ? Math.max(...lanes.map((l) => l.position.y)) : 0;
-  const isTopHeaderLanes = lanes.length > 1 && maxLaneY - minLaneY < 150 && minLaneY < 300;
+  const isTopHeaderLanes =
+    lanes.length > 1 &&
+    maxLaneY - minLaneY < OCR_TOP_HEADER_MAX_SPREAD_Y &&
+    minLaneY < OCR_TOP_HEADER_MAX_START_Y;
 
   if (lanes.length > 0) {
     for (const n of downgraded) {
@@ -91,10 +98,14 @@ function resolveDiagram(nodes: OcrRawNode[]): ResolvedDiagram {
       const isBelowTopHeader = isTopHeaderLanes && n.position.y >= minLaneY;
       if (!anyExplicitChildren && !isBelowTopHeader) continue;
 
+      // Snap to closest lane by horizontal center (or x origin if width missing)
+      const nodeCenterX = n.position.x + (n.width ? n.width / 2 : 0);
       let closest = lanes[0].id;
-      let minDistance = Math.abs(n.position.x - lanes[0].position.x);
+      const firstLaneCenterX = lanes[0].position.x + (lanes[0].width ? lanes[0].width / 2 : 0);
+      let minDistance = Math.abs(nodeCenterX - firstLaneCenterX);
       for (let i = 1; i < lanes.length; i += 1) {
-        const distance = Math.abs(n.position.x - lanes[i].position.x);
+        const laneCenterX = lanes[i].position.x + (lanes[i].width ? lanes[i].width / 2 : 0);
+        const distance = Math.abs(nodeCenterX - laneCenterX);
         if (distance < minDistance) {
           minDistance = distance;
           closest = lanes[i].id;

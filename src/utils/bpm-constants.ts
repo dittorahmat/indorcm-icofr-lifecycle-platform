@@ -54,6 +54,10 @@ export const DOWNWARD_PLUNGE_THRESHOLD_DY = 40;
 // Minimum vertical descent within the same swimlane to enforce strict sequential bottom -> top flow
 export const SAME_LANE_SEQUENTIAL_FLOW_THRESHOLD_DY = 15;
 
+// Heuristic limits for detecting top-header swimlane rows in 0-1000 OCR normalized coordinate space
+export const OCR_TOP_HEADER_MAX_SPREAD_Y = 150;
+export const OCR_TOP_HEADER_MAX_START_Y = 300;
+
 export type BpmEdgeSide =
   | 'top'
   | 'bottom'
