@@ -52,6 +52,10 @@ interface ResolvedDiagram {
   allNodes: OcrRawNode[];
 }
 
+function getNodeCenterX(n: OcrRawNode): number {
+  return n.position.x + (n.width ? n.width / 2 : 0);
+}
+
 /**
  * Normalize parents: drop unknown lane references, snap orphans whose x falls
  * nearest a lane column, order lanes left-to-right, then bucket children.
@@ -99,16 +103,21 @@ function resolveDiagram(nodes: OcrRawNode[]): ResolvedDiagram {
       if (!anyExplicitChildren && !isBelowTopHeader) continue;
 
       // Snap to closest lane by horizontal center (or x origin if width missing)
-      const nodeCenterX = n.position.x + (n.width ? n.width / 2 : 0);
-      let closest = lanes[0].id;
-      const firstLaneCenterX = lanes[0].position.x + (lanes[0].width ? lanes[0].width / 2 : 0);
+      const firstLane = lanes[0];
+      if (!firstLane) continue;
+
+      const nodeCenterX = getNodeCenterX(n);
+      let closest = firstLane.id;
+      const firstLaneCenterX = getNodeCenterX(firstLane);
       let minDistance = Math.abs(nodeCenterX - firstLaneCenterX);
       for (let i = 1; i < lanes.length; i += 1) {
-        const laneCenterX = lanes[i].position.x + (lanes[i].width ? lanes[i].width / 2 : 0);
+        const lane = lanes[i];
+        if (!lane) continue;
+        const laneCenterX = getNodeCenterX(lane);
         const distance = Math.abs(nodeCenterX - laneCenterX);
         if (distance < minDistance) {
           minDistance = distance;
-          closest = lanes[i].id;
+          closest = lane.id;
         }
       }
       n.parentId = closest;
