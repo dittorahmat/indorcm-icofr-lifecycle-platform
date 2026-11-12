@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
+import { MainHeader } from '../MainHeader';
 import { FiscalYearSelector } from '../FiscalYearSelector';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { NotificationBell } from '../NotificationBell';
@@ -20,6 +21,16 @@ vi.mock('@/context/UnsavedChangesContext', () => ({
 
 vi.mock('@/hooks/use-confirm', () => ({
   useConfirm: () => vi.fn(),
+}));
+
+vi.mock('@/hooks/use-current-role', () => ({
+  useCurrentRole: () => ({ role: 'Admin', isLoading: false }),
+}));
+
+vi.mock('@/components/ui/sidebar', () => ({
+  SidebarTrigger: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+    <button type="button" data-testid="sidebar-trigger" {...props} />
+  ),
 }));
 
 vi.mock('@/store/useFiscalYearStore', () => ({
@@ -146,6 +157,34 @@ describe('MainHeader components contrast calibration (#157)', () => {
       expect(button.className).not.toContain('hover:bg-white/10');
       expect(button.className).toContain('min-h-[44px]');
       expect(button.className).toContain('min-w-[44px]');
+    });
+  });
+
+  describe('MainHeader Container & Accent Border', () => {
+    it('locks sovereign neutral background and Manchester City blue accent border on light theme', () => {
+      mockUseTheme.mockReturnValue({ isDark: false });
+      const Wrapper = createWrapper();
+      render(<MainHeader />, { wrapper: Wrapper });
+
+      const header = screen.getByRole('banner');
+      expect(header.className).toContain('bg-surface-container-low');
+      expect(header.className).toContain('border-b-2');
+      expect(header.className).toContain('border-b-primary/60');
+      expect(header.className).toContain('text-foreground');
+      expect(header.className).not.toContain('border-border/60');
+      expect(header.className).not.toContain('bg-mancity-pattern');
+    });
+
+    it('locks symmetric 2px border and dark styling on dark theme', () => {
+      mockUseTheme.mockReturnValue({ isDark: true });
+      const Wrapper = createWrapper();
+      render(<MainHeader />, { wrapper: Wrapper });
+
+      const header = screen.getByRole('banner');
+      expect(header.className).toContain('bg-slate-950');
+      expect(header.className).toContain('border-b-2');
+      expect(header.className).toContain('border-b-slate-800');
+      expect(header.className).toContain('text-slate-50');
     });
   });
 });
