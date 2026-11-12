@@ -66,6 +66,13 @@ for (const file of filesToCheck) {
       console.error(`   -> Solution: Compliance cards must use 'bg-white dark:bg-card' (SOVEREIGN_CARD_CONTAINER).`);
       totalViolations++;
     }
+
+    // 3. Conflicting border utilities on the same line (e.g. border-border AND border-b-*)
+    if (/\bborder-border(?:\/\d+)?\b/.test(line) && /\bborder-b-(?:primary|secondary|slate|border)(?:\/\d+)?\b/.test(line)) {
+      console.error(`❌ [BORDER-CONFLICT] ${file}:${index + 1}: Found conflicting border utilities ('border-border' and 'border-b-*' on the same element).`);
+      console.error(`   -> Solution: Avoid mixing generic border-border with directional border-b-* tokens; consolidate to a single unambiguous border token.`);
+      totalViolations++;
+    }
   });
 }
 
