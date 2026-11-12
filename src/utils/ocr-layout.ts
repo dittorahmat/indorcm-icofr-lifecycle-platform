@@ -99,16 +99,21 @@ function resolveDiagram(nodes: OcrRawNode[]): ResolvedDiagram {
       if (!anyExplicitChildren && !isBelowTopHeader) continue;
 
       // Snap to closest lane by horizontal center (or x origin if width missing)
+      const firstLane = lanes[0];
+      if (!firstLane) continue;
+
       const nodeCenterX = n.position.x + (n.width ? n.width / 2 : 0);
-      let closest = lanes[0].id;
-      const firstLaneCenterX = lanes[0].position.x + (lanes[0].width ? lanes[0].width / 2 : 0);
+      let closest = firstLane.id;
+      const firstLaneCenterX = firstLane.position.x + (firstLane.width ? firstLane.width / 2 : 0);
       let minDistance = Math.abs(nodeCenterX - firstLaneCenterX);
       for (let i = 1; i < lanes.length; i += 1) {
-        const laneCenterX = lanes[i].position.x + (lanes[i].width ? lanes[i].width / 2 : 0);
+        const lane = lanes[i];
+        if (!lane) continue;
+        const laneCenterX = lane.position.x + (lane.width ? lane.width / 2 : 0);
         const distance = Math.abs(nodeCenterX - laneCenterX);
         if (distance < minDistance) {
           minDistance = distance;
-          closest = lanes[i].id;
+          closest = lane.id;
         }
       }
       n.parentId = closest;
