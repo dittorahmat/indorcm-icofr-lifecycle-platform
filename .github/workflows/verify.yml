@@ -73,6 +73,7 @@ jobs:
             node scripts/check-rbac-delta.mjs --base "$BASE" $FILES
           fi
           node scripts/check-workflows.mjs
+          node scripts/check-crlf.mjs
           node scripts/check-test-i18n.mjs
           node scripts/check-doc-refs.mjs
           node scripts/check-ocr-constants.mjs
