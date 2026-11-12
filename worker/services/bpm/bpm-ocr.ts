@@ -131,13 +131,15 @@ Hanya yang BOLEH menjadi node/edge: lajur swimlane, bentuk alur proses, label di
 
 Instruksi Partisi Kolom & Swimlane (SANGAT KRITIS):
 1. Setiap kolom vertikal pembatas departemen/fungsi ADALAH SATU SWIMLANE. Identifikasi semua kolom dari kiri ke kanan secara berurutan.
-   - Contoh pada 5 kolom: Kolom 1 (x: 0 - 200), Kolom 2 (x: 200 - 400), Kolom 3 (x: 400 - 600), Kolom 4 (x: 600 - 800), Kolom 5 (x: 800 - 1000).
-   - Ekstrak judul header masing-masing lajur (misal Kolom 1: "NASABAH", Kolom 2: "PENAKSIR", Kolom 3: "PEMIMPIN BIDANG OPERASIONAL", Kolom 4: "UNIT OPERASIONAL", Kolom 5: "TELLER").
-   - Simpan teks header tersebut ke properti "department" dan "label" dari node swimlane tersebut. Jangan biarkan kosong!
+   - PENTING (KOTAK HEADER ATAS): Kotak nama divisi/entitas di paling atas (misalnya kotak berwarna kuning bertuliskan "Konsumen", "Administrasi", "Bank", "Developer" atau sejenisnya) yang biasanya berdiri sendiri tanpa panah alur masuk/keluar ADALAH HEADER SWIMLANE.
+   - Ekstrak kotak tersebut sebagai tipe "swimlane", BUKAN sebagai node proses/activity biasa.
+   - Teks pada kotak tersebut (misal "Konsumen") simpan ke properti "department" dan "label" dari node swimlane tersebut. Jangan biarkan kosong.
+   - Koordinat swimlane: position.x = tepi kiri kolom, position.y = posisi atas header (atau 0), width = lebar kolom, height = tinggi vertikal kolom yang menaungi seluruh alur proses di bawahnya.
 2. KEANGGOTAAN SWIMLANE (parentId):
-   - SEMUA bentuk alur proses yang berada secara fisik di dalam batas horizontal sebuah kolom WAJIB memiliki "parentId" bernilai "id" dari swimlane kolom tersebut.
-   - JANGAN PERNAH mengaitkan node di Kolom 1 ke Kolom 2 atau sebaliknya. Perhatikan posisi X fisik node tersebut terhadap garis kolom vertikal pembatas!
-   - Kolom paling kiri (seperti "NASABAH") yang memuat dokumen awal WAJIB berisi node-node tersebut dengan parentId menunjuk ke swimlane kolom paling kiri.
+   - SEMUA bentuk alur proses (start, activity, decision, document, manual-operation, end, dll.) yang berada secara fisik di bawah kotak header / di dalam batas horizontal sebuah kolom WAJIB memiliki "parentId" bernilai "id" dari swimlane kolom tersebut.
+   - DILARANG membiarkan node di bawah kolom swimlane tanpa parentId (unparented/orphan). Jika node berada di bawah kolom "Konsumen", maka parentId-nya WAJIB id swimlane "Konsumen".
+   - JANGAN PERNAH mengaitkan node di Kolom 1 ke Kolom 2 atau sebaliknya. Perhatikan posisi X fisik node tersebut terhadap garis/lajur kolom pembatas!
+   - Kolom paling kiri yang memuat start atau dokumen awal WAJIB berisi node-node tersebut dengan parentId menunjuk ke swimlane kolom paling kiri.
 3. KONSOLIDASI STACKED DOCUMENTS:
    - Jika ada simbol dokumen bertumpuk 2-4 lembar, ekstrak menjadi TEPAT SATU node bertipe "multi-document".
    - Gabungkan teks dokumen tersebut menjadi satu label yang rapi. Contoh: "Formulir Pembiayaan Rahn\nKTP\nEmas".

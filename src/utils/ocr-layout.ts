@@ -74,13 +74,22 @@ function resolveDiagram(nodes: OcrRawNode[]): ResolvedDiagram {
   const lanes = orderLanes(lanesRaw, initialChildMap);
   const anyExplicitChildren = downgraded.some((n) => n.type !== 'swimlane' && n.parentId);
 
+  // Determine if lanes form a top header row (e.g. swimlane cards across the top
+  // where flow nodes sit physically below them, as in multi-column BPM diagrams).
+  const minLaneY = lanes.length > 0 ? Math.min(...lanes.map((l) => l.position.y)) : 0;
+  const maxLaneY = lanes.length > 0 ? Math.max(...lanes.map((l) => l.position.y)) : 0;
+  const isTopHeaderLanes = lanes.length > 1 && maxLaneY - minLaneY < 150 && minLaneY < 300;
+
   if (lanes.length > 0) {
     for (const n of downgraded) {
       if (n.type === 'swimlane' || n.parentId) continue;
       // A node that already named an unknown lane is left unparented on purpose.
       const rawParent = nodes.find((candidate) => candidate.id === n.id)?.parentId;
       if (rawParent) continue;
-      if (!anyExplicitChildren) continue;
+      // If there are explicit children OR the lanes are clearly top headers,
+      // snap unparented process nodes to their corresponding column lane.
+      const isBelowTopHeader = isTopHeaderLanes && n.position.y >= minLaneY;
+      if (!anyExplicitChildren && !isBelowTopHeader) continue;
 
       let closest = lanes[0].id;
       let minDistance = Math.abs(n.position.x - lanes[0].position.x);
