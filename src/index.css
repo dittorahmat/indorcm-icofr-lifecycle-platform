@@ -43,6 +43,9 @@
     --chart-3: 209 63% 16%;
     --chart-4: 172 81% 74%;
     --chart-5: 216 96% 91%;
+    --header-mancity: 206 64% 65%; /* Manchester City Blue #6CABDD */
+    --header-mancity-foreground: 222 47% 11%; /* High contrast Dark Navy #0f172a */
+    --header-mancity-border: 204 70% 53%; /* Sky Blue Accent Border #38bdf8 */
     --radius: 0.375rem;
 
     /* Layout Theme */
@@ -146,6 +149,9 @@
     --sidebar-accent-foreground: 221 100% 97%;
     --sidebar-border: 211 45% 20%;
     --sidebar-ring: 172 81% 74%;
+    --header-mancity: 210 100% 8%;
+    --header-mancity-foreground: 221 100% 97%;
+    --header-mancity-border: 211 45% 20%;
   }
   
   * {
@@ -201,7 +207,7 @@
 
   /* Manchester City Patterned Blue (Corak) */
   .bg-mancity-pattern {
-    background-color: #6CABDD;
+    background-color: hsl(var(--header-mancity));
     background-image: repeating-linear-gradient(
       -45deg,
       transparent,
