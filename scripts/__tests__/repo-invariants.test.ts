@@ -116,3 +116,32 @@ describe('check-ocr-constants', () => {
     expect(run('check-ocr-constants.mjs', root).status).toBe(0);
   });
 });
+
+describe('check-theme-tokens', () => {
+  it('fails when raw hex color is used in index.css outside comments', () => {
+    const root = tree({
+      'src/index.css': '.bg-custom { background-color: #6CABDD; }\n',
+    });
+    const { status, output } = run('check-theme-tokens.mjs', root);
+    expect(status).toBe(1);
+    expect(output).toContain('Found hardcoded hex color');
+  });
+
+  it('fails when ambiguous arbitrary transition duration is used in components', () => {
+    const root = tree({
+      'src/index.css': '.bg-custom { background-color: hsl(var(--primary)); }\n',
+      'src/components/MyComp.tsx': 'export function MyComp() { return <div className="duration-[250ms]" />; }\n',
+    });
+    const { status, output } = run('check-theme-tokens.mjs', root);
+    expect(status).toBe(1);
+    expect(output).toContain('Found ambiguous arbitrary transition classes');
+  });
+
+  it('passes when semantic tokens and standard duration classes are used', () => {
+    const root = tree({
+      'src/index.css': '/* hex #123 in comment is fine */\n.bg-custom { background-color: hsl(var(--primary)); }\n',
+      'src/components/MyComp.tsx': 'export function MyComp() { return <div className="duration-250 ease-spring-standard" />; }\n',
+    });
+    expect(run('check-theme-tokens.mjs', root).status).toBe(0);
+  });
+});
