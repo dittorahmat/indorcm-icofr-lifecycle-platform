@@ -188,6 +188,17 @@ export default {
   				}
   			}
   		},
+  		transitionTimingFunction: {
+  			'spring-standard': 'cubic-bezier(0.22, 1, 0.36, 1)',
+  			'spring-bounce': 'cubic-bezier(0.34, 1.35, 0.64, 1)',
+  		},
+  		transitionDuration: {
+  			'50': '50ms',
+  			'150': '150ms',
+  			'250': '250ms',
+  			'350': '350ms',
+  			'400': '400ms',
+  		},
   		animation: {
   			'fade-in': 'fade-in 0.3s ease-out',
   			'accordion-down': 'accordion-down 0.2s ease-out',
