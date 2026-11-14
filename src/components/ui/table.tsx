@@ -4,29 +4,38 @@ import { cn } from "@/lib/utils"
 
 export interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
   noWrapper?: boolean
-  wrapperProps?: React.HTMLAttributes<HTMLDivElement> & Record<string, unknown>
+  wrapperProps?: React.HTMLAttributes<HTMLDivElement> & {
+    "data-testid"?: string
+    [key: `data-${string}`]: unknown
+  }
 }
 
 const Table = React.forwardRef<
   HTMLTableElement,
   TableProps
 >(({ className, noWrapper, wrapperProps, ...props }, ref) => {
-  const table = (
-    <table
-      ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
-      {...props}
-    />
-  )
+  if (noWrapper) {
+    return (
+      <table
+        ref={ref}
+        className={cn("w-full caption-bottom text-sm", className)}
+        {...props}
+      />
+    )
+  }
 
-  if (noWrapper) return table
+  const {
+    "aria-label": tableAriaLabel,
+    "aria-labelledby": tableAriaLabelledby,
+    ...tableRestProps
+  } = props
 
   const {
     className: wrapperClassName,
     role = "region",
     tabIndex = 0,
-    "aria-label": wrapperAriaLabel = props["aria-label"],
-    "aria-labelledby": wrapperAriaLabelledby = props["aria-labelledby"],
+    "aria-label": wrapperAriaLabel = tableAriaLabel,
+    "aria-labelledby": wrapperAriaLabelledby = tableAriaLabelledby,
     ...restWrapperProps
   } = wrapperProps ?? {}
 
@@ -42,7 +51,11 @@ const Table = React.forwardRef<
       )}
       {...restWrapperProps}
     >
-      {table}
+      <table
+        ref={ref}
+        className={cn("w-full caption-bottom text-sm", className)}
+        {...tableRestProps}
+      />
     </div>
   )
 })

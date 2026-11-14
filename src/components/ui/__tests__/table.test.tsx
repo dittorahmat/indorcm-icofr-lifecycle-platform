@@ -37,13 +37,16 @@ describe("Table accessibility and keyboard scroll region (#168)", () => {
     expect(region.className).toContain("@container")
     expect(region.className).toContain("touch-pan-x")
     expect(region.className).toContain("overscroll-x-contain")
+    expect(region.className).toContain("focus-visible:ring-ring")
 
     const table = container.querySelector("table")
     expect(table).toBeDefined()
+    // Verify aria-label was assigned to region wrapper and not duplicated onto raw table
+    expect(table?.getAttribute("aria-label")).toBeNull()
   })
 
-  it("links aria-labelledby to caption when provided via wrapperProps or captionId", () => {
-    render(
+  it("links aria-labelledby to caption when provided via wrapperProps or captionId without duplicate on table", () => {
+    const { container } = render(
       <Table
         aria-labelledby="compliance-caption"
         wrapperProps={{ "data-testid": "table-wrapper" }}
@@ -61,6 +64,9 @@ describe("Table accessibility and keyboard scroll region (#168)", () => {
     expect(region.getAttribute("role")).toBe("region")
     expect(region.getAttribute("aria-labelledby")).toBe("compliance-caption")
     expect(region.getAttribute("tabindex")).toBe("0")
+
+    const table = container.querySelector("table")
+    expect(table?.getAttribute("aria-labelledby")).toBeNull()
   })
 
   it("renders pure table without wrapper when noWrapper is set", () => {
