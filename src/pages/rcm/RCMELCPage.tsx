@@ -104,7 +104,7 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
         {
           id: 'action',
           header: 'Action',
-          width: '50px',
+          width: '60px',
           render: (row) => (
             <Button 
               variant="ghost" 
@@ -125,10 +125,10 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
     {
       title: t('matrix.groups.control'),
       columns: [
-        { id: 'frequency', header: t('matrix.frequency'), accessorKey: 'frequency', width: '90px', className: 'text-center text-xs text-slate-800 font-medium' },
+        { id: 'frequency', header: t('matrix.frequency'), accessorKey: 'frequency', width: '120px', className: 'text-center text-xs text-slate-800 font-medium' },
         { id: 'supportingDocs', header: t('matrix.supporting_docs'), accessorKey: 'supportingDocs', width: '150px', className: 'text-xs text-slate-700 font-normal' },
-        { id: 'companyName', header: t('matrix.executing_function'), accessorKey: 'companyName', width: '150px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'executorRole', header: t('matrix.executor_role'), accessorKey: 'executorRole', width: '150px', className: 'text-xs text-slate-800 font-normal' },
+        { id: 'companyName', header: t('matrix.executing_function'), accessorKey: 'companyName', width: '160px', className: 'text-xs text-slate-800 font-normal' },
+        { id: 'executorRole', header: t('matrix.executor_role'), accessorKey: 'executorRole', width: '160px', className: 'text-xs text-slate-800 font-normal' },
         { 
           id: 'effectivePeriod', 
           header: t('matrix.effective_period'), 
@@ -206,7 +206,7 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
         groups={columnGroups}
         data={elcItems}
         isLoading={isLoadingControls}
-        minWidth="2200px"
+        minWidth="2305px"
       />
       
       <RCMEditDialog 

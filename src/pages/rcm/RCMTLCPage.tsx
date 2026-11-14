@@ -4,15 +4,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { RCMControlMapping } from '@shared/types';
-import { 
-  Search, RefreshCw, Edit3, AlertTriangle, Check, Shield, ExternalLink
-} from 'lucide-react';
+import { Search, RefreshCw, Edit3, AlertTriangle, Check, Shield, ExternalLink, FileUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
-import { FileUp } from 'lucide-react';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
 import { RCMGroupRow } from '@/components/rcm/RCMGroupRow';
@@ -139,7 +136,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
         {
           id: 'action',
           header: 'Action',
-          width: '50px',
+          width: '60px',
           render: (row) => (
             <Button 
               variant="ghost" 
@@ -215,7 +212,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
       title: t('matrix.groups.risk'),
       columns: [
         { id: 'company', header: t('matrix.company'), accessorKey: 'companyName', width: '180px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'location', header: t('matrix.location'), accessorKey: 'locationCode', width: '90px', className: 'text-xs text-slate-700 font-mono text-center font-medium' },
+        { id: 'location', header: t('matrix.location'), accessorKey: 'locationCode', width: '110px', className: 'text-xs text-slate-700 font-mono text-center font-medium' },
         { id: 'risk_desc', header: t('matrix.risk_description'), accessorKey: 'riskDescription', width: '380px', className: 'text-xs text-slate-800 font-normal leading-relaxed' },
         { 
           id: 'fraud', 
@@ -353,7 +350,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
         groups={columnGroups}
         data={filteredItems}
         isLoading={isLoading}
-        minWidth="4800px"
+        minWidth="4510px"
       />
 
       <RCMEditDialog 

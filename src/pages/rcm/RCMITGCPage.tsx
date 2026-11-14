@@ -111,7 +111,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
         {
           id: 'action',
           header: 'Action',
-          width: '50px',
+          width: '60px',
           render: (row) => (
             <Button 
               variant="ghost" 
@@ -145,7 +145,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
       title: t('matrix.groups.risk'),
       columns: [
         { id: 'company', header: t('matrix.company'), accessorKey: 'companyName', width: '180px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'location', header: t('matrix.location'), accessorKey: 'locationCode', width: '90px', className: 'text-xs text-slate-700 font-mono text-center font-medium' },
+        { id: 'location', header: t('matrix.location'), accessorKey: 'locationCode', width: '110px', className: 'text-xs text-slate-700 font-mono text-center font-medium' },
         { id: 'risk_desc', header: t('matrix.risk_description'), accessorKey: 'riskDescription', width: '380px', className: 'text-xs text-slate-800 font-normal leading-relaxed' },
       ]
     },
@@ -225,7 +225,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
         groups={columnGroups}
         data={filteredItems}
         isLoading={isLoading}
-        minWidth="3800px"
+        minWidth="3300px"
       />
 
       <RCMEditDialog 
