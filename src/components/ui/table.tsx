@@ -2,10 +2,15 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+export interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
+  noWrapper?: boolean
+  wrapperProps?: React.HTMLAttributes<HTMLDivElement> & Record<string, unknown>
+}
+
 const Table = React.forwardRef<
   HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement> & { noWrapper?: boolean }
->(({ className, noWrapper, ...props }, ref) => {
+  TableProps
+>(({ className, noWrapper, wrapperProps, ...props }, ref) => {
   const table = (
     <table
       ref={ref}
@@ -16,8 +21,27 @@ const Table = React.forwardRef<
 
   if (noWrapper) return table
 
+  const {
+    className: wrapperClassName,
+    role = "region",
+    tabIndex = 0,
+    "aria-label": wrapperAriaLabel = props["aria-label"],
+    "aria-labelledby": wrapperAriaLabelledby = props["aria-labelledby"],
+    ...restWrapperProps
+  } = wrapperProps ?? {}
+
   return (
-    <div className="relative w-full max-w-full overflow-x-auto touch-pan-x overscroll-x-contain table-scroll-hint">
+    <div
+      role={role}
+      tabIndex={tabIndex}
+      aria-label={wrapperAriaLabel}
+      aria-labelledby={wrapperAriaLabelledby}
+      className={cn(
+        "@container relative w-full max-w-full overflow-x-auto touch-pan-x overscroll-x-contain table-scroll-hint focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        wrapperClassName
+      )}
+      {...restWrapperProps}
+    >
       {table}
     </div>
   )
