@@ -144,14 +144,15 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
         id: `coso-${p}`,
         header: `${p}`,
         width: '45px',
-        className: 'p-0',
+        className: 'p-0 text-center',
         headerClassName: 'text-center',
+        align: 'center',
         tooltip: `Prinsip ${p}: ${t(`matrix.coso_tooltips.p${p}`)}`,
         render: (row) => {
           const isMapped = row.cosoPrinciples?.includes(p);
           return (
             <div className="flex items-center justify-center h-full text-xs font-mono">
-              <span className={isMapped ? "font-bold text-emerald-700" : "text-slate-400 font-normal"}>
+              <span className={isMapped ? "font-semibold text-emerald-700" : "text-slate-400 font-normal"}>
                 {isMapped ? 'Y' : 'N'}
               </span>
             </div>

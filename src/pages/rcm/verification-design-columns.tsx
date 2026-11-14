@@ -71,7 +71,7 @@ export function buildVerificationDesignColumns({
   return [
     {
       title: t('rcm:verification.columns.actions'),
-      className: 'bg-slate-200/50 print:hidden',
+      className: 'print:hidden',
       columns: [
         {
           id: 'action',
@@ -96,7 +96,6 @@ export function buildVerificationDesignColumns({
     },
     {
       title: t('rcm:verification.groups.info'),
-      className: 'bg-indigo-50/50',
       columns: [
         { id: 'control_name', header: t('rcm:verification.columns.control_name'), accessorKey: 'controlName', width: '280px', className: 'text-xs text-slate-800 font-normal' },
         { id: 'control_desc', header: t('rcm:matrix.control_description'), accessorKey: 'controlDescription', width: '350px', className: 'text-xs text-slate-600 font-normal not-italic' },
@@ -116,25 +115,35 @@ export function buildVerificationDesignColumns({
     },
     {
       title: t('rcm:matrix.ipo'),
-      className: 'bg-blue-600 text-white',
-      columns: IPO_FIELDS.map((field) => ({
-        id: field,
-        header: IPO_CODE[field],
-        width: '40px',
-        className: 'text-center text-xs font-mono text-slate-700',
-        render: (row) => row[field] === 'Y' ? 'Y' : 'N',
-      }))
+      columns: [
+        ...IPO_FIELDS.map((field) => ({
+          id: field,
+          header: IPO_CODE[field],
+          width: '40px',
+          className: 'text-center text-xs font-mono text-slate-700',
+          render: (row: Record<string, unknown>) => (
+            <span className={cn("font-mono text-xs", row[field] === 'Y' ? "font-semibold text-slate-800" : "font-normal text-slate-400")}>
+              {row[field] === 'Y' ? 'Y' : 'N'}
+            </span>
+          ),
+        }))
+      ]
     },
     {
       title: t('rcm:matrix.assertions'),
-      className: 'bg-indigo-600 text-white',
-      columns: ASSERTION_FIELDS.map((field) => ({
-        id: field,
-        header: ASSERTION_CODE[field],
-        width: '40px',
-        className: 'text-center text-xs font-mono text-slate-700',
-        render: (row) => row[field] === 'Y' ? 'Y' : 'N',
-      }))
+      columns: [
+        ...ASSERTION_FIELDS.map((field) => ({
+          id: field,
+          header: ASSERTION_CODE[field],
+          width: '40px',
+          className: 'text-center text-xs font-mono text-slate-700',
+          render: (row: Record<string, unknown>) => (
+            <span className={cn("font-mono text-xs", row[field] === 'Y' ? "font-semibold text-slate-800" : "font-normal text-slate-400")}>
+              {row[field] === 'Y' ? 'Y' : 'N'}
+            </span>
+          ),
+        }))
+      ]
     },
     {
       title: t('rcm:matrix.groups.metadata'),
@@ -146,13 +155,12 @@ export function buildVerificationDesignColumns({
         { id: 'app', header: t('rcm:matrix.supporting_app'), accessorKey: 'supportingApp', width: '150px', className: 'text-xs text-slate-800 font-normal' },
         { id: 'function', header: t('rcm:matrix.executing_function'), accessorKey: 'executingFunction', width: '150px', className: 'text-xs text-slate-800 font-normal' },
         { id: 'role', header: t('rcm:matrix.executor_role'), accessorKey: 'executorRole', width: '150px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'fsli', header: t('rcm:matrix.affected_fsli_item'), accessorKey: 'affectedFsliItem', width: '150px', className: 'text-xs font-mono text-slate-600' },
-        { id: 'period', header: t('rcm:matrix.effective_period'), accessorKey: 'effectivePeriod', width: '120px', className: 'text-xs font-semibold text-indigo-700' },
+        { id: 'fsli', header: t('rcm:matrix.affected_fsli_item'), accessorKey: 'affectedFsliItem', width: '150px', className: 'text-xs text-slate-800 font-normal' },
+        { id: 'period', header: t('rcm:matrix.effective_period'), accessorKey: 'effectivePeriod', width: '120px', className: 'text-center text-xs font-semibold text-indigo-700' },
       ]
     },
     {
       title: t('rcm:verification.groups.tod'),
-      className: 'bg-amber-50',
       columns: [
         { id: 'p_obj', header: t('rcm:verification.columns.p_obj'), accessorKey: 'pilarObjective', width: '150px', className: 'text-xs' },
         { id: 'p_time', header: t('rcm:verification.columns.p_time'), accessorKey: 'pilarTiming', width: '150px', className: 'text-xs' },

@@ -135,7 +135,6 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
   const columnGroups: RCMColumnGroup[] = [
     {
       title: t('matrix.groups.process'),
-      className: 'bg-slate-200/50',
       columns: [
         {
           id: 'action',
@@ -214,7 +213,6 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
     },
     {
       title: t('matrix.groups.risk'),
-      className: 'bg-rose-50/50',
       columns: [
         { id: 'company', header: t('matrix.company'), accessorKey: 'companyName', width: '180px', className: 'text-xs text-slate-800 font-normal' },
         { id: 'location', header: t('matrix.location'), accessorKey: 'locationCode', width: '90px', className: 'text-xs text-slate-700 font-mono text-center font-medium' },
@@ -241,7 +239,6 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
     },
     {
       title: t('matrix.groups.control'),
-      className: 'bg-indigo-50/50',
       columns: [
         { id: 'control_ref', header: t('matrix.control_ref'), accessorKey: 'controlCode', width: '130px', className: 'font-mono text-xs font-semibold text-slate-700' },
         { id: 'control_name', header: t('matrix.control_name'), accessorKey: 'mappedControlName', width: '320px', className: 'text-xs text-slate-900 font-medium leading-snug' },
@@ -262,26 +259,32 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
     },
     {
       title: 'IPO',
-      className: 'bg-blue-600 text-white',
       columns: IPO_FIELDS.map((field) => ({
         id: field,
         header: IPO_CODE[field],
         tooltip: t(`bpm:ipo.tooltip.${IPO_TIP[field]}.desc`),
         width: '50px',
         className: 'text-center text-xs font-mono text-slate-700',
-        render: (row) => row[field] === 'Y' ? 'Y' : 'N',
+        render: (row) => (
+          <span className={cn("font-mono text-xs", row[field] === 'Y' ? "font-semibold text-slate-800" : "font-normal text-slate-400")}>
+            {row[field] === 'Y' ? 'Y' : 'N'}
+          </span>
+        ),
       }))
     },
     {
       title: t('matrix.assertions'),
-      className: 'bg-indigo-600 text-white',
       columns: ASSERTION_FIELDS.map((field) => ({
         id: field,
         header: ASSERTION_CODE[field],
         tooltip: t(`bpm:assertions.tooltip.${ASSERTION_TIP[field]}.desc`),
         width: '50px',
         className: 'text-center text-xs font-mono text-slate-700',
-        render: (row) => row[field] === 'Y' ? 'Y' : 'N',
+        render: (row) => (
+          <span className={cn("font-mono text-xs", row[field] === 'Y' ? "font-semibold text-slate-800" : "font-normal text-slate-400")}>
+            {row[field] === 'Y' ? 'Y' : 'N'}
+          </span>
+        ),
       }))
     },
     {
@@ -294,7 +297,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
         { id: 'app', header: t('matrix.supporting_app'), accessorKey: 'supportingApp', width: '180px', className: 'text-xs text-slate-800 font-normal' },
         { id: 'function', header: t('matrix.executing_function'), accessorKey: 'executingFunction', width: '180px', className: 'text-xs text-slate-800 font-normal' },
         { id: 'role', header: t('matrix.executor_role'), accessorKey: 'executorRole', width: '180px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'fsli', header: t('matrix.affected_fsli_item'), accessorKey: 'affectedFsliItem', width: '220px', className: 'text-xs font-mono text-slate-600' },
+        { id: 'fsli', header: t('matrix.affected_fsli_item'), accessorKey: 'affectedFsliItem', width: '220px', className: 'text-xs text-slate-800 font-normal' },
         { id: 'period', header: t('matrix.effective_period'), accessorKey: 'effectivePeriod', width: '130px', className: 'text-center text-xs font-semibold text-indigo-700' },
       ]
     }
