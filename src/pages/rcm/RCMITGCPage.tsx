@@ -16,6 +16,7 @@ import { RCMImportWizardModal } from '@/components/rcm/import/RCMImportWizardMod
 import { exportRCMToExcel, getDefaultRcmSignoffs } from '@/lib/rcm-excel-export';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { ASSERTION_FIELDS, IPO_FIELDS } from '@shared/assertion-fields';
+import { BooleanIndicator } from '@/components/rcm/BooleanIndicator';
 
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
@@ -160,11 +161,10 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
           id: 'is_key', 
           header: t('matrix.is_key_control'), 
           width: '90px', 
+          align: 'center',
           className: 'text-center text-xs font-mono',
           render: (row) => (
-            <span className={cn(row.isKeyControl ? "font-semibold text-indigo-700" : "text-slate-400 font-normal")}>
-              {row.isKeyControl ? 'Y' : 'N'}
-            </span>
+            <BooleanIndicator value={row.isKeyControl} tone="primary" />
           )
         },
       ]

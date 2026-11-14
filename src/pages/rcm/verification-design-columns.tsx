@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import type { RCMColumnGroup } from '@/components/rcm/RCMTable';
 import { cn } from '@/lib/utils';
 import { ASSERTION_CODE, ASSERTION_FIELDS, IPO_CODE, IPO_FIELDS } from '@shared/assertion-fields';
+import { BooleanIndicator } from '@/components/rcm/BooleanIndicator';
 
 /** One row of the Appendix 8 verification matrix. */
 export interface VerificationMatrixItem {
@@ -104,11 +105,10 @@ export function buildVerificationDesignColumns({
           id: 'is_key',
           header: t('rcm:verification.columns.is_key'),
           width: '90px',
+          align: 'center',
           className: 'text-center text-xs font-mono',
           render: (row) => (
-            <span className={cn(row.isKeyControl ? "font-bold text-indigo-700" : "text-slate-400 font-normal")}>
-              {row.isKeyControl ? 'Y' : 'N'}
-            </span>
+            <BooleanIndicator value={row.isKeyControl} tone="primary" />
           )
         },
       ]
@@ -120,11 +120,10 @@ export function buildVerificationDesignColumns({
           id: field,
           header: IPO_CODE[field],
           width: '40px',
+          align: 'center' as const,
           className: 'text-center text-xs font-mono text-slate-700',
           render: (row: Record<string, unknown>) => (
-            <span className={cn("font-mono text-xs", row[field] === 'Y' ? "font-semibold text-slate-800" : "font-normal text-slate-400")}>
-              {row[field] === 'Y' ? 'Y' : 'N'}
-            </span>
+            <BooleanIndicator value={row[field]} />
           ),
         }))
       ]
@@ -136,11 +135,10 @@ export function buildVerificationDesignColumns({
           id: field,
           header: ASSERTION_CODE[field],
           width: '40px',
+          align: 'center' as const,
           className: 'text-center text-xs font-mono text-slate-700',
           render: (row: Record<string, unknown>) => (
-            <span className={cn("font-mono text-xs", row[field] === 'Y' ? "font-semibold text-slate-800" : "font-normal text-slate-400")}>
-              {row[field] === 'Y' ? 'Y' : 'N'}
-            </span>
+            <BooleanIndicator value={row[field]} />
           ),
         }))
       ]

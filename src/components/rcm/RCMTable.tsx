@@ -176,6 +176,7 @@ export function RCMTable({
                             key={`cell-${col.id}-${cIdx}`}
                             className={cn(
                               "px-3 border-r border-slate-100 py-2 text-xs transition-colors duration-200",
+                              col.align === 'center' ? "text-center" : col.align === 'right' ? "text-right" : undefined,
                               "group-hover:bg-indigo-50/70 group-hover:border-indigo-100/50",
                               col.className
                             )}

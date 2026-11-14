@@ -27,6 +27,7 @@ import {
   IPO_FIELDS,
   IPO_TIP,
 } from '@shared/assertion-fields';
+import { BooleanIndicator } from '@/components/rcm/BooleanIndicator';
 
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
@@ -218,11 +219,10 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
           id: 'fraud', 
           header: 'Fraud', 
           width: '70px', 
+          align: 'center',
           className: 'text-center text-xs font-mono',
           render: (row) => (
-            <span className={cn(row.isFraudRelated ? "font-semibold text-rose-700" : "text-slate-400 font-normal")}>
-              {row.isFraudRelated ? 'Y' : 'N'}
-            </span>
+            <BooleanIndicator value={row.isFraudRelated} tone="danger" />
           )
         },
         { 
@@ -245,11 +245,10 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
           id: 'is_key', 
           header: t('matrix.is_key_control'), 
           width: '90px', 
+          align: 'center',
           className: 'text-center text-xs font-mono',
           render: (row) => (
-            <span className={cn(row.isKeyControl ? "font-semibold text-indigo-700" : "text-slate-400 font-normal")}>
-              {row.isKeyControl ? 'Y' : 'N'}
-            </span>
+            <BooleanIndicator value={row.isKeyControl} tone="primary" />
           )
         },
       ]
@@ -261,11 +260,10 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
         header: IPO_CODE[field],
         tooltip: t(`bpm:ipo.tooltip.${IPO_TIP[field]}.desc`),
         width: '50px',
+        align: 'center' as const,
         className: 'text-center text-xs font-mono text-slate-700',
         render: (row) => (
-          <span className={cn("font-mono text-xs", row[field] === 'Y' ? "font-semibold text-slate-800" : "font-normal text-slate-400")}>
-            {row[field] === 'Y' ? 'Y' : 'N'}
-          </span>
+          <BooleanIndicator value={row[field]} />
         ),
       }))
     },
@@ -276,11 +274,10 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
         header: ASSERTION_CODE[field],
         tooltip: t(`bpm:assertions.tooltip.${ASSERTION_TIP[field]}.desc`),
         width: '50px',
+        align: 'center' as const,
         className: 'text-center text-xs font-mono text-slate-700',
         render: (row) => (
-          <span className={cn("font-mono text-xs", row[field] === 'Y' ? "font-semibold text-slate-800" : "font-normal text-slate-400")}>
-            {row[field] === 'Y' ? 'Y' : 'N'}
-          </span>
+          <BooleanIndicator value={row[field]} />
         ),
       }))
     },

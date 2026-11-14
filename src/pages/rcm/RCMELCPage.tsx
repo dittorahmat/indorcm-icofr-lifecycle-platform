@@ -16,6 +16,7 @@ import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
 import { RolloverCard } from '@/components/layout/RolloverCard';
 import { exportRCMToExcel, getDefaultRcmSignoffs } from '@/lib/rcm-excel-export';
+import { BooleanIndicator } from '@/components/rcm/BooleanIndicator';
 
 const COSO_PRINCIPLES = Array.from({ length: 17 }, (_, i) => i + 1);
 
@@ -151,10 +152,8 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
         render: (row) => {
           const isMapped = row.cosoPrinciples?.includes(p);
           return (
-            <div className="flex items-center justify-center h-full text-xs font-mono">
-              <span className={isMapped ? "font-semibold text-emerald-700" : "text-slate-400 font-normal"}>
-                {isMapped ? 'Y' : 'N'}
-              </span>
+            <div className="flex items-center justify-center h-full">
+              <BooleanIndicator value={isMapped} className={isMapped ? "text-emerald-700 font-semibold" : undefined} />
             </div>
           );
         }
