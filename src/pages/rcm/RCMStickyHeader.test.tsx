@@ -72,4 +72,49 @@ describe('RCMTable Sticky Header Verification', () => {
     const groupRow = container.querySelector('.sticky.top-\\[88px\\]');
     expect(groupRow).toBeInTheDocument();
   });
+
+  it('renders custom minWidth on desktop table when passed as a prop', () => {
+    const { container } = render(
+      <QueryClientProvider client={queryClient}>
+        <I18nextProvider i18n={i18n}>
+          <TooltipProvider>
+            <RCMTable groups={mockGroups} data={mockData} minWidth="4510px" />
+          </TooltipProvider>
+        </I18nextProvider>
+      </QueryClientProvider>
+    );
+
+    const table = container.querySelector('table');
+    expect(table).toHaveStyle({ minWidth: '4510px' });
+  });
+
+  it('respects explicit column align property (center, right, left)', () => {
+    const alignGroups = [
+      {
+        title: "Align Group",
+        columns: [
+          { id: "col_center", header: "Center", width: "100px", align: "center" as const, accessorKey: "col1" },
+          { id: "col_right", header: "Right", width: "100px", align: "right" as const, accessorKey: "col1" },
+        ]
+      }
+    ];
+
+    const { container } = render(
+      <QueryClientProvider client={queryClient}>
+        <I18nextProvider i18n={i18n}>
+          <TooltipProvider>
+            <RCMTable groups={alignGroups} data={mockData} />
+          </TooltipProvider>
+        </I18nextProvider>
+      </QueryClientProvider>
+    );
+
+    const ths = container.querySelectorAll('thead tr:nth-child(2) th');
+    expect(ths[0]).toHaveClass('text-center');
+    expect(ths[1]).toHaveClass('text-left'); // default text-left unless center
+
+    const tds = container.querySelectorAll('tbody tr td');
+    expect(tds[0]).toHaveClass('text-center');
+    expect(tds[1]).toHaveClass('text-right');
+  });
 });
