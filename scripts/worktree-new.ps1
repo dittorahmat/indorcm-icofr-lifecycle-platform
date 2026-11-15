@@ -12,6 +12,7 @@ param(
     [Parameter(Mandatory=$false)]
     [ValidateSet(1, 2, 3)]
     [int]$Slot,
+    [Alias('BaseBranch')]
     [string]$Base = "HEAD"
 )
 

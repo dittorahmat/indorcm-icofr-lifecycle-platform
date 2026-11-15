@@ -31,10 +31,20 @@ if (Test-Path $targetNodeModules) {
 }
 
 Write-Host "Removing git worktree at $Path..." -ForegroundColor Cyan
-if ($Force) {
+try {
+    if ($Force) {
+        git worktree remove $Path --force
+    } else {
+        git worktree remove $Path
+    }
+} catch {
+    Write-Warning "Standard git worktree remove failed: $_. Retrying with force..."
     git worktree remove $Path --force
-} else {
-    git worktree remove $Path
+}
+
+if (Test-Path $Path) {
+    Write-Host "Cleaning residual directory at $Path via cmd rmdir..." -ForegroundColor Yellow
+    cmd /c rmdir /s /q "$Path"
 }
 
 Write-Host "Worktree safely removed from $Path" -ForegroundColor Green

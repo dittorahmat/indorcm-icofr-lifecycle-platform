@@ -74,7 +74,14 @@ for (const file of filesToCheck) {
       totalViolations++;
     }
 
-    // 4. Sticky columns/headers/tables using raw bg-white or bg-slate without dark: counterparts
+    // 4. Banned ad-hoc multi-stop gradients on markup (Must use SOVEREIGN_SKY_BANNER_CONTAINER or theme tokens)
+    if (line.includes('bg-gradient-to-') && line.includes('from-') && line.includes('to-') && !file.includes('sovereign-banner.ts')) {
+      console.error(`❌ [GRADIENT-SLOP] ${file}:${index + 1}: Found ad-hoc multi-stop gradient directly in component markup.`);
+      console.error("   -> Solution: Banner and header surfaces must use SOVEREIGN_SKY_BANNER_CONTAINER or SOVEREIGN_CARD_CONTAINER.");
+      totalViolations++;
+    }
+
+    // 5. Sticky columns/headers/tables using raw bg-white or bg-slate without dark: counterparts
     if (/\b(?:TableHeader|TableHead|TableCell|th|td)\b/.test(line) && /\bsticky\b/.test(line) && /\b(?:bg-white|bg-slate-50)\b/.test(line) && !line.includes('dark:')) {
       console.error(`❌ [STICKY-THEME-SLOP] ${file}:${index + 1}: Found sticky table element with hardcoded light background without dark: counterpart.`);
       console.error(`   -> Solution: Sticky headers/columns must pair light backgrounds with dark counterparts (e.g., 'bg-white dark:bg-card' or 'bg-slate-50 dark:bg-card').`);
