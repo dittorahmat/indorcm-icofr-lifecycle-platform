@@ -33,7 +33,7 @@ if (existsSync(INDEX_CSS)) {
 
 // 2. Scan src/**/*.{tsx,jsx} for ambiguous arbitrary duration / easing utility classes
 const ROOT_SRC = resolve(ROOT_DIR, 'src');
-const AMBIGUOUS_DURATION_EASE = /\b(duration-\[[0-9]+ms\]|ease-\[cubic-bezier[^\]]+\]|group-\[\.toaster\]:duration-\[[0-9]+ms\]|group-\[\.toaster\]:ease-\[cubic-bezier[^\]]+\])\b/g;
+const AMBIGUOUS_DURATION_EASE = /(?:^|[\s"'`])(duration-\[[0-9]+ms\]|ease-\[cubic-bezier[^\]]+\]|group-\[\.toaster\]:duration-\[[0-9]+ms\]|group-\[\.toaster\]:ease-\[cubic-bezier[^\]]+\])(?:$|[\s"'`])/g;
 
 function scanDir(dir) {
   const entries = readdirSync(dir);
@@ -56,7 +56,9 @@ function scanDir(dir) {
   }
 }
 
-scanDir(ROOT_SRC);
+if (existsSync(ROOT_SRC)) {
+  scanDir(ROOT_SRC);
+}
 
 if (violations > 0) {
   console.error(`\n🚫 check:theme-tokens failed with ${violations} violation(s).\n`);
