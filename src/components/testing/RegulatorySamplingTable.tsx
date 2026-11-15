@@ -186,11 +186,11 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
 
       {/* DESKTOP VIEW: Table (>= md) with safe horizontal scroll */}
       <div className="hidden md:block border border-slate-200 rounded-xl overflow-x-auto max-w-full touch-pan-x overscroll-x-contain bg-white shadow-xs">
-        <Table className="min-w-[760px]">
+        <Table className="min-w-[920px]">
           <TableHeader className="bg-slate-50/70 border-b border-slate-200">
             <TableRow>
               <TableHead className="w-[50px] text-center text-xs uppercase font-bold text-slate-700">No</TableHead>
-              <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[180px]">
+              <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[260px]">
                 {t('sampling.ref', { defaultValue: 'Ref. Bukti Dokumen' })}
               </TableHead>
               <TableHead className="w-[80px] text-center text-xs uppercase font-bold text-slate-700">Attr A</TableHead>
@@ -200,7 +200,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
               <TableHead className="w-[100px] text-center text-xs uppercase font-bold text-slate-700">
                 {t('sampling.status', { defaultValue: 'Hasil' })}
               </TableHead>
-              <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[200px]">
+              <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[280px]">
                 {t('sampling.comments', { defaultValue: 'Catatan Auditor' })}
               </TableHead>
               {!isReadOnly && <TableHead className="w-[50px]"></TableHead>}
