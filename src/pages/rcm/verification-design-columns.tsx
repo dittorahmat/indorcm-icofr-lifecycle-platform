@@ -98,8 +98,8 @@ export function buildVerificationDesignColumns({
     {
       title: t('rcm:verification.groups.info'),
       columns: [
-        { id: 'control_name', header: t('rcm:verification.columns.control_name'), accessorKey: 'controlName', width: '280px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'control_desc', header: t('rcm:matrix.control_description'), accessorKey: 'controlDescription', width: '350px', className: 'text-xs text-slate-600 font-normal not-italic' },
+        { id: 'control_name', header: t('rcm:verification.columns.control_name'), accessorKey: 'controlName', width: '360px', className: 'text-xs text-slate-800 font-normal' },
+        { id: 'control_desc', header: t('rcm:matrix.control_description'), accessorKey: 'controlDescription', width: '560px', className: 'text-xs text-slate-600 font-normal not-italic' },
         { id: 'docs', header: t('rcm:matrix.supporting_docs'), accessorKey: 'supportingDocs', width: '200px', className: 'text-xs text-slate-800 font-normal' },
         {
           id: 'is_key',
