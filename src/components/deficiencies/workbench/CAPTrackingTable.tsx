@@ -112,13 +112,13 @@ export function CAPTrackingTable({
 
   return (
     <div className="border border-slate-200 rounded-xl overflow-x-auto max-w-full touch-pan-x overscroll-x-contain bg-white shadow-xs">
-      <Table className="min-w-[840px]">
+      <Table className="min-w-[1040px]">
         <TableHeader className="bg-slate-50/70 border-b border-slate-200">
           <TableRow>
             <TableHead className="w-[110px] text-xs uppercase font-bold text-slate-700">Kode Temuan</TableHead>
-            <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[200px]">Uraian Temuan & Kontrol</TableHead>
+            <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[340px]">Uraian Temuan & Kontrol</TableHead>
             <TableHead className="w-[90px] text-center text-xs uppercase font-bold text-slate-700">Keparahan</TableHead>
-            <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[150px]">Owner / PIC</TableHead>
+            <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[180px]">Owner / PIC</TableHead>
             <TableHead className="w-[130px] text-xs uppercase font-bold text-slate-700">Target Deadline</TableHead>
             <TableHead className="w-[140px] text-center text-xs uppercase font-bold text-slate-700">Status CAP</TableHead>
             <TableHead className="w-[120px] text-center text-xs uppercase font-bold text-slate-700">Aksi</TableHead>
