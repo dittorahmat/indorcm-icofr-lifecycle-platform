@@ -11,45 +11,32 @@ interface ChatInputProps {
 
 export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
   const [message, setMessage] = React.useState('');
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   const handleSend = () => {
     if (message.trim() && !disabled) {
       onSend(message.trim());
       setMessage('');
-      // Reset textarea height
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
-      }
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleSend();
     }
-  };
-
-  // Auto-resize textarea
-  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
-    e.target.style.height = 'auto';
-    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
   };
 
   return (
     <div className="border-t bg-background p-4">
       <div className="flex gap-2">
         <Textarea
-          ref={textareaRef}
           value={message}
-          onChange={handleInput}
+          onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder || 'Tanyakan tentang ICOFR...'}
           disabled={disabled}
           rows={1}
-          className="min-h-[44px] max-h-[120px] resize-none focus:ring-0 focus:ring-offset-0"
+          className="min-h-[44px] max-h-[120px] resize-none [field-sizing:content] focus:ring-0 focus:ring-offset-0"
         />
         <Button
           onClick={handleSend}
