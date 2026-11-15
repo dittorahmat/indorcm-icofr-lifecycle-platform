@@ -154,6 +154,11 @@ export default {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
+  			},
+  			'header-mancity': {
+  				DEFAULT: 'hsl(var(--header-mancity))',
+  				foreground: 'hsl(var(--header-mancity-foreground))',
+  				border: 'hsl(var(--header-mancity-border))',
   			}
   		},
   		boxShadow: {
@@ -187,6 +192,17 @@ export default {
   					height: '0'
   				}
   			}
+  		},
+  		transitionTimingFunction: {
+  			'spring-standard': 'cubic-bezier(0.22, 1, 0.36, 1)',
+  			'spring-bounce': 'cubic-bezier(0.34, 1.35, 0.64, 1)',
+  		},
+  		transitionDuration: {
+  			'50': '50ms',
+  			'150': '150ms',
+  			'250': '250ms',
+  			'350': '350ms',
+  			'400': '400ms',
   		},
   		animation: {
   			'fade-in': 'fade-in 0.3s ease-out',

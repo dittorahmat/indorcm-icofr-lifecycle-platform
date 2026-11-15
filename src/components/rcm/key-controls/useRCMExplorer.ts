@@ -50,7 +50,7 @@ export function useRCMExplorer(workingYear: string) {
     queryFn: () => api<{ items: RCMMatrixItem[] }>(`/api/rcm-matrix/tlc?year=${workingYear}`),
   });
 
-  const rawItems = data?.items || [];
+  const rawItems = React.useMemo(() => data?.items || [], [data?.items]);
 
   // Filtered items
   const filteredItems = React.useMemo(() => {

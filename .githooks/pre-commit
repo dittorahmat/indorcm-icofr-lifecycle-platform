@@ -43,6 +43,7 @@ node scripts/check-no-window-print.mjs || exit 1
 node scripts/check-number-inputs.mjs || exit 1
 node scripts/check-font-slop.mjs || exit 1
 node scripts/check-contrast-slop.mjs || exit 1
+node scripts/check-theme-tokens.mjs || exit 1
 node scripts/check-worktree-isolation.mjs || exit 1
 node scripts/check-period-queries.mjs || exit 1
 node scripts/check-api-contract.mjs || exit 1

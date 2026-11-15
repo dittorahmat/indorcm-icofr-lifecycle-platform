@@ -35,7 +35,7 @@ export function MainHeader() {
       "sticky top-0 z-[100] w-full border-b transition-colors duration-300 shadow-sm print:hidden",
       isDark
         ? "bg-slate-950 border-b-2 border-b-slate-800 text-slate-50"
-        : "bg-surface-container-low border-b-2 border-b-primary/60 text-foreground"
+        : "bg-mancity-pattern border-b-2 border-b-sky-700/30 text-slate-900"
     )}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-2 sm:px-4 gap-2 py-2 sm:py-1 min-w-0 max-w-full flex-wrap">
         <div className="flex items-center gap-1.5 sm:gap-4 md:gap-6 min-w-0 max-w-full w-full sm:w-auto">
@@ -43,36 +43,54 @@ export function MainHeader() {
           <SidebarTrigger 
             aria-label={t('navigation.toggleSidebar', { defaultValue: 'Toggle navigation menu' })}
             className={cn(
-              "md:hidden h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 rounded-md text-foreground hover:bg-surface-container active:bg-surface-container-high border border-border/80 shadow-sm flex items-center justify-center",
-              isDark && "text-slate-100 hover:bg-slate-800 border-slate-700"
+              "md:hidden h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 rounded-md transition-colors flex items-center justify-center",
+              isDark 
+                ? "text-slate-100 hover:bg-slate-800 border border-slate-700" 
+                : "text-slate-900 hover:bg-white/20 active:bg-white/30 border border-slate-900/20 shadow-sm"
             )} 
           />
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 max-w-full flex-wrap">
             <Link to="/dashboard" className="flex items-center gap-1.5 md:gap-2 group shrink-0 min-h-[44px] min-w-[44px] py-1">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-sm">
-                <Shield className="h-4 w-4 transition-transform group-hover:scale-105" />
+              <div className={cn(
+                "h-8 w-8 rounded-lg flex items-center justify-center shadow-sm transition-transform group-hover:scale-105",
+                isDark ? "bg-primary text-primary-foreground" : "bg-slate-900 text-white"
+              )}>
+                <Shield className="h-4 w-4" />
               </div>
               <div className="flex flex-col min-w-0">
                 <span className={cn(
-                  "font-display tracking-tight text-xs sm:text-base font-bold truncate max-w-[110px] min-[420px]:max-w-[150px] sm:max-w-none text-primary",
-                  isDark && "text-white"
+                  "font-display tracking-tight text-xs sm:text-base font-extrabold truncate max-w-[110px] min-[420px]:max-w-[150px] sm:max-w-none",
+                  isDark ? "text-white" : "text-slate-950"
                 )}>{t('appName')}</span>
-                <span className="hidden lg:inline text-xs text-muted-foreground font-medium leading-none">
+                <span className={cn(
+                  "hidden lg:inline text-xs font-semibold leading-none",
+                  isDark ? "text-slate-400" : "text-slate-800"
+                )}>
                   {t('header.subTitle')}
                 </span>
               </div>
             </Link>
 
             {/* Compliance Status Badge */}
-            <div className="hidden min-[480px]:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container/40 border border-secondary/20 text-secondary text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-secondary" />
-              <span className="text-foreground/80 font-medium">{t('header.complianceStatus')}:</span>
-              <span className="font-bold text-secondary">{t('header.statusActive')}</span>
+            <div className={cn(
+              "hidden min-[480px]:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shadow-xs",
+              isDark 
+                ? "bg-secondary-container/40 border border-secondary/20 text-secondary"
+                : "bg-white/70 border border-white/80 text-slate-900"
+            )}>
+              <span className="w-2 h-2 rounded-full bg-emerald-600 dark:bg-secondary" />
+              <span className="font-medium text-slate-700 dark:text-foreground/80">{t('header.complianceStatus')}:</span>
+              <span className="font-bold text-slate-950 dark:text-secondary">{t('header.statusActive')}</span>
             </div>
 
             {/* Cycle Indicator Badge */}
-            <div className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container border border-border/60 text-muted-foreground text-xs font-medium">
-              <span className="text-foreground/70 font-semibold">{t('header.bumnHolding')}</span>
+            <div className={cn(
+              "hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
+              isDark
+                ? "bg-surface-container border border-border/60 text-muted-foreground"
+                : "bg-white/50 border border-white/60 text-slate-800"
+            )}>
+              <span className="font-semibold text-slate-950 dark:text-foreground/70">{t('header.bumnHolding')}</span>
               <span>•</span>
               <span>{t('header.assessmentCycle')}</span>
             </div>
@@ -91,8 +109,8 @@ export function MainHeader() {
                 aria-label={t('actions.openAccountMenu', { defaultValue: 'User account menu' })}
                 className="relative cursor-pointer hover:opacity-90 transition-opacity p-0.5 rounded-full min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border-2 border-border/60 shadow-sm ring-1 ring-black/5">
-                  <AvatarFallback className="bg-primary text-primary-foreground font-bold text-xs">
+                <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border-2 border-white/80 shadow-sm ring-1 ring-black/10">
+                  <AvatarFallback className="bg-slate-900 text-white font-bold text-xs">
                     {currentRole.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'US'}
                   </AvatarFallback>
                 </Avatar>
@@ -101,7 +119,7 @@ export function MainHeader() {
                     "absolute -bottom-0.5 -right-1 text-xs px-1 min-w-[18px] h-[18px] rounded-full flex items-center justify-center border font-bold shadow-sm select-none",
                     isDark
                       ? "bg-slate-900 border-slate-700 text-slate-200"
-                      : "bg-surface border-border text-foreground"
+                      : "bg-white border-slate-300 text-slate-900"
                   )}
                   title={`Role: ${currentRole}`}
                 >

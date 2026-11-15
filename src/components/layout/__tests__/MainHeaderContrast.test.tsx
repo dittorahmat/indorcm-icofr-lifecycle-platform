@@ -81,12 +81,10 @@ describe('MainHeader components contrast calibration (#157)', () => {
       render(<FiscalYearSelector />, { wrapper: Wrapper });
 
       const trigger = screen.getByRole('combobox');
-      expect(trigger.className).toContain('bg-surface-container/70');
-      expect(trigger.className).toContain('text-foreground');
-      expect(trigger.className).toContain('hover:bg-surface-container');
-      expect(trigger.className).toContain('border-border/80');
-      expect(trigger.className).not.toContain('bg-white/10');
-      expect(trigger.className).not.toContain('text-white');
+      expect(trigger.className).toContain('bg-white/80');
+      expect(trigger.className).toContain('text-slate-950');
+      expect(trigger.className).toContain('hover:bg-white');
+      expect(trigger.className).toContain('border-white/90');
     });
 
     it('applies dark theme styling when dark mode is enabled', () => {
@@ -118,17 +116,16 @@ describe('MainHeader components contrast calibration (#157)', () => {
   });
 
   describe('LanguageSwitcher', () => {
-    it('uses text-muted-foreground and surface-container hover on light theme', () => {
+    it('uses high contrast slate text and translucent hover on light theme', () => {
       mockUseTheme.mockReturnValue({ isDark: false });
       const Wrapper = createWrapper();
       render(<LanguageSwitcher />, { wrapper: Wrapper });
 
       const button = screen.getByRole('button');
-      expect(button.className).toContain('text-muted-foreground');
-      expect(button.className).toContain('hover:text-foreground');
-      expect(button.className).toContain('hover:bg-surface-container');
+      expect(button.className).toContain('text-slate-900');
+      expect(button.className).toContain('hover:text-slate-950');
+      expect(button.className).toContain('hover:bg-white/20');
       expect(button.className).not.toContain('text-white/70');
-      expect(button.className).not.toContain('hover:bg-white/10');
     });
 
     it('uses slate contrast on dark theme', () => {
@@ -144,35 +141,32 @@ describe('MainHeader components contrast calibration (#157)', () => {
   });
 
   describe('NotificationBell', () => {
-    it('applies calibrated text-muted-foreground and surface-container hover on light theme', () => {
+    it('applies calibrated text-slate-900 and translucent white hover on light theme', () => {
       mockUseTheme.mockReturnValue({ isDark: false });
       const Wrapper = createWrapper();
       render(<NotificationBell />, { wrapper: Wrapper });
 
       const button = screen.getByRole('button');
-      expect(button.className).toContain('text-muted-foreground');
-      expect(button.className).toContain('hover:text-foreground');
-      expect(button.className).toContain('hover:bg-surface-container');
+      expect(button.className).toContain('text-slate-900');
+      expect(button.className).toContain('hover:text-slate-950');
+      expect(button.className).toContain('hover:bg-white/20');
       expect(button.className).toContain('dark:hover:bg-slate-800');
-      expect(button.className).not.toContain('hover:bg-white/10');
       expect(button.className).toContain('min-h-[44px]');
       expect(button.className).toContain('min-w-[44px]');
     });
   });
 
   describe('MainHeader Container & Accent Border', () => {
-    it('locks sovereign neutral background and Manchester City blue accent border on light theme', () => {
+    it('locks authentic Manchester City blue patterned background on light theme', () => {
       mockUseTheme.mockReturnValue({ isDark: false });
       const Wrapper = createWrapper();
       render(<MainHeader />, { wrapper: Wrapper });
 
       const header = screen.getByRole('banner');
-      expect(header.className).toContain('bg-surface-container-low');
+      expect(header.className).toContain('bg-mancity-pattern');
       expect(header.className).toContain('border-b-2');
-      expect(header.className).toContain('border-b-primary/60');
-      expect(header.className).toContain('text-foreground');
-      expect(header.className).not.toContain('border-border/60');
-      expect(header.className).not.toContain('bg-mancity-pattern');
+      expect(header.className).toContain('border-b-sky-700/30');
+      expect(header.className).toContain('text-slate-900');
     });
 
     it('locks symmetric 2px border and dark styling on dark theme', () => {

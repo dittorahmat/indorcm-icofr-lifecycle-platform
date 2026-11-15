@@ -28,10 +28,10 @@ export function LanguageSwitcher() {
           size="icon" 
           aria-label={t('common:actions.switchLanguage', { defaultValue: 'Switch language' })}
           className={cn(
-            "h-11 w-11 sm:h-9 sm:w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0",
+            "h-11 w-11 sm:h-9 sm:w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 rounded-lg",
             isDark 
               ? "text-slate-300 hover:text-white hover:bg-slate-800" 
-              : "text-muted-foreground hover:text-foreground hover:bg-surface-container"
+              : "text-slate-900 hover:text-slate-950 hover:bg-white/20 active:bg-white/30"
           )}
         >
           <Languages className="h-4 w-4" aria-hidden="true" />
