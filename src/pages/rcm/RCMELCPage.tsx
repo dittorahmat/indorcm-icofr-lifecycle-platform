@@ -16,6 +16,7 @@ import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
 import { RolloverCard } from '@/components/layout/RolloverCard';
 import { exportRCMToExcel, getDefaultRcmSignoffs } from '@/lib/rcm-excel-export';
+import { BooleanIndicator } from '@/components/rcm/BooleanIndicator';
 
 const COSO_PRINCIPLES = Array.from({ length: 17 }, (_, i) => i + 1);
 
@@ -104,7 +105,7 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
         {
           id: 'action',
           header: 'Action',
-          width: '50px',
+          width: '60px',
           render: (row) => (
             <Button 
               variant="ghost" 
@@ -125,10 +126,10 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
     {
       title: t('matrix.groups.control'),
       columns: [
-        { id: 'frequency', header: t('matrix.frequency'), accessorKey: 'frequency', width: '90px', className: 'text-center text-xs text-slate-800 font-medium' },
+        { id: 'frequency', header: t('matrix.frequency'), accessorKey: 'frequency', width: '120px', className: 'text-center text-xs text-slate-800 font-medium' },
         { id: 'supportingDocs', header: t('matrix.supporting_docs'), accessorKey: 'supportingDocs', width: '150px', className: 'text-xs text-slate-700 font-normal' },
-        { id: 'companyName', header: t('matrix.executing_function'), accessorKey: 'companyName', width: '150px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'executorRole', header: t('matrix.executor_role'), accessorKey: 'executorRole', width: '150px', className: 'text-xs text-slate-800 font-normal' },
+        { id: 'companyName', header: t('matrix.executing_function'), accessorKey: 'companyName', width: '160px', className: 'text-xs text-slate-800 font-normal' },
+        { id: 'executorRole', header: t('matrix.executor_role'), accessorKey: 'executorRole', width: '160px', className: 'text-xs text-slate-800 font-normal' },
         { 
           id: 'effectivePeriod', 
           header: t('matrix.effective_period'), 
@@ -144,16 +145,15 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
         id: `coso-${p}`,
         header: `${p}`,
         width: '45px',
-        className: 'p-0',
+        className: 'p-0 text-center',
         headerClassName: 'text-center',
+        align: 'center',
         tooltip: `Prinsip ${p}: ${t(`matrix.coso_tooltips.p${p}`)}`,
         render: (row) => {
           const isMapped = row.cosoPrinciples?.includes(p);
           return (
-            <div className="flex items-center justify-center h-full text-xs font-mono">
-              <span className={isMapped ? "font-bold text-emerald-700" : "text-slate-400 font-normal"}>
-                {isMapped ? 'Y' : 'N'}
-              </span>
+            <div className="flex items-center justify-center h-full">
+              <BooleanIndicator value={isMapped} className={isMapped ? "text-emerald-700 font-semibold" : undefined} />
             </div>
           );
         }
@@ -205,7 +205,7 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
         groups={columnGroups}
         data={elcItems}
         isLoading={isLoadingControls}
-        minWidth="2200px"
+        minWidth="2305px"
       />
       
       <RCMEditDialog 

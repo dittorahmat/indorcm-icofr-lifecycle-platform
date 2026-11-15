@@ -16,13 +16,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-if (-not $Path -and $Slot) {
-    $Path = "..\icofr$Slot"
-}
-
 if (-not $Path) {
-    Write-Error "Either -Path or -Slot must be specified."
-    exit 1
+    if ($Slot) {
+        $Path = "..\icofr$Slot"
+    } else {
+        throw "Either -Path or -Slot (1, 2, or 3) must be provided."
+    }
 }
 
 $targetNodeModules = Join-Path $Path "node_modules"

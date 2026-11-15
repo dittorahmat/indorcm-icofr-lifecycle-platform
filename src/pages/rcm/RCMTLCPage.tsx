@@ -4,15 +4,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { RCMControlMapping } from '@shared/types';
-import { 
-  Search, RefreshCw, Edit3, AlertTriangle, Check, Shield, ExternalLink
-} from 'lucide-react';
+import { Search, RefreshCw, Edit3, AlertTriangle, Check, Shield, ExternalLink, FileUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
-import { FileUp } from 'lucide-react';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
 import { RCMGroupRow } from '@/components/rcm/RCMGroupRow';
@@ -30,6 +27,7 @@ import {
   IPO_FIELDS,
   IPO_TIP,
 } from '@shared/assertion-fields';
+import { BooleanIndicator } from '@/components/rcm/BooleanIndicator';
 
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
@@ -135,12 +133,11 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
   const columnGroups: RCMColumnGroup[] = [
     {
       title: t('matrix.groups.process'),
-      className: 'bg-slate-200/50',
       columns: [
         {
           id: 'action',
           header: 'Action',
-          width: '50px',
+          width: '60px',
           render: (row) => (
             <Button 
               variant="ghost" 
@@ -214,20 +211,18 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
     },
     {
       title: t('matrix.groups.risk'),
-      className: 'bg-rose-50/50',
       columns: [
         { id: 'company', header: t('matrix.company'), accessorKey: 'companyName', width: '180px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'location', header: t('matrix.location'), accessorKey: 'locationCode', width: '90px', className: 'text-xs text-slate-700 font-mono text-center font-medium' },
+        { id: 'location', header: t('matrix.location'), accessorKey: 'locationCode', width: '110px', className: 'text-xs text-slate-700 font-mono text-center font-medium' },
         { id: 'risk_desc', header: t('matrix.risk_description'), accessorKey: 'riskDescription', width: '380px', className: 'text-xs text-slate-800 font-normal leading-relaxed' },
         { 
           id: 'fraud', 
           header: 'Fraud', 
           width: '70px', 
+          align: 'center',
           className: 'text-center text-xs font-mono',
           render: (row) => (
-            <span className={cn(row.isFraudRelated ? "font-semibold text-rose-700" : "text-slate-400 font-normal")}>
-              {row.isFraudRelated ? 'Y' : 'N'}
-            </span>
+            <BooleanIndicator value={row.isFraudRelated} tone="danger" />
           )
         },
         { 
@@ -241,7 +236,6 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
     },
     {
       title: t('matrix.groups.control'),
-      className: 'bg-indigo-50/50',
       columns: [
         { id: 'control_ref', header: t('matrix.control_ref'), accessorKey: 'controlCode', width: '130px', className: 'font-mono text-xs font-semibold text-slate-700' },
         { id: 'control_name', header: t('matrix.control_name'), accessorKey: 'mappedControlName', width: '320px', className: 'text-xs text-slate-900 font-medium leading-snug' },
@@ -251,37 +245,40 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
           id: 'is_key', 
           header: t('matrix.is_key_control'), 
           width: '90px', 
+          align: 'center',
           className: 'text-center text-xs font-mono',
           render: (row) => (
-            <span className={cn(row.isKeyControl ? "font-semibold text-indigo-700" : "text-slate-400 font-normal")}>
-              {row.isKeyControl ? 'Y' : 'N'}
-            </span>
+            <BooleanIndicator value={row.isKeyControl} tone="primary" />
           )
         },
       ]
     },
     {
       title: 'IPO',
-      className: 'bg-blue-600 text-white',
       columns: IPO_FIELDS.map((field) => ({
         id: field,
         header: IPO_CODE[field],
         tooltip: t(`bpm:ipo.tooltip.${IPO_TIP[field]}.desc`),
         width: '50px',
+        align: 'center' as const,
         className: 'text-center text-xs font-mono text-slate-700',
-        render: (row) => row[field] === 'Y' ? 'Y' : 'N',
+        render: (row) => (
+          <BooleanIndicator value={row[field]} />
+        ),
       }))
     },
     {
       title: t('matrix.assertions'),
-      className: 'bg-indigo-600 text-white',
       columns: ASSERTION_FIELDS.map((field) => ({
         id: field,
         header: ASSERTION_CODE[field],
         tooltip: t(`bpm:assertions.tooltip.${ASSERTION_TIP[field]}.desc`),
         width: '50px',
+        align: 'center' as const,
         className: 'text-center text-xs font-mono text-slate-700',
-        render: (row) => row[field] === 'Y' ? 'Y' : 'N',
+        render: (row) => (
+          <BooleanIndicator value={row[field]} />
+        ),
       }))
     },
     {
@@ -294,7 +291,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
         { id: 'app', header: t('matrix.supporting_app'), accessorKey: 'supportingApp', width: '180px', className: 'text-xs text-slate-800 font-normal' },
         { id: 'function', header: t('matrix.executing_function'), accessorKey: 'executingFunction', width: '180px', className: 'text-xs text-slate-800 font-normal' },
         { id: 'role', header: t('matrix.executor_role'), accessorKey: 'executorRole', width: '180px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'fsli', header: t('matrix.affected_fsli_item'), accessorKey: 'affectedFsliItem', width: '220px', className: 'text-xs font-mono text-slate-600' },
+        { id: 'fsli', header: t('matrix.affected_fsli_item'), accessorKey: 'affectedFsliItem', width: '220px', className: 'text-xs text-slate-800 font-normal' },
         { id: 'period', header: t('matrix.effective_period'), accessorKey: 'effectivePeriod', width: '130px', className: 'text-center text-xs font-semibold text-indigo-700' },
       ]
     }
@@ -350,7 +347,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
         groups={columnGroups}
         data={filteredItems}
         isLoading={isLoading}
-        minWidth="4800px"
+        minWidth="4510px"
       />
 
       <RCMEditDialog 
