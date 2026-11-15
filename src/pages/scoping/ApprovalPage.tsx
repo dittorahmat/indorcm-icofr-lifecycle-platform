@@ -117,16 +117,16 @@ export function ApprovalPage() {
           </CardHeader>
           <CardContent>
             <Table>
-              <TableHeader>
+              <TableHeader sticky>
                 <TableRow>
-                  <TableHead>Simulation Name</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Basis</TableHead>
-                  <TableHead className="text-right">% OM</TableHead>
-                  <TableHead className="text-right">% Haircut</TableHead>
-                  <TableHead className="text-right">OM Value</TableHead>
-                  <TableHead className="text-right">PM Value</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead stickyLeft className="min-w-[180px]">Simulation Name</TableHead>
+                  <TableHead className="w-[140px]">Status</TableHead>
+                  <TableHead className="min-w-[140px]">Basis</TableHead>
+                  <TableHead className="w-[80px] text-right">% OM</TableHead>
+                  <TableHead className="w-[90px] text-right">% Haircut</TableHead>
+                  <TableHead className="min-w-[120px] text-right">OM Value</TableHead>
+                  <TableHead className="min-w-[120px] text-right">PM Value</TableHead>
+                  <TableHead className="w-[100px] text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -136,7 +136,7 @@ export function ApprovalPage() {
                   <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">No simulations pending your review.</TableCell></TableRow>
                 ) : queue.map(({ sim, status }) => (
                   <TableRow key={sim.id}>
-                    <TableCell className="font-medium">{sim.name}</TableCell>
+                    <TableCell stickyLeft className="font-medium truncate max-w-[220px]">{sim.name}</TableCell>
                     <TableCell>
                       <Badge variant="secondary" className={cn(
                         status === 'Pending Deletion Approval' ? "bg-rose-100 text-rose-800 border-rose-200" :
@@ -146,7 +146,7 @@ export function ApprovalPage() {
                          status === 'Pending CFO' ? t('status.pendingCfo') : t('status.pendingKomut')}
                       </Badge>
                     </TableCell>
-                    <TableCell>{sim.basis}</TableCell>
+                    <TableCell className="truncate max-w-[160px]">{sim.basis}</TableCell>
                     <TableCell className="text-right text-xs font-medium">{sim.omPercentage}%</TableCell>
                     <TableCell className="text-right text-xs font-medium">{sim.haircutPercentage}%</TableCell>
                     <TableCell className="text-right font-mono text-xs">{formatIDR(sim.omValue)}</TableCell>

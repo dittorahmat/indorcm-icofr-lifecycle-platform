@@ -85,4 +85,63 @@ describe("Table accessibility and keyboard scroll region (#168)", () => {
     expect(table.tagName.toLowerCase()).toBe("table")
     expect(container.firstChild).toBe(table)
   })
+
+  it("supports sticky column headers (thead) with solid opaque surface and top-0 positioning (#170)", () => {
+    const { container } = render(
+      <Table>
+        <TableHeader sticky>
+          <TableRow>
+            <TableHead>Header 1</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell>Data 1</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    )
+
+    const thead = container.querySelector("thead")
+    expect(thead).toBeDefined()
+    expect(thead?.className).toContain("sticky")
+    expect(thead?.className).toContain("top-0")
+    expect(thead?.className).toContain("z-10")
+    expect(thead?.className).toContain("bg-slate-50")
+  })
+
+  it("supports sticky left column freeze on TableHead and TableCell with proper z-indices (#169, #170)", () => {
+    render(
+      <Table>
+        <TableHeader sticky>
+          <TableRow>
+            <TableHead stickyLeft data-testid="sticky-th">
+              Primary ID
+            </TableHead>
+            <TableHead>Other Info</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell stickyLeft data-testid="sticky-td">
+              CTL-001
+            </TableCell>
+            <TableCell>Description Text</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    )
+
+    const stickyTh = screen.getByTestId("sticky-th")
+    expect(stickyTh.className).toContain("sticky")
+    expect(stickyTh.className).toContain("left-0")
+    expect(stickyTh.className).toContain("z-20") // Intersection cell requires higher z-index than sticky thead (z-10)
+    expect(stickyTh.className).toContain("bg-slate-50")
+
+    const stickyTd = screen.getByTestId("sticky-td")
+    expect(stickyTd.className).toContain("sticky")
+    expect(stickyTd.className).toContain("left-0")
+    expect(stickyTd.className).toContain("z-[2]") // Body sticky column above regular cells
+    expect(stickyTd.className).toContain("bg-white")
+  })
 })
