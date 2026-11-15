@@ -123,7 +123,7 @@ export function buildVerificationDesignColumns({
           align: 'center' as const,
           className: 'text-center text-xs font-mono text-slate-700',
           render: (row: Record<string, unknown>) => (
-            <BooleanIndicator value={row[field]} />
+            <BooleanIndicator value={row[field] as string | boolean | null | undefined} />
           ),
         }))
       ]
@@ -138,7 +138,7 @@ export function buildVerificationDesignColumns({
           align: 'center' as const,
           className: 'text-center text-xs font-mono text-slate-700',
           render: (row: Record<string, unknown>) => (
-            <BooleanIndicator value={row[field]} />
+            <BooleanIndicator value={row[field] as string | boolean | null | undefined} />
           ),
         }))
       ]
