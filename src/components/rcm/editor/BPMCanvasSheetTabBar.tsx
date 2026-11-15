@@ -43,7 +43,13 @@ export const BPMCanvasSheetTabBar: React.FC<BPMCanvasSheetTabBarProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleSaveRename();
+    if (e.key === 'Enter') {
+      if (e.nativeEvent.isComposing) {
+        e.preventDefault();
+        return;
+      }
+      handleSaveRename();
+    }
     if (e.key === 'Escape') setEditingSheetId(null);
   };
 

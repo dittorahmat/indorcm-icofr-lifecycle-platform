@@ -8,6 +8,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     /* Sovereign Governance BUMN Theme Foundation */
     --background: 231 100% 99%; /* #f8f9ff */
     --foreground: 212 63% 12%; /* #0b1c30 on-surface */
