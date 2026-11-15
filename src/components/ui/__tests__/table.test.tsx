@@ -108,6 +108,7 @@ describe("Table accessibility and keyboard scroll region (#168)", () => {
     expect(thead?.className).toContain("top-0")
     expect(thead?.className).toContain("z-10")
     expect(thead?.className).toContain("bg-slate-50")
+    expect(thead?.className).toContain("dark:bg-card")
   })
 
   it("supports sticky left column freeze on TableHead and TableCell with proper z-indices (#169, #170)", () => {
@@ -137,11 +138,13 @@ describe("Table accessibility and keyboard scroll region (#168)", () => {
     expect(stickyTh.className).toContain("left-0")
     expect(stickyTh.className).toContain("z-20") // Intersection cell requires higher z-index than sticky thead (z-10)
     expect(stickyTh.className).toContain("bg-slate-50")
+    expect(stickyTh.className).toContain("dark:bg-card")
 
     const stickyTd = screen.getByTestId("sticky-td")
     expect(stickyTd.className).toContain("sticky")
     expect(stickyTd.className).toContain("left-0")
     expect(stickyTd.className).toContain("z-[2]") // Body sticky column above regular cells
     expect(stickyTd.className).toContain("bg-white")
+    expect(stickyTd.className).toContain("dark:bg-card")
   })
 })

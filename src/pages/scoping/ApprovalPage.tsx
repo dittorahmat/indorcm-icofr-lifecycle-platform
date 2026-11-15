@@ -119,24 +119,24 @@ export function ApprovalPage() {
             <Table>
               <TableHeader sticky>
                 <TableRow>
-                  <TableHead stickyLeft className="min-w-[180px]">Simulation Name</TableHead>
-                  <TableHead className="w-[140px]">Status</TableHead>
-                  <TableHead className="min-w-[140px]">Basis</TableHead>
-                  <TableHead className="w-[80px] text-right">% OM</TableHead>
-                  <TableHead className="w-[90px] text-right">% Haircut</TableHead>
-                  <TableHead className="min-w-[120px] text-right">OM Value</TableHead>
-                  <TableHead className="min-w-[120px] text-right">PM Value</TableHead>
-                  <TableHead className="w-[100px] text-right">Action</TableHead>
+                  <TableHead stickyLeft className="min-w-[180px]">{t('form.name', { defaultValue: 'Simulation Name' })}</TableHead>
+                  <TableHead className="w-[140px]">{t('table.status', { defaultValue: 'Status' })}</TableHead>
+                  <TableHead className="min-w-[140px]">{t('form.benchmark', { defaultValue: 'Basis' })}</TableHead>
+                  <TableHead className="w-[80px] text-right">{t('params.omLabel', { defaultValue: '% OM' })}</TableHead>
+                  <TableHead className="w-[90px] text-right">{t('params.haircutLabel', { defaultValue: '% Haircut' })}</TableHead>
+                  <TableHead className="min-w-[120px] text-right">{t('params.omValue', { defaultValue: 'OM Value' })}</TableHead>
+                  <TableHead className="min-w-[120px] text-right">{t('params.pmValue', { defaultValue: 'PM Value' })}</TableHead>
+                  <TableHead className="w-[100px] text-right">{t('common:actions.action', { defaultValue: 'Action' })}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow><TableCell colSpan={8} className="text-center py-10"><Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" /></TableCell></TableRow>
                 ) : pendingSims.length === 0 ? (
-                  <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">No simulations pending your review.</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">{t('approval.noPending', { defaultValue: 'No simulations pending your review.' })}</TableCell></TableRow>
                 ) : queue.map(({ sim, status }) => (
                   <TableRow key={sim.id}>
-                    <TableCell stickyLeft className="font-medium truncate max-w-[220px]">{sim.name}</TableCell>
+                    <TableCell stickyLeft className="font-medium truncate max-w-[220px]" title={sim.name}>{sim.name}</TableCell>
                     <TableCell>
                       <Badge variant="secondary" className={cn(
                         status === 'Pending Deletion Approval' ? "bg-rose-100 text-rose-800 border-rose-200" :
@@ -146,14 +146,14 @@ export function ApprovalPage() {
                          status === 'Pending CFO' ? t('status.pendingCfo') : t('status.pendingKomut')}
                       </Badge>
                     </TableCell>
-                    <TableCell className="truncate max-w-[160px]">{sim.basis}</TableCell>
+                    <TableCell className="truncate max-w-[160px]" title={sim.basis}>{sim.basis}</TableCell>
                     <TableCell className="text-right text-xs font-medium">{sim.omPercentage}%</TableCell>
                     <TableCell className="text-right text-xs font-medium">{sim.haircutPercentage}%</TableCell>
                     <TableCell className="text-right font-mono text-xs">{formatIDR(sim.omValue)}</TableCell>
                     <TableCell className="text-right font-mono text-xs">{formatIDR(sim.pmValue)}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => { setSelectedSim(sim); setIsReviewOpen(true); }} className="gap-2">
-                        <Eye className="h-4 w-4" /> Review
+                        <Eye className="h-4 w-4" /> {t('common:actions.review', { defaultValue: 'Review' })}
                       </Button>
                     </TableCell>
                   </TableRow>

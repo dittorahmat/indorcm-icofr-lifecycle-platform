@@ -72,7 +72,7 @@ const TableHeader = React.forwardRef<
   <thead
     ref={ref}
     className={cn(
-      "[&_tr]:border-b-2 [&_tr]:border-slate-300 bg-slate-50",
+      "[&_tr]:border-b-2 [&_tr]:border-slate-300 bg-slate-50 dark:bg-card",
       sticky && "sticky top-0 z-10 shadow-sm",
       className
     )}
@@ -134,8 +134,8 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-10 px-2 text-left align-middle font-bold text-slate-900 border-r-2 border-slate-200 last:border-r-0 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-      stickyLeft && "sticky left-0 z-20 bg-slate-50",
+      "h-10 px-2 text-left align-middle font-bold text-slate-900 dark:text-foreground border-r-2 border-slate-200 dark:border-border last:border-r-0 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      stickyLeft && "sticky left-0 z-20 bg-slate-50 dark:bg-card",
       className
     )}
     {...props}
@@ -154,8 +154,8 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      "p-2 align-middle border-r-2 border-slate-100 last:border-r-0 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-      stickyLeft && "sticky left-0 z-[2] bg-white",
+      "p-2 align-middle border-r-2 border-slate-100 dark:border-border/60 last:border-r-0 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      stickyLeft && "sticky left-0 z-[2] bg-white dark:bg-card",
       className
     )}
     {...props}
