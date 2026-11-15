@@ -47,10 +47,11 @@ describe('Executive Dashboard Sovereign Governance Components', () => {
     expect(html).not.toContain('text-[10px]');
     expect(html).not.toContain('text-[11px]');
 
-    // Light Sovereign styling assertions
+    // Institutional Sky Gradient styling assertions
     const rootDiv = container.firstChild as HTMLElement;
-    expect(rootDiv.className).toContain('bg-white');
-    expect(rootDiv.className).toContain('border-l-secondary');
+    expect(rootDiv.className).toContain('bg-gradient-to-r');
+    expect(rootDiv.className).toContain('from-sky-50');
+    expect(rootDiv.className).toContain('border-l-sky-600');
     expect(rootDiv.className).toContain('border-l-4');
   });
 
