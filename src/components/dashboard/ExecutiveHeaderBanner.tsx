@@ -1,6 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Award, ShieldCheck } from 'lucide-react';
+import {
+  SOVEREIGN_SKY_BANNER_CONTAINER,
+  SOVEREIGN_SKY_METRIC_CARD,
+} from '@/components/ui/sovereign-banner';
 
 interface ExecutiveHeaderBannerProps {
   workingYear?: string;
@@ -20,7 +24,7 @@ export function ExecutiveHeaderBanner({
   const resolvedOpini = opiniManagement || t('executiveBanner.opiniDefault');
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-r from-sky-50 via-blue-50/50 to-white dark:from-slate-900 dark:via-slate-900/90 dark:to-slate-800 text-foreground rounded-xl p-4 sm:p-6 shadow-xs border border-sky-200/80 dark:border-sky-800/60 border-l-4 border-l-sky-600">
+    <div className={SOVEREIGN_SKY_BANNER_CONTAINER}>
       <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-4 sm:gap-6">
         <div className="flex flex-col gap-2 max-w-3xl min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -47,7 +51,7 @@ export function ExecutiveHeaderBanner({
           </p>
         </div>
 
-        <div className="flex flex-wrap sm:flex-nowrap items-stretch gap-4 bg-white/80 dark:bg-slate-950/60 p-3.5 sm:p-4 rounded-xl border border-sky-200/60 dark:border-sky-800/40 shrink-0 shadow-2xs">
+        <div className={SOVEREIGN_SKY_METRIC_CARD}>
           <div className="flex flex-col justify-center min-w-0">
             <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">
               {t('executiveBanner.kesimpulanOpiniTitle')}

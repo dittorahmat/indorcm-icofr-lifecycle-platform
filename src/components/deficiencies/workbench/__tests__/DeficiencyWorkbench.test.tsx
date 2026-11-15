@@ -225,5 +225,28 @@ describe('DeficiencyWorkbench', () => {
       fireEvent.click(dodButtons[0]);
       expect(handleAssess).toHaveBeenCalledWith('def-1');
     });
+
+    it('locks wide layout density on CAPTrackingTable and narrative column width', () => {
+      const { container } = render(
+        <I18nextProvider i18n={i18n}>
+          <CAPTrackingTable
+            deficiencies={mockDeficiencies}
+            actionPlans={mockActionPlans}
+            onAssess={vi.fn()}
+            onEditPlan={vi.fn()}
+            onStatusChange={vi.fn()}
+            role="Admin"
+          />
+        </I18nextProvider>
+      );
+
+      const table = container.querySelector('table');
+      expect(table).not.toBeNull();
+      expect(table?.className).toContain('min-w-[1040px]');
+
+      const uraianHeader = screen.getByRole('columnheader', { name: /Uraian Temuan & Kontrol/i });
+      expect(uraianHeader).toBeInTheDocument();
+      expect(uraianHeader.className).toContain('min-w-[340px]');
+    });
   });
 });

@@ -88,4 +88,17 @@ describe('RCMTLCPage Ref BPM deep-link rendering', () => {
 
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
+
+  it('locks TLC table narrative column widths to 520px for risk and 580px for control descriptions', async () => {
+    const Wrapper = createWrapper();
+    render(<Wrapper />);
+
+    const riskHeader = await screen.findByRole('columnheader', { name: /Risk Control Activity|Risiko Aktivitas Pengendalian/i });
+    expect(riskHeader).toBeInTheDocument();
+    expect(riskHeader.style.width).toBe('520px');
+
+    const controlDescHeader = await screen.findByRole('columnheader', { name: /Control Activity Description|Deskripsi Aktivitas Pengendalian/i });
+    expect(controlDescHeader).toBeInTheDocument();
+    expect(controlDescHeader.style.width).toBe('580px');
+  });
 });
