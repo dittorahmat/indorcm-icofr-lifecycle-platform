@@ -2,6 +2,7 @@
 .SYNOPSIS
     Safely removes a git worktree and its node_modules junction on Windows.
 .EXAMPLE
+    .\scripts\worktree-remove.ps1 -Slot 1
     .\scripts\worktree-remove.ps1 -Path "..\icofr1"
 #>
 param(
