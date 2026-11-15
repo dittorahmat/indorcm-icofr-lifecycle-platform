@@ -139,7 +139,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
             </div>
           )
         },
-        { id: 'sub_process', header: t('matrix.sub_process'), accessorKey: 'subProcessName', width: '200px', className: 'text-xs text-slate-800 font-medium' },
+        { id: 'sub_process', header: t('matrix.sub_process'), accessorKey: 'subProcessName', width: '250px', className: 'text-xs text-slate-800 font-medium' },
       ]
     },
     {
@@ -147,16 +147,16 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
       columns: [
         { id: 'company', header: t('matrix.company'), accessorKey: 'companyName', width: '180px', className: 'text-xs text-slate-800 font-normal' },
         { id: 'location', header: t('matrix.location'), accessorKey: 'locationCode', width: '110px', className: 'text-xs text-slate-700 font-mono text-center font-medium' },
-        { id: 'risk_desc', header: t('matrix.risk_description'), accessorKey: 'riskDescription', width: '380px', className: 'text-xs text-slate-800 font-normal leading-relaxed' },
+        { id: 'risk_desc', header: t('matrix.risk_description'), accessorKey: 'riskDescription', width: '520px', className: 'text-xs text-slate-800 font-normal leading-relaxed' },
       ]
     },
     {
       title: t('matrix.groups.control'),
       columns: [
         { id: 'control_ref', header: t('matrix.control_ref'), accessorKey: 'controlCode', width: '130px', className: 'font-mono text-xs font-semibold text-slate-700' },
-        { id: 'control_name', header: t('matrix.control_name'), accessorKey: 'mappedControlName', width: '320px', className: 'text-xs text-slate-900 font-medium leading-snug' },
-        { id: 'control_desc', header: t('matrix.control_description'), accessorKey: 'mappedControlDescription', width: '450px', className: 'text-xs text-slate-700 font-normal leading-relaxed' },
-        { id: 'docs', header: t('matrix.supporting_docs'), accessorKey: 'supportingDocs', width: '220px', className: 'text-xs text-slate-700 font-normal' },
+        { id: 'control_name', header: t('matrix.control_name'), accessorKey: 'mappedControlName', width: '380px', className: 'text-xs text-slate-900 font-medium leading-snug' },
+        { id: 'control_desc', header: t('matrix.control_description'), accessorKey: 'mappedControlDescription', width: '580px', className: 'text-xs text-slate-700 font-normal leading-relaxed' },
+        { id: 'docs', header: t('matrix.supporting_docs'), accessorKey: 'supportingDocs', width: '250px', className: 'text-xs text-slate-700 font-normal' },
         { 
           id: 'is_key', 
           header: t('matrix.is_key_control'), 
@@ -225,7 +225,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
         groups={columnGroups}
         data={filteredItems}
         isLoading={isLoading}
-        minWidth="3300px"
+        minWidth="3710px"
       />
 
       <RCMEditDialog 

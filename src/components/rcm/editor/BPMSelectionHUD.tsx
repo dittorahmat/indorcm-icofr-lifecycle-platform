@@ -107,6 +107,7 @@ export const BPMSelectionHUD: React.FC<BPMSelectionHUDProps> = ({
                 onKeyDown={(e) => {
                   e.stopPropagation();
                   if (e.key === 'Enter') {
+                    if (e.nativeEvent.isComposing) return;
                     (e.target as HTMLInputElement).blur();
                   } else if (e.key === 'Escape') {
                     setEdgeLabelDraft((selectedEdge.label as string) ?? '');
