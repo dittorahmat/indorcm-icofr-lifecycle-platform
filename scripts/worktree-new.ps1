@@ -17,6 +17,13 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Pre-flight check: ensure at least 1.5 GB of free disk space before checkout
+$drive = (Get-Item (Get-Location)).PSDrive
+if ($drive -and $drive.Free -lt 1.5GB) {
+    $freeMb = [math]::Round($drive.Free / 1MB, 2)
+    throw "Pre-flight failed: Insufficient disk space on drive $($drive.Name): ($freeMb MB free). At least 1.5 GB required to create a new worktree safely."
+}
+
 if (-not $Path) {
     if ($Slot) {
         $Path = "..\icofr$Slot"

@@ -77,4 +77,39 @@ describe('RCMTable Responsive Rendering', () => {
     expect(onEditMock).toHaveBeenCalledTimes(1);
     expect(onEditMock).toHaveBeenCalledWith(mockData[0]);
   });
+
+  it('aligns Level 2 headers correctly (center for code/numeric/short, left for descriptive text)', () => {
+    const alignmentGroups: RCMColumnGroup[] = [
+      {
+        title: 'Header Alignment Test',
+        columns: [
+          { id: 'no', header: 'No', width: '50px' },
+          { id: 'control_name', header: 'Nama Kontrol', width: '250px' },
+          { id: 'is_key', header: 'Key?', width: '70px' },
+          { id: 'risk_desc', header: 'Deskripsi Risiko', width: '300px' },
+        ],
+      },
+    ];
+
+    const { container } = render(
+      <RCMTable groups={alignmentGroups} data={mockData} />
+    );
+
+    const thElements = container.querySelectorAll('thead tr:nth-child(2) th');
+    expect(thElements.length).toBe(4);
+
+    // 'no' should be center-aligned and tracking-normal (width <= 60px)
+    expect(thElements[0]).toHaveClass('text-center');
+    expect(thElements[0]).toHaveClass('tracking-normal');
+
+    // 'control_name' should be left-aligned and tracking-wider
+    expect(thElements[1]).toHaveClass('text-left');
+    expect(thElements[1]).toHaveClass('tracking-wider');
+
+    // 'is_key' should be center-aligned
+    expect(thElements[2]).toHaveClass('text-center');
+
+    // 'risk_desc' should be left-aligned
+    expect(thElements[3]).toHaveClass('text-left');
+  });
 });

@@ -14,6 +14,7 @@ export interface RCMColumn {
   width: string;
   className?: string;
   headerClassName?: string;
+  align?: 'left' | 'center' | 'right';
   tooltip?: string;
   render?: (row: any, index: number) => React.ReactNode;
 }
@@ -47,6 +48,35 @@ export function RCMTable({
 
   const allColumns = groups.flatMap(g => g.columns);
 
+  const isSmallColumn = (col: RCMColumn): boolean => {
+    const widthNum = parseInt(col.width, 10);
+    return !Number.isNaN(widthNum) && widthNum <= 60;
+  };
+
+  const isCenterAligned = (col: RCMColumn): boolean => {
+    if (col.align) return col.align === 'center';
+    if (col.headerClassName?.includes('text-center') || col.className?.includes('text-center')) {
+      return true;
+    }
+    const id = col.id.toLowerCase();
+    if (
+      id === 'no' ||
+      id === 'action' ||
+      id === 'fraud' ||
+      id === 'is_key' ||
+      id === 'risk_rating' ||
+      id === 'period' ||
+      id === 'effectiveperiod' ||
+      id === 'location' ||
+      id.startsWith('coso-') ||
+      id.startsWith('ipo_') ||
+      id.startsWith('ast_')
+    ) {
+      return true;
+    }
+    return isSmallColumn(col);
+  };
+
   return (
     <TooltipProvider>
       {/* 
@@ -79,35 +109,47 @@ export function RCMTable({
 
               {/* Level 2 Header: Columns */}
               <tr className="h-11 bg-slate-100 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 sticky top-[36px] z-20">
-                {allColumns.map((col, cIdx) => (
-                  <th 
-                    key={`col-${col.id}-${cIdx}`}
-                    className={cn(
-                      "font-semibold uppercase text-xs px-3 border-r border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 align-middle bg-slate-100 dark:bg-slate-900",
-                      col.headerClassName
-                    )}
-                    style={{ 
-                      width: col.width
-                    }}
-                  >
-                    <div className="flex flex-col items-center justify-center gap-1">
-                      {col.tooltip ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="cursor-help flex items-center justify-center hover:text-indigo-600 transition-colors">
-                              {col.header}
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="max-w-[300px] bg-slate-900 text-white p-3 border border-slate-700 shadow-xl rounded-lg z-[100]">
-                             <div className="text-xs leading-relaxed font-normal">
-                                {col.tooltip}
-                             </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      ) : col.header}
-                    </div>
-                  </th>
-                ))}
+                {allColumns.map((col, cIdx) => {
+                  const center = isCenterAligned(col);
+                  const small = isSmallColumn(col);
+                  return (
+                    <th 
+                      key={`col-${col.id}-${cIdx}`}
+                      className={cn(
+                        "font-semibold uppercase text-xs px-3 border-r border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 align-middle bg-slate-100 dark:bg-slate-900",
+                        center ? "text-center" : "text-left",
+                        small ? "tracking-normal px-1.5" : "tracking-wider",
+                        col.headerClassName
+                      )}
+                      style={{ 
+                        width: col.width
+                      }}
+                    >
+                      <div className={cn(
+                        "flex flex-col gap-1",
+                        center ? "items-center justify-center text-center" : "items-start justify-start text-left"
+                      )}>
+                        {col.tooltip ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className={cn(
+                                "cursor-help flex hover:text-indigo-600 transition-colors",
+                                center ? "items-center justify-center" : "items-start justify-start"
+                              )}>
+                                {col.header}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-[300px] bg-slate-900 text-white p-3 border border-slate-700 shadow-xl rounded-lg z-[100]">
+                               <div className="text-xs leading-relaxed font-normal normal-case text-left">
+                                  {col.tooltip}
+                               </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : col.header}
+                      </div>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody className="bg-white">
@@ -134,6 +176,7 @@ export function RCMTable({
                             key={`cell-${col.id}-${cIdx}`}
                             className={cn(
                               "px-3 border-r border-slate-100 py-2 text-xs transition-colors duration-200",
+                              col.align === 'center' ? "text-center" : col.align === 'right' ? "text-right" : undefined,
                               "group-hover:bg-indigo-50/70 group-hover:border-indigo-100/50",
                               col.className
                             )}
