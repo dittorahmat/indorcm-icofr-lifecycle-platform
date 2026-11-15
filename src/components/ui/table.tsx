@@ -2,23 +2,60 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+export interface TableProps extends React.HTMLAttributes<HTMLTableElement> {
+  noWrapper?: boolean
+  wrapperProps?: React.HTMLAttributes<HTMLDivElement> & {
+    "data-testid"?: string
+    [key: `data-${string}`]: unknown
+  }
+}
+
 const Table = React.forwardRef<
   HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement> & { noWrapper?: boolean }
->(({ className, noWrapper, ...props }, ref) => {
-  const table = (
-    <table
-      ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
-      {...props}
-    />
-  )
+  TableProps
+>(({ className, noWrapper, wrapperProps, ...props }, ref) => {
+  if (noWrapper) {
+    return (
+      <table
+        ref={ref}
+        className={cn("w-full caption-bottom text-sm", className)}
+        {...props}
+      />
+    )
+  }
 
-  if (noWrapper) return table
+  const {
+    "aria-label": tableAriaLabel,
+    "aria-labelledby": tableAriaLabelledby,
+    ...tableRestProps
+  } = props
+
+  const {
+    className: wrapperClassName,
+    role = "region",
+    tabIndex = 0,
+    "aria-label": wrapperAriaLabel = tableAriaLabel,
+    "aria-labelledby": wrapperAriaLabelledby = tableAriaLabelledby,
+    ...restWrapperProps
+  } = wrapperProps ?? {}
 
   return (
-    <div className="relative w-full max-w-full overflow-x-auto touch-pan-x overscroll-x-contain table-scroll-hint">
-      {table}
+    <div
+      role={role}
+      tabIndex={tabIndex}
+      aria-label={wrapperAriaLabel}
+      aria-labelledby={wrapperAriaLabelledby}
+      className={cn(
+        "@container relative w-full max-w-full overflow-x-auto touch-pan-x overscroll-x-contain table-scroll-hint focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        wrapperClassName
+      )}
+      {...restWrapperProps}
+    >
+      <table
+        ref={ref}
+        className={cn("w-full caption-bottom text-sm", className)}
+        {...tableRestProps}
+      />
     </div>
   )
 })

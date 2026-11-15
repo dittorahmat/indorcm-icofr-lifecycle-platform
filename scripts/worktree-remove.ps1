@@ -5,12 +5,23 @@
     .\scripts\worktree-remove.ps1 -Path "..\icofr1"
 #>
 param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory=$false)]
     [string]$Path,
+    [Parameter(Mandatory=$false)]
+    [ValidateSet(1, 2, 3)]
+    [int]$Slot,
     [switch]$Force
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $Path) {
+    if ($Slot) {
+        $Path = "..\icofr$Slot"
+    } else {
+        throw "Either -Path or -Slot (1, 2, or 3) must be provided."
+    }
+}
 
 $targetNodeModules = Join-Path $Path "node_modules"
 if (Test-Path $targetNodeModules) {
