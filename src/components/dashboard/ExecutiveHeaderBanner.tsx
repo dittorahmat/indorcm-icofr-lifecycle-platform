@@ -40,7 +40,7 @@ export function ExecutiveHeaderBanner({
             </span>
           </div>
 
-          <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold text-foreground tracking-tight leading-snug">
+          <h1 className="font-display text-lg sm:text-xl lg:text-2xl font-bold text-foreground tracking-tight leading-snug">
             {t('executiveBanner.headline')}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground font-normal leading-relaxed">
@@ -53,7 +53,7 @@ export function ExecutiveHeaderBanner({
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">
               {t('executiveBanner.kesimpulanOpiniTitle')}
             </span>
-            <span className="font-display text-sm sm:text-base font-bold text-secondary leading-tight">
+            <span className="font-display text-xs sm:text-sm font-bold text-secondary leading-tight">
               {resolvedOpini}
             </span>
             <span className="text-xs text-muted-foreground font-normal mt-0.5">
@@ -69,7 +69,7 @@ export function ExecutiveHeaderBanner({
               {t('executiveBanner.maturityScoreTitle')}
             </span>
             <div className="flex items-baseline gap-1.5 sm:justify-end">
-              <span className="font-display text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+              <span className="font-display text-xl sm:text-2xl font-bold text-foreground tracking-tight">
                 {maturityScore}%
               </span>
               <span className="text-xs font-bold text-secondary px-1.5 py-0.5 rounded bg-secondary-container/50">

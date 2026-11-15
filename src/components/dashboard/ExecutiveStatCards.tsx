@@ -52,7 +52,7 @@ export function ExecutiveStatCards({
       {/* Card 1: Status Keseluruhan ICOFR */}
       <motion.div
         variants={itemVariants}
-        className="bg-card text-card-foreground p-4 sm:p-5 rounded-xl shadow-xs border border-border/40 flex flex-col justify-between min-w-0"
+        className="bg-card text-card-foreground p-3.5 sm:p-4 rounded-xl shadow-xs border border-border/40 flex flex-col justify-between min-w-0"
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col min-w-0">
@@ -60,7 +60,7 @@ export function ExecutiveStatCards({
               {t('statCards.card1.title')}
             </span>
             <div className="flex items-baseline gap-2 mt-1">
-              <span className="font-display text-2xl sm:text-3xl font-bold text-primary tracking-tight">
+              <span className="font-display text-xl sm:text-2xl font-bold text-primary tracking-tight">
                 {effectivePercentage}%
               </span>
               <span className="text-xs font-bold text-secondary px-1.5 py-0.5 rounded bg-secondary-container/50">
@@ -94,7 +94,7 @@ export function ExecutiveStatCards({
       {/* Card 2: Pengendalian Tingkat Transaksi (TLC) Efektif */}
       <motion.div
         variants={itemVariants}
-        className="bg-card text-card-foreground p-4 sm:p-5 rounded-xl shadow-xs border border-border/40 flex flex-col justify-between min-w-0"
+        className="bg-card text-card-foreground p-3.5 sm:p-4 rounded-xl shadow-xs border border-border/40 flex flex-col justify-between min-w-0"
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col min-w-0">
@@ -102,7 +102,7 @@ export function ExecutiveStatCards({
               {t('statCards.card2.title')}
             </span>
             <div className="flex items-baseline gap-2 mt-1">
-              <span className="font-display text-2xl sm:text-3xl font-bold text-primary tracking-tight">
+              <span className="font-display text-xl sm:text-2xl font-bold text-primary tracking-tight">
                 {tlcPercent}%
               </span>
               <span className="text-xs font-semibold text-muted-foreground">
@@ -138,7 +138,7 @@ export function ExecutiveStatCards({
       {/* Card 3: Entity Level (ELC) & ITGC Kepatuhan */}
       <motion.div
         variants={itemVariants}
-        className="bg-card text-card-foreground p-4 sm:p-5 rounded-xl shadow-xs border border-border/40 flex flex-col justify-between min-w-0"
+        className="bg-card text-card-foreground p-3.5 sm:p-4 rounded-xl shadow-xs border border-border/40 flex flex-col justify-between min-w-0"
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col min-w-0">
@@ -146,7 +146,7 @@ export function ExecutiveStatCards({
               {t('statCards.card3.title')}
             </span>
             <div className="flex items-baseline gap-2 mt-1">
-              <span className="font-display text-2xl sm:text-3xl font-bold text-primary tracking-tight">
+              <span className="font-display text-xl sm:text-2xl font-bold text-primary tracking-tight">
                 {elcCompliance}%
               </span>
               <span className="text-xs font-semibold text-muted-foreground">
@@ -178,7 +178,7 @@ export function ExecutiveStatCards({
       {/* Card 4: Status Defisiensi & Rencana Tindak Lanjut Remediasi */}
       <motion.div
         variants={itemVariants}
-        className="bg-card text-card-foreground p-4 sm:p-5 rounded-xl shadow-xs border border-border/40 flex flex-col justify-between min-w-0"
+        className="bg-card text-card-foreground p-3.5 sm:p-4 rounded-xl shadow-xs border border-border/40 flex flex-col justify-between min-w-0"
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex flex-col min-w-0">
@@ -188,7 +188,7 @@ export function ExecutiveStatCards({
             <div className="flex items-baseline gap-2 mt-1">
               <span
                 className={cn(
-                  'font-display text-2xl sm:text-3xl font-bold tracking-tight',
+                  'font-display text-xl sm:text-2xl font-bold tracking-tight',
                   overdueDeficienciesCount > 0 ? 'text-destructive' : 'text-primary'
                 )}
               >

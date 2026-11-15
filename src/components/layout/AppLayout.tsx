@@ -60,7 +60,7 @@ export function AppLayout({
         <div className={cn(
           "flex-1 flex flex-col min-h-0 min-w-0 w-full max-w-full",
           !noScroll && "scrollbar-hover",
-          container && "max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8",
+          container && "max-w-[1720px] 2xl:max-w-[1840px] mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8",
           contentClassName
         )}>          {children}
         </div>
