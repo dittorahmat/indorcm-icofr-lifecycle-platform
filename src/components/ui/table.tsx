@@ -61,11 +61,23 @@ const Table = React.forwardRef<
 })
 Table.displayName = "Table"
 
+export interface TableHeaderProps extends React.HTMLAttributes<HTMLTableSectionElement> {
+  sticky?: boolean
+}
+
 const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
-  React.HTMLAttributes<HTMLTableSectionElement>
->(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b-2 [&_tr]:border-slate-300 bg-slate-50/80", className)} {...props} />
+  TableHeaderProps
+>(({ className, sticky, ...props }, ref) => (
+  <thead
+    ref={ref}
+    className={cn(
+      "[&_tr]:border-b-2 [&_tr]:border-slate-300 bg-slate-50 dark:bg-card",
+      sticky && "sticky top-0 z-10 shadow-sm",
+      className
+    )}
+    {...props}
+  />
 ))
 TableHeader.displayName = "TableHeader"
 
@@ -111,14 +123,19 @@ const TableRow = React.forwardRef<
 ))
 TableRow.displayName = "TableRow"
 
+export interface TableHeadProps extends React.ThHTMLAttributes<HTMLTableCellElement> {
+  stickyLeft?: boolean
+}
+
 const TableHead = React.forwardRef<
   HTMLTableCellElement,
-  React.ThHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+  TableHeadProps
+>(({ className, stickyLeft, ...props }, ref) => (
   <th
     ref={ref}
     className={cn(
-      "h-10 px-2 text-left align-middle font-bold text-slate-900 border-r-2 border-slate-200 last:border-r-0 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      "h-10 px-2 text-left align-middle font-bold text-slate-900 dark:text-foreground border-r-2 border-slate-200 dark:border-border last:border-r-0 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      stickyLeft && "sticky left-0 z-20 bg-slate-50 dark:bg-card",
       className
     )}
     {...props}
@@ -126,14 +143,19 @@ const TableHead = React.forwardRef<
 ))
 TableHead.displayName = "TableHead"
 
+export interface TableCellProps extends React.TdHTMLAttributes<HTMLTableCellElement> {
+  stickyLeft?: boolean
+}
+
 const TableCell = React.forwardRef<
   HTMLTableCellElement,
-  React.TdHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+  TableCellProps
+>(({ className, stickyLeft, ...props }, ref) => (
   <td
     ref={ref}
     className={cn(
-      "p-2 align-middle border-r-2 border-slate-100 last:border-r-0 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      "p-2 align-middle border-r-2 border-slate-100 dark:border-border/60 last:border-r-0 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      stickyLeft && "sticky left-0 z-[2] bg-white dark:bg-card",
       className
     )}
     {...props}
