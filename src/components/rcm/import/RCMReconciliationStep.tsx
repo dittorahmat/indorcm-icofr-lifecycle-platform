@@ -52,7 +52,7 @@ export function RCMReconciliationStep({
       {/* Tabel Pemetaan */}
       <div className="border border-border rounded-md overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0 max-h-80">
         <Table className="min-w-[760px]">
-          <TableHeader className="bg-slate-50 sticky top-0 z-10">
+          <TableHeader sticky className="bg-slate-50 dark:bg-card">
             <TableRow>
               <TableHead className="w-10 text-xs font-bold">Status</TableHead>
               <TableHead className="text-xs font-bold">Kode & Nama Kontrol</TableHead>

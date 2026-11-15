@@ -73,6 +73,13 @@ for (const file of filesToCheck) {
       console.error(`   -> Solution: Avoid mixing generic border-border with directional border-b-* tokens; consolidate to a single unambiguous border token.`);
       totalViolations++;
     }
+
+    // 4. Sticky columns/headers/tables using raw bg-white or bg-slate without dark: counterparts
+    if (/\b(?:TableHeader|TableHead|TableCell|th|td)\b/.test(line) && /\bsticky\b/.test(line) && /\b(?:bg-white|bg-slate-50)\b/.test(line) && !line.includes('dark:')) {
+      console.error(`❌ [STICKY-THEME-SLOP] ${file}:${index + 1}: Found sticky table element with hardcoded light background without dark: counterpart.`);
+      console.error(`   -> Solution: Sticky headers/columns must pair light backgrounds with dark counterparts (e.g., 'bg-white dark:bg-card' or 'bg-slate-50 dark:bg-card').`);
+      totalViolations++;
+    }
   });
 }
 
