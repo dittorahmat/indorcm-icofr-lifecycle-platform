@@ -28,6 +28,9 @@ export default defineConfig({
       '**/dist-whitelabel/**',
       '**/cypress/**',
       '**/.{idea,git,cache,output,temp}/**',
+      '**/.*/**',
+      'skills/**',
+      '**/*.cjs',
       '**/{karma,rollup,webpack,vite,vitest}.config.*'
     ],
     alias: {
