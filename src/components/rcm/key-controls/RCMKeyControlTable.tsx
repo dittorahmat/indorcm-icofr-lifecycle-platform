@@ -24,7 +24,7 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
             <th className="py-3 px-4 w-44">{t('explorer.table.riskId', { defaultValue: 'ID & Risiko' })}</th>
             <th className="py-3 px-4 w-36">{t('explorer.table.fsli', { defaultValue: 'Akun Signifikan (FSLI)' })}</th>
             <th className="py-3 px-4 w-40">{t('explorer.table.controlId', { defaultValue: 'ID Kontrol & Status' })}</th>
-            <th className="py-3 px-4">{t('explorer.table.controlActivity', { defaultValue: 'Aktivitas Pengendalian' })}</th>
+            <th className="py-3 px-4 min-w-[360px]">{t('explorer.table.controlActivity', { defaultValue: 'Aktivitas Pengendalian' })}</th>
             <th className="py-3 px-4 w-40">{t('explorer.table.processSub', { defaultValue: 'Proses & Subproses' })}</th>
             <th className="py-3 px-4 w-36">{t('explorer.table.typeNature', { defaultValue: 'Tipe & Sifat' })}</th>
             <th className="py-3 px-4 w-32">{t('explorer.table.automation', { defaultValue: 'Automasi & App' })}</th>

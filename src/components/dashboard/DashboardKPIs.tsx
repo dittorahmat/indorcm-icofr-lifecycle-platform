@@ -44,7 +44,7 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
           </CardHeader>
           <CardContent className="p-3.5 sm:p-4 pt-1 sm:pt-2">
             <div className="flex items-baseline justify-between gap-2 flex-wrap">
-              <div className="text-2xl sm:text-3xl font-bold tracking-tight">{t('kpis.ready')}</div>
+              <div className="text-xl sm:text-2xl font-bold tracking-tight">{t('kpis.ready')}</div>
               <p className="text-xs text-primary-foreground/80 font-medium uppercase tracking-wider truncate">{t('kpis.reportingCycle', { year: workingYear })}</p>
             </div>
             <div className="mt-2.5 sm:mt-4 h-1.5 w-full bg-primary-foreground/20 rounded-full overflow-hidden relative">
@@ -98,7 +98,7 @@ export function DashboardKPIs({ controlsCount, openDeficienciesCount, cosoPercen
                 </span>
               </div>
               <div className="min-w-0">
-                <div className={cn("text-2xl sm:text-2xl md:text-3xl font-bold tracking-tight", kpi.valueColor || "text-slate-900")}>
+                <div className={cn("text-xl sm:text-2xl font-bold tracking-tight", kpi.valueColor || "text-slate-900")}>
                   {kpi.value}
                 </div>
                 <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mt-0.5 truncate" title={kpi.subtitle}>

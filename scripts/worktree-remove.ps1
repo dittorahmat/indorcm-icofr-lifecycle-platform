@@ -38,17 +38,13 @@ try {
         git worktree remove $Path
     }
 } catch {
-    Write-Warning "Standard worktree removal failed, attempting with --force..."
+    Write-Warning "Standard git worktree remove failed: $_. Retrying with force..."
     git worktree remove $Path --force
 }
 
-# Ensure directory is truly cleaned up if git left empty or untracked debris behind
 if (Test-Path $Path) {
-    try {
-        Remove-Item -Path $Path -Recurse -Force -ErrorAction SilentlyContinue
-    } catch {
-        # ignore locked files if any
-    }
+    Write-Host "Cleaning residual directory at $Path via cmd rmdir..." -ForegroundColor Yellow
+    cmd /c rmdir /s /q "$Path"
 }
 
 Write-Host "Worktree safely removed from $Path" -ForegroundColor Green

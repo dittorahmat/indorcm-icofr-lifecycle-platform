@@ -108,4 +108,21 @@ describe('Dashboard Mobile Responsiveness & Anti-Slop Integrity', () => {
       expect(title.className).toContain('truncate');
     });
   });
+
+  it('locks wide container max-width classes on AppLayout when container is enabled', async () => {
+    const { AppLayout } = await import('@/components/layout/AppLayout');
+    const { MemoryRouter } = await import('react-router-dom');
+    const { container } = render(
+      <MemoryRouter>
+        <AppLayout container>
+          <div data-testid="layout-child">Content</div>
+        </AppLayout>
+      </MemoryRouter>
+    );
+
+    const contentWrapper = container.querySelector('[data-testid="layout-child"]')?.parentElement;
+    expect(contentWrapper).not.toBeNull();
+    expect(contentWrapper?.className).toContain('max-w-[1720px]');
+    expect(contentWrapper?.className).toContain('2xl:max-w-[1840px]');
+  });
 });
