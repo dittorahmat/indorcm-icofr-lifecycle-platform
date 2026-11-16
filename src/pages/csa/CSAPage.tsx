@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { CSARecordRow } from './components/CSARecordRow';
 import { CSAWorklistTab } from './components/CSAWorklistTab';
+import { CSA_ASSESSED_COLUMNS } from './components/csa-assessed-detail';
 
 type CSAResultFilter = 'all' | 'Effective' | 'Ineffective';
 
@@ -176,15 +177,15 @@ export function CSAPage() {
         </div>
         {/* DESKTOP VIEW: Table */}
         <div className="hidden md:block border rounded-lg bg-white shadow-sm overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
-          <Table className="min-w-[720px]">
+          <Table className="min-w-[880px]">
             <TableHeader className="bg-slate-50 border-b border-slate-200">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 py-4 pl-6">{t('page.table.subProcess')}</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 text-center">{t('page.table.period')}</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 text-center">{t('page.table.status')}</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">{t('page.table.signOff')}</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 text-center">{t('page.table.samples')}</TableHead>
-                <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-slate-500 pr-6">{t('page.table.reports')}</TableHead>
+                <TableHead className={cn("text-xs font-semibold uppercase tracking-wider text-slate-500 py-4 pl-6", CSA_ASSESSED_COLUMNS.subProcess)}>{t('page.table.subProcess')}</TableHead>
+                <TableHead className={cn("text-xs font-semibold uppercase tracking-wider text-slate-500 text-center", CSA_ASSESSED_COLUMNS.period)}>{t('page.table.period')}</TableHead>
+                <TableHead className={cn("text-xs font-semibold uppercase tracking-wider text-slate-500 text-center", CSA_ASSESSED_COLUMNS.status)}>{t('page.table.status')}</TableHead>
+                <TableHead className={cn("text-xs font-semibold uppercase tracking-wider text-slate-500", CSA_ASSESSED_COLUMNS.signOff)}>{t('page.table.signOff')}</TableHead>
+                <TableHead className={cn("text-xs font-semibold uppercase tracking-wider text-slate-500 text-center", CSA_ASSESSED_COLUMNS.samples)}>{t('page.table.samples')}</TableHead>
+                <TableHead className={cn("text-right text-xs font-semibold uppercase tracking-wider text-slate-500 pr-6", CSA_ASSESSED_COLUMNS.reports)}>{t('page.table.reports')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -18,6 +18,16 @@ import {
  * Row and Card adapters supply presentation only.
  */
 
+/** Shared column sizing tokens for the desktop CSA Assessed Records Table */
+export const CSA_ASSESSED_COLUMNS = {
+  subProcess: 'min-w-[240px]',
+  period: 'w-[100px] min-w-[100px]',
+  status: 'w-[110px] min-w-[110px]',
+  signOff: 'w-[160px] min-w-[160px]',
+  samples: 'w-[110px] min-w-[110px]',
+  reports: 'w-[150px] min-w-[150px]',
+} as const;
+
 /** TLC matrix row: Control plus the mapping identifiers the API joins in. */
 export type MatrixControl = Control & { controlId: string; mappingId: string };
 

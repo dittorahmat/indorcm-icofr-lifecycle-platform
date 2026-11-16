@@ -48,6 +48,12 @@ export function RCMTable({
 
   const allColumns = groups.flatMap(g => g.columns);
 
+  const getColumnWidth = (col: RCMColumn): string => col.width || '120px';
+  const getCellStyle = (col: RCMColumn): React.CSSProperties => {
+    const w = getColumnWidth(col);
+    return { width: w, minWidth: w };
+  };
+
   const isSmallColumn = (col: RCMColumn): boolean => {
     const widthNum = parseInt(col.width, 10);
     return !Number.isNaN(widthNum) && widthNum <= 60;
@@ -92,7 +98,7 @@ export function RCMTable({
           >
             <colgroup>
               {allColumns.map((col, cIdx) => (
-                <col key={`colgroup-${col.id}-${cIdx}`} style={{ width: col.width, minWidth: col.width }} />
+                <col key={`colgroup-${col.id}-${cIdx}`} style={{ width: getColumnWidth(col) }} />
               ))}
             </colgroup>
             <thead className="z-30">
@@ -126,10 +132,7 @@ export function RCMTable({
                         small ? "tracking-normal px-1.5" : "tracking-wider",
                         col.headerClassName
                       )}
-                      style={{ 
-                        width: col.width,
-                        minWidth: col.width
-                      }}
+                      style={getCellStyle(col)}
                     >
                       <div className={cn(
                         "flex flex-col gap-1",
@@ -186,10 +189,7 @@ export function RCMTable({
                               "group-hover:bg-indigo-50/70 group-hover:border-indigo-100/50",
                               col.className
                             )}
-                            style={{
-                              width: col.width,
-                              minWidth: col.width
-                            }}
+                            style={getCellStyle(col)}
                           >
                             {col.render ? col.render(row, idx) : (row[col.accessorKey as string] || '-')}
                             {/* Row Indicator Accent */}

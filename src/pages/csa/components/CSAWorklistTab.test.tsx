@@ -136,4 +136,21 @@ describe('CSAWorklistTab', () => {
     }
   });
 
+  it('applies shared column sizing classes to desktop TableHead and TableCell', () => {
+    vi.mocked(useCsaWorklist).mockReturnValue({ ...BASE, groups: GROUPS });
+    const { container } = render(<CSAWorklistTab />);
+
+    const ths = container.querySelectorAll('thead th');
+    expect(ths[0]).toHaveClass('w-[140px]', 'min-w-[140px]');
+    expect(ths[1]).toHaveClass('min-w-[320px]');
+    expect(ths[2]).toHaveClass('min-w-[420px]');
+    expect(ths[3]).toHaveClass('w-[120px]', 'min-w-[120px]');
+
+    const rowTds = container.querySelectorAll('tbody tr:nth-child(2) td');
+    expect(rowTds[0]).toHaveClass('w-[140px]', 'min-w-[140px]');
+    expect(rowTds[1]).toHaveClass('min-w-[320px]');
+    expect(rowTds[2]).toHaveClass('min-w-[420px]');
+    expect(rowTds[3]).toHaveClass('w-[120px]', 'min-w-[120px]');
+  });
+
 });

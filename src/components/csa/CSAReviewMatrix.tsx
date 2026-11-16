@@ -182,10 +182,10 @@ export function CSAReviewMatrix({
           <Table className="border-collapse">
             <TableHeader className="bg-white">
               <TableRow className="hover:bg-transparent border-b-2">
-                <TableHead className="w-[280px] sticky left-0 z-20 bg-white border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                <TableHead className="w-[280px] min-w-[280px] sticky left-0 z-20 bg-white border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-500 py-1">{t('tod.rcmAttributes')}</div>
                 </TableHead>
-                <TableHead className="w-[120px] text-center border-r bg-slate-50/50">
+                <TableHead className="w-[120px] min-w-[120px] text-center border-r bg-slate-50/50">
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-500 py-1">TOD Lini 2</div>
                 </TableHead>
                 {record.samples?.map((sample, idx) => (
@@ -206,7 +206,7 @@ export function CSAReviewMatrix({
                 const tod = getTODStatus(control.controlId);
                 return (
                   <TableRow key={control.mappingId} className="group hover:bg-white transition-colors">
-                    <TableCell className="sticky left-0 z-10 bg-white group-hover:bg-indigo-50/30 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] py-3">
+                    <TableCell className="w-[280px] min-w-[280px] sticky left-0 z-10 bg-white group-hover:bg-indigo-50/30 border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] py-3">
                       <button 
                         onClick={() => onControlClick(control)}
                         className="text-left hover:underline decoration-indigo-300 decoration-2 underline-offset-4"
@@ -220,7 +220,7 @@ export function CSAReviewMatrix({
                         </div>
                       </button>
                     </TableCell>
-                    <TableCell className="text-center border-r py-3 bg-slate-50/30 group-hover:bg-indigo-50/20 transition-colors">
+                    <TableCell className="w-[120px] min-w-[120px] text-center border-r py-3 bg-slate-50/30 group-hover:bg-indigo-50/20 transition-colors">
                       <Badge className={cn("px-2 py-0.5 text-xs font-bold uppercase border shadow-none pointer-events-none flex items-center gap-1 w-fit mx-auto", tod.color)}>
                         {tod.icon}
                         {tod.label}

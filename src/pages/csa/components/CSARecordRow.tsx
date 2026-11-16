@@ -17,6 +17,7 @@ import {
   isValidAssessmentDate,
   resolveWorkflowStatus,
   type MatrixControl,
+  CSA_ASSESSED_COLUMNS,
 } from './csa-assessed-detail';
 
 export function CSARecordRow({ record: initialRecord, process }: { record: CSARecord, process?: BPMProcess }) {
@@ -84,7 +85,7 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
         )}
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <TableCell className="py-4">
+        <TableCell className={cn("py-4", CSA_ASSESSED_COLUMNS.subProcess)}>
            <div className="flex items-center gap-3">
              <div className={cn(
                  "p-1 rounded-md transition-transform duration-200",
@@ -98,24 +99,24 @@ export function CSARecordRow({ record: initialRecord, process }: { record: CSARe
              </div>
            </div>
         </TableCell>
-        <TableCell className="text-center font-black text-indigo-700 text-xs">{initialRecord.period}</TableCell>
-        <TableCell className="text-center">
+        <TableCell className={cn("text-center font-black text-indigo-700 text-xs", CSA_ASSESSED_COLUMNS.period)}>{initialRecord.period}</TableCell>
+        <TableCell className={cn("text-center", CSA_ASSESSED_COLUMNS.status)}>
           <Badge className={cn(
             "text-xs font-black uppercase shadow-none border-none",
             initialRecord.result === 'Effective' ? "bg-green-500 text-white" : "bg-red-500 text-white"
           )}>{initialRecord.result}</Badge>
         </TableCell>
-        <TableCell className="text-xs text-slate-500 font-medium">
+        <TableCell className={cn("text-xs text-slate-500 font-medium", CSA_ASSESSED_COLUMNS.signOff)}>
           {isValidAssessmentDate(initialRecord.assessmentDate)
             ? format(new Date(initialRecord.assessmentDate), 'dd MMM yyyy HH:mm')
             : '-'}
         </TableCell>
-        <TableCell className="text-center">
+        <TableCell className={cn("text-center", CSA_ASSESSED_COLUMNS.samples)}>
            <Badge variant="outline" className="font-black text-xs bg-white border-slate-200">
              {record.samples?.length || 0} {t('page.table.samples')}
            </Badge>
         </TableCell>
-        <TableCell className="text-right" onClick={e => e.stopPropagation()}>
+        <TableCell className={cn("text-right", CSA_ASSESSED_COLUMNS.reports)} onClick={e => e.stopPropagation()}>
           <div className="flex flex-wrap justify-end gap-2 pr-2">
             <Button 
               variant="outline" 

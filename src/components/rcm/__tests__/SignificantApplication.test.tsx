@@ -181,5 +181,9 @@ describe('ApplicationDetailDialog', () => {
       expect(screen.getByText('TLC-FIN-001')).toBeInTheDocument();
       expect(screen.getByText('Automated 3-Way Matching')).toBeInTheDocument();
     });
+
+    const ths = screen.getAllByRole('columnheader');
+    const nameHeader = ths.find((th) => th.textContent?.includes('Control Name & Description'));
+    expect(nameHeader).toHaveClass('min-w-[280px]');
   });
 });

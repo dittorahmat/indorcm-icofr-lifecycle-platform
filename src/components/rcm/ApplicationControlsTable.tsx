@@ -60,7 +60,7 @@ export function ControlsTable({
         <TableHeader className="bg-slate-50">
           <TableRow>
             <TableHead className="w-[120px] text-xs font-bold text-slate-700">Control ID</TableHead>
-            <TableHead className="text-xs font-bold text-slate-700">Control Name & Description</TableHead>
+            <TableHead className="min-w-[280px] text-xs font-bold text-slate-700">Control Name & Description</TableHead>
             {matrixType === 'itgc' && (
               <TableHead className="w-[140px] text-xs font-bold text-slate-700">ITGC Domain</TableHead>
             )}
@@ -77,7 +77,7 @@ export function ControlsTable({
               <TableCell className="font-bold text-xs text-indigo-700 whitespace-nowrap">
                 {ctrl.code}
               </TableCell>
-              <TableCell className="space-y-0.5 max-w-[320px]">
+              <TableCell className="space-y-0.5 min-w-[280px] max-w-[320px]">
                 <div className="font-semibold text-xs text-slate-800 truncate">{ctrl.name}</div>
                 {ctrl.description && (
                   <div className="text-xs text-slate-500 line-clamp-1">{ctrl.description}</div>

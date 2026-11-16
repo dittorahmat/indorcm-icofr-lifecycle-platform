@@ -113,15 +113,15 @@ describe('RCMTable Responsive Rendering', () => {
     expect(thElements[3]).toHaveClass('text-left');
   });
 
-  it('renders colgroup with explicit width and minWidth for strict column sizing', () => {
+  it('renders colgroup with explicit width for column sizing and minWidth on cells', () => {
     const { container } = render(
       <RCMTable groups={mockGroups} data={mockData} />
     );
 
     const cols = container.querySelectorAll('colgroup col');
     expect(cols.length).toBe(2);
-    expect(cols[0]).toHaveStyle({ width: '120px', minWidth: '120px' });
-    expect(cols[1]).toHaveStyle({ width: '250px', minWidth: '250px' });
+    expect(cols[0]).toHaveStyle({ width: '120px' });
+    expect(cols[1]).toHaveStyle({ width: '250px' });
 
     const ths = container.querySelectorAll('thead tr:nth-child(2) th');
     expect(ths[0]).toHaveStyle({ width: '120px', minWidth: '120px' });

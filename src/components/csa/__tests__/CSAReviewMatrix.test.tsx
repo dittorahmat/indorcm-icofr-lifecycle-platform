@@ -104,6 +104,16 @@ describe('CSAReviewMatrix Mobile & Desktop Dual-Render', () => {
     const controlCodes = screen.getAllByText('CTL-PTP-01');
     expect(controlCodes).toHaveLength(2);
 
+    // Verify desktop headers have robust column widths
+    const ths = container.querySelectorAll('.hidden.md\\:block thead th');
+    expect(ths[0]).toHaveClass('w-[280px]', 'min-w-[280px]');
+    expect(ths[1]).toHaveClass('w-[120px]', 'min-w-[120px]');
+
+    // Verify desktop cells have robust column widths
+    const tds = container.querySelectorAll('.hidden.md\\:block tbody tr td');
+    expect(tds[0]).toHaveClass('w-[280px]', 'min-w-[280px]');
+    expect(tds[1]).toHaveClass('w-[120px]', 'min-w-[120px]');
+
     // Verify click triggers callback
     fireEvent.click(controlCodes[0]);
     expect(handleControlClick).toHaveBeenCalledWith(mockControls[0]);

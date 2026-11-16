@@ -223,4 +223,42 @@ describe('CSAPage', () => {
       resetPageQueryStore(csaPageQueryState);
     }
   });
+
+  it('applies robust min-w-[880px] and explicit column sizing classes to desktop table headers and row cells', () => {
+    const record: TestCsaRecord = {
+      id: 'csa-size-1',
+      bpmProcessId: 'proc-size-1',
+      period: '2026-Q1',
+      result: 'Effective',
+      assessmentDate: new Date('2026-03-01T10:00:00').getTime(),
+      samples: [],
+      comments: '',
+    };
+    csaPageQueryState.records = [record];
+    csaPageQueryState.processes = [{ id: 'proc-size-1', name: 'Size Test Process' }];
+
+    try {
+      const { container } = render(<CSAPage />);
+      const table = container.querySelector('.hidden.md\\:block table');
+      expect(table).toHaveClass('min-w-[880px]');
+
+      const ths = container.querySelectorAll('.hidden.md\\:block thead th');
+      expect(ths[0]).toHaveClass('min-w-[240px]');
+      expect(ths[1]).toHaveClass('w-[100px]', 'min-w-[100px]');
+      expect(ths[2]).toHaveClass('w-[110px]', 'min-w-[110px]');
+      expect(ths[3]).toHaveClass('w-[160px]', 'min-w-[160px]');
+      expect(ths[4]).toHaveClass('w-[110px]', 'min-w-[110px]');
+      expect(ths[5]).toHaveClass('w-[150px]', 'min-w-[150px]');
+
+      const tds = container.querySelectorAll('.hidden.md\\:block tbody tr:first-child td');
+      expect(tds[0]).toHaveClass('min-w-[240px]');
+      expect(tds[1]).toHaveClass('w-[100px]', 'min-w-[100px]');
+      expect(tds[2]).toHaveClass('w-[110px]', 'min-w-[110px]');
+      expect(tds[3]).toHaveClass('w-[160px]', 'min-w-[160px]');
+      expect(tds[4]).toHaveClass('w-[110px]', 'min-w-[110px]');
+      expect(tds[5]).toHaveClass('w-[150px]', 'min-w-[150px]');
+    } finally {
+      resetPageQueryStore(csaPageQueryState);
+    }
+  });
 });
