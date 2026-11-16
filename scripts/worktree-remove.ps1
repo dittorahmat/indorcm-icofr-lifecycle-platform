@@ -11,6 +11,8 @@ param(
     [Parameter(Mandatory=$false)]
     [ValidateSet(1, 2, 3)]
     [int]$Slot,
+    [Parameter(Mandatory=$false)]
+    [string]$Branch,
     [switch]$Force
 )
 
@@ -48,3 +50,17 @@ if (Test-Path $Path) {
 }
 
 Write-Host "Worktree safely removed from $Path" -ForegroundColor Green
+
+if ($Branch) {
+    Write-Host "Deleting branch $Branch..." -ForegroundColor Cyan
+    try {
+        git branch -d $Branch 2>$null
+        if ($LASTEXITCODE -ne 0 -and $Force) {
+            git branch -D $Branch
+        }
+    } catch {
+        if ($Force) {
+            git branch -D $Branch
+        }
+    }
+}
