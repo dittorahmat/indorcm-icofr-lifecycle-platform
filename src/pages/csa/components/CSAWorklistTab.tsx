@@ -106,13 +106,13 @@ export function CSAWorklistTab() {
 
       {/* DESKTOP VIEW: grouped table */}
       <div className="hidden md:block border rounded-lg bg-white shadow-sm overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
-        <Table className="min-w-[720px]">
+        <Table className="min-w-[1080px]">
           <TableHeader className="bg-slate-50 border-b border-slate-200">
             <TableRow className="hover:bg-transparent">
-              <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 py-4 pl-6">{t('page.worklist.table.code')}</TableHead>
-              <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">{t('page.worklist.table.control')}</TableHead>
-              <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">{t('page.worklist.table.risk')}</TableHead>
-              <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-slate-500 pr-6">{t('page.worklist.table.action')}</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 py-4 pl-6 w-[140px] min-w-[140px]">{t('page.worklist.table.code')}</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 min-w-[320px]">{t('page.worklist.table.control')}</TableHead>
+              <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 min-w-[420px]">{t('page.worklist.table.risk')}</TableHead>
+              <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-slate-500 pr-6 w-[120px] min-w-[120px]">{t('page.worklist.table.action')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -130,10 +130,10 @@ export function CSAWorklistTab() {
                 </TableRow>
                 {group.items.map((item) => (
                   <TableRow key={item.id} className="hover:bg-indigo-50/10 transition-colors">
-                    <TableCell className="pl-6 text-xs font-bold text-slate-700">{item.code}</TableCell>
-                    <TableCell className="text-sm font-bold text-slate-900">{item.name}</TableCell>
-                    <TableCell className="text-xs text-slate-500 font-medium">{item.riskDescription ?? '—'}</TableCell>
-                    <TableCell className="text-right pr-6">
+                    <TableCell className="pl-6 text-xs font-bold text-slate-700 w-[140px] min-w-[140px]">{item.code}</TableCell>
+                    <TableCell className="text-sm font-bold text-slate-900 min-w-[320px] leading-relaxed">{item.name}</TableCell>
+                    <TableCell className="text-xs text-slate-500 font-medium min-w-[420px] leading-relaxed">{item.riskDescription ?? '—'}</TableCell>
+                    <TableCell className="text-right pr-6 w-[120px] min-w-[120px]">
                       <Button
                         size="sm"
                         onClick={openWorkspace(item)}

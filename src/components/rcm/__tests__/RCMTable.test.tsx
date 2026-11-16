@@ -112,4 +112,23 @@ describe('RCMTable Responsive Rendering', () => {
     // 'risk_desc' should be left-aligned
     expect(thElements[3]).toHaveClass('text-left');
   });
+
+  it('renders colgroup with explicit width and minWidth for strict column sizing', () => {
+    const { container } = render(
+      <RCMTable groups={mockGroups} data={mockData} />
+    );
+
+    const cols = container.querySelectorAll('colgroup col');
+    expect(cols.length).toBe(2);
+    expect(cols[0]).toHaveStyle({ width: '120px', minWidth: '120px' });
+    expect(cols[1]).toHaveStyle({ width: '250px', minWidth: '250px' });
+
+    const ths = container.querySelectorAll('thead tr:nth-child(2) th');
+    expect(ths[0]).toHaveStyle({ width: '120px', minWidth: '120px' });
+    expect(ths[1]).toHaveStyle({ width: '250px', minWidth: '250px' });
+
+    const tds = container.querySelectorAll('tbody tr td');
+    expect(tds[0]).toHaveStyle({ width: '120px', minWidth: '120px' });
+    expect(tds[1]).toHaveStyle({ width: '250px', minWidth: '250px' });
+  });
 });

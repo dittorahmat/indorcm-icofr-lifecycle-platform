@@ -90,6 +90,11 @@ export function RCMTable({
             className="table-fixed border-separate border-spacing-0 mb-10 w-full"
             style={{ minWidth }}
           >
+            <colgroup>
+              {allColumns.map((col, cIdx) => (
+                <col key={`colgroup-${col.id}-${cIdx}`} style={{ width: col.width, minWidth: col.width }} />
+              ))}
+            </colgroup>
             <thead className="z-30">
               {/* Level 1 Header: Groups */}
               <tr className="h-9 bg-slate-800 text-slate-100 sticky top-0 z-30 border-b border-slate-700">
@@ -122,7 +127,8 @@ export function RCMTable({
                         col.headerClassName
                       )}
                       style={{ 
-                        width: col.width
+                        width: col.width,
+                        minWidth: col.width
                       }}
                     >
                       <div className={cn(
@@ -180,6 +186,10 @@ export function RCMTable({
                               "group-hover:bg-indigo-50/70 group-hover:border-indigo-100/50",
                               col.className
                             )}
+                            style={{
+                              width: col.width,
+                              minWidth: col.width
+                            }}
                           >
                             {col.render ? col.render(row, idx) : (row[col.accessorKey as string] || '-')}
                             {/* Row Indicator Accent */}
