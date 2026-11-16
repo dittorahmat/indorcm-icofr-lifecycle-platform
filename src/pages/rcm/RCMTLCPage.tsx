@@ -16,6 +16,7 @@ import { RCMGroupRow } from '@/components/rcm/RCMGroupRow';
 import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
 import { RCMImportWizardModal } from '@/components/rcm/import/RCMImportWizardModal';
 import { RCM_NARRATIVE_WIDTHS } from '@/components/rcm/rcm-column-widths';
+import { buildBpmDeepLinkUrl, formatBpmStepLabel } from '@/utils/bpm-link';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
 import { RolloverCard } from '@/components/layout/RolloverCard';
@@ -194,13 +195,15 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
             if (!hasLink) {
               return <span className="text-slate-400 font-mono text-xs">-</span>;
             }
-            const displayLabel = row.nodeId ? (row.nodeId.length > 15 ? 'BPM Step' : row.nodeId) : 'BPM';
-            const targetUrl = `/rcm/bpm?diagramId=${encodeURIComponent(row.diagramId || '')}${row.nodeId ? `&nodeId=${encodeURIComponent(row.nodeId)}` : ''}`;
+            const displayLabel = formatBpmStepLabel(row.nodeId, 'BPM', 15);
+            const targetUrl = buildBpmDeepLinkUrl(row.diagramId, row.nodeId);
             return (
               <Link
                 to={targetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 hover:text-indigo-900 px-2 py-0.5 rounded transition-colors"
-                title={t('matrix.open_bpm_step', { defaultValue: 'Buka Simpul BPM' })}
+                title={t('matrix.open_bpm_step', { defaultValue: 'Buka Simpul BPM di Tab Baru' })}
               >
                 <span>{displayLabel}</span>
                 <ExternalLink className="h-3 w-3 shrink-0" />

@@ -43,6 +43,7 @@
     "check:font-slop": "node scripts/check-font-slop.mjs",
     "check:contrast": "node scripts/check-contrast-slop.mjs",
     "check:theme-tokens": "node scripts/check-theme-tokens.mjs",
+    "check:route-links": "node scripts/check-route-links.mjs",
     "check:table-semantics": "node scripts/check-table-semantics.mjs",
     "check:worktree": "node scripts/check-worktree-isolation.mjs",
     "sync:skills": "node scripts/sync-skills.mjs",

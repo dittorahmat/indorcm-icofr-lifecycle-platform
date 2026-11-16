@@ -5,6 +5,7 @@ import { ExternalLink, Star, CheckCircle, AlertCircle, Eye, ShieldCheck, Databas
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { buildBpmDeepLinkUrl, formatBpmStepLabel } from '@/utils/bpm-link';
 import type { RCMMatrixItem } from './useRCMExplorer';
 
 interface RCMKeyControlTableProps {
@@ -53,9 +54,7 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
               const isHigh = riskRating.toLowerCase() === 'high';
               const bpmCode = item.parentBpmCode || item.bpmCode;
               const hasBpmLink = Boolean(item.diagramId || item.nodeId);
-              const bpmTarget = `/rcm/bpm?diagramId=${encodeURIComponent(item.diagramId || '')}${
-                item.nodeId ? `&nodeId=${encodeURIComponent(item.nodeId)}` : ''
-              }`;
+              const bpmTarget = buildBpmDeepLinkUrl(item.diagramId, item.nodeId);
 
               return (
                 <tr
@@ -183,10 +182,12 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                     {hasBpmLink ? (
                       <Link
                         to={bpmTarget}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 font-mono text-xs font-bold text-secondary bg-secondary/10 border border-secondary/20 hover:bg-secondary/20 px-2 py-1 rounded transition-colors"
-                        title={t('explorer.table.openBpmTooltip', { defaultValue: 'Buka Simpul BPM' })}
+                        title={t('explorer.table.openBpmTooltip', { defaultValue: 'Buka Simpul BPM di Tab Baru' })}
                       >
-                        <span>{item.nodeId ? (item.nodeId.length > 12 ? 'BPM Node' : item.nodeId) : (bpmCode || 'BPM')}</span>
+                        <span>{formatBpmStepLabel(item.nodeId, bpmCode || 'BPM', 12)}</span>
                         <ExternalLink className="h-3 w-3 shrink-0" />
                       </Link>
                     ) : (

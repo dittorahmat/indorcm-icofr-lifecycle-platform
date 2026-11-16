@@ -149,6 +149,11 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
     *   **Tiga invariant whole-tree berjalan otomatis** (pre-commit + CI): `check:test-i18n`, `check:doc-refs`, `check:ocr-constants`. Jika merah, perbaiki sumbernya (pakai `strictT`, betulkan path komentar, impor konstanta) — dilarang menonaktifkan gate, menambah allowlist, atau `git commit --no-verify` tanpa ADR.
     *   **Verifikasi layout tidak boleh membakar panggilan model:** `npm run ocr:probe -- <file>` memanggil model SEKALI lalu menulis `fixtures/ocr/<slug>.ocr.json`; gate replay-nya `src/test/ocr-real-snapshot.test.ts`. Probe live `OCR_LIVE=1` hanya untuk menjawab "apakah model masih mengekstrak gambar ini", bukan "apakah layout benar" — provider 503/timeout bukan bukti kode salah.
     *   **Lampiran pengguna tidak otomatis tersimpan di disk:** cek `fixtures/inbox/` lebih dulu, lalu minta path eksplisit. Dilarang menebak-nebak direktori temp sistem atau menganggap lampiran sudah ada di workspace.
+15. **Navigasi & Deep-Link Antar-Modul (BPM Step & Regulatory Linkage - Wajib):**
+    *   **Rute Kanonikal & Manifest Terpusat:** Seluruh rute aplikasi didefinisikan secara terpusat di `src/routes/paths.ts` (`ROUTES`). Rute kanonikal workspace BPM adalah `/bpm` (bukan `/rcm/bpm` atau sub-path arbitrary). Ditegakkan mekanis oleh `npm run check:route-links`.
+    *   **Beban Konstruksi Link Bersumber Tunggal:** Setiap pembentukan link ke BPM (mis. dari matriks RCM TLC, Key Control Explorer, atau workbench testing) WAJIB menggunakan pembangun URL terpusat `buildBpmDeepLinkUrl(diagramId, nodeId)` dan `formatBpmStepLabel` dari `src/utils/bpm-link.ts`. Dilarang menduplikasi interpolasi string manual query search params.
+    *   **Buka di Tab Baru untuk Surface Referensi:** Tautan deep-link dari halaman pembacaan tabel matriks/laporan kerja WAJIB membuka tab baru (`target="_blank" rel="noopener noreferrer"`) agar pengguna tidak kehilangan konteks baca atau posisi scroll pada halaman kerja asal.
+    *   **Redirect Fallback dengan Preservasi Query:** Router aplikasi di `src/main.tsx` wajib menyediakan route redirect fallback yang meneruskan query parameters dan hash (`RedirectWithSearch`) untuk setiap rute legacy guna mencegah pengguna terlempar ke halaman Login (`/`).
 
 ## Development Conventions
 

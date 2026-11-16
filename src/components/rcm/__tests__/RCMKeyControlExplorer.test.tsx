@@ -142,8 +142,11 @@ describe('RCM Key Control Explorer & Sovereign Governance Components', () => {
     expect(screen.getByText('SAP FI-CO')).toBeInTheDocument();
 
     // BPM node link
-    const bpmLinks = screen.getAllByTitle('Buka Simpul BPM');
+    const bpmLinks = screen.getAllByTitle(/Buka Simpul BPM/i);
     expect(bpmLinks.length).toBeGreaterThanOrEqual(1);
+    expect(bpmLinks[0]).toHaveAttribute('href', expect.stringContaining('/bpm?diagramId='));
+    expect(bpmLinks[0]).toHaveAttribute('target', '_blank');
+    expect(bpmLinks[0]).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
   it('filters table by priority (Key Control only)', async () => {

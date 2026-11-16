@@ -79,7 +79,9 @@ describe('RCMTLCPage Ref BPM deep-link rendering', () => {
 
     const bpmLink = await screen.findByRole('link', { name: /node-act-1/i });
     expect(bpmLink).toBeInTheDocument();
-    expect(bpmLink).toHaveAttribute('href', '/rcm/bpm?diagramId=diag-1&nodeId=node-act-1');
+    expect(bpmLink).toHaveAttribute('href', '/bpm?diagramId=diag-1&nodeId=node-act-1');
+    expect(bpmLink).toHaveAttribute('target', '_blank');
+    expect(bpmLink).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
   it('renders a hyphen when no BPM linkage exists', async () => {
