@@ -44,8 +44,14 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Test
+      - name: Test (unit & domain integration)
         run: npm test
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E Browser Test (Playwright)
+        run: npm run test:e2e
 
       - name: Repo gates (delta + API contract)
         # Delta gates (loc / any-delta / i18n / worker-strings) compare the PR
