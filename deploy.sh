@@ -31,6 +31,7 @@ PROJECT_DIR="/home/ubuntu/indorcm-icofr-lifecycle-platform"
 LOCK_FILE="/tmp/icofr-deploy.lock"
 LOG_FILE="/tmp/icofr-deploy.log"
 BACKEND_URL="http://localhost:3001/api/settings"
+AUTH_HEALTH_URL="http://localhost:3001/api/auth/get-session"
 DIST_INDEX="dist/client/index.html"
 DEPLOY_INFO="dist/client/deploy-info.json"
 LIVE_DIR="/var/www/icofr"
@@ -41,8 +42,9 @@ MODE="deploy"
 for arg in "$@"; do
     case "$arg" in
         --check) MODE="check" ;;
+        --check-health|--probe) MODE="probe" ;;
         --force|--rebuild) MODE="force" ;;
-        *) echo "Argumen tidak dikenal: $arg (pilihan: --check, --force)"; exit 2 ;;
+        *) echo "Argumen tidak dikenal: $arg (pilihan: --check, --check-health, --force)"; exit 2 ;;
     esac
 done
 
@@ -97,6 +99,12 @@ if [ "$MODE" = "check" ]; then
     if [ -n "$NEED_REASON" ]; then log "CHECK hasil: BUTUH DEPLOY ($NEED_REASON)"; exit 1; fi
     log "CHECK hasil: SEHAT (git sinkron, build segar)"
     exit 0
+fi
+
+if [ "$MODE" = "probe" ]; then
+    log "Menjalankan post-deploy probe langsung..."
+    node scripts/post-deploy-probe.mjs
+    exit $?
 fi
 
 if [ -z "$NEED_REASON" ] && [ "$MODE" != "force" ]; then
@@ -233,9 +241,17 @@ PM2_NOW="$(pm2 jlist 2>/dev/null | python3 -c "import json,sys;print(next((a['pm
 [ "$PM2_NOW" = "online" ] || { log "FATAL: icofr-backend tidak online (status: $PM2_NOW)"; exit 1; }
 HTTP_CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$BACKEND_URL" || echo 000)"
 case "$HTTP_CODE" in
-    000) log "FATAL: backend tidak menjawab di $BACKEND_URL"; exit 1 ;;
-    5*)  log "FATAL: backend error (HTTP $HTTP_CODE di $BACKEND_URL)"; exit 1 ;;
-    *)   log "Backend menjawab (HTTP $HTTP_CODE)." ;;
+    000) log "FATAL: backend DB tidak menjawab di $BACKEND_URL"; exit 1 ;;
+    5*)  log "FATAL: backend DB error (HTTP $HTTP_CODE di $BACKEND_URL)"; exit 1 ;;
+    *)   log "Backend DB menjawab (HTTP $HTTP_CODE)." ;;
 esac
 
-log "Deployment sukses: commit=$NEW_REV pm2=$PM2_NOW backend_http=$HTTP_CODE live_dir=$LIVE_DIR"
+# Probe auth runtime readiness (Better-Auth secret, initialization)
+AUTH_HTTP_CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$AUTH_HEALTH_URL" || echo 000)"
+case "$AUTH_HTTP_CODE" in
+    000) log "FATAL: auth service tidak menjawab di $AUTH_HEALTH_URL"; exit 1 ;;
+    5*)  log "FATAL: auth service error (HTTP $AUTH_HTTP_CODE di $AUTH_HEALTH_URL)"; exit 1 ;;
+    *)   log "Auth runtime menjawab (HTTP $AUTH_HTTP_CODE)." ;;
+esac
+
+log "Deployment sukses: commit=$NEW_REV pm2=$PM2_NOW backend_http=$HTTP_CODE auth_http=$AUTH_HTTP_CODE live_dir=$LIVE_DIR"

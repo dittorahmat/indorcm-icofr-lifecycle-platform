@@ -48,6 +48,7 @@
     "check:table-semantics": "node scripts/check-table-semantics.mjs",
     "check:worktree": "node scripts/check-worktree-isolation.mjs",
     "sync:skills": "node scripts/sync-skills.mjs",
+    "probe:live": "node scripts/post-deploy-probe.mjs",
     "check:period-queries": "node scripts/check-period-queries.mjs",
     "ocr:probe": "tsx scripts/ocr-probe.ts",
     "preview": "bun run build && vite preview --host 0.0.0.0 --port 4173",

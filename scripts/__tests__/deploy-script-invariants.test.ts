@@ -38,4 +38,13 @@ describe('deploy.sh sync and git safety invariants', () => {
   it('avoids futile nested retry loops on pull failure', () => {
     expect(deployScript).not.toContain('git pull --ff-only gagal pertama kali');
   });
+
+  it('locks multi-endpoint health probe gate (DB settings + Better-Auth session)', () => {
+    expect(deployScript).toContain('AUTH_HEALTH_URL="http://localhost:3001/api/auth/get-session"');
+    expect(deployScript).toContain('BACKEND_URL="http://localhost:3001/api/settings"');
+    expect(deployScript).toContain('curl -s -o /dev/null -w \'%{http_code}\' --max-time 15 "$AUTH_HEALTH_URL"');
+    expect(deployScript).toContain('auth_http=$AUTH_HTTP_CODE');
+    expect(deployScript).toContain('--check-health|--probe');
+    expect(deployScript).toContain('node scripts/post-deploy-probe.mjs');
+  });
 });
