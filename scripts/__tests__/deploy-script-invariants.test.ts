@@ -44,5 +44,7 @@ describe('deploy.sh sync and git safety invariants', () => {
     expect(deployScript).toContain('BACKEND_URL="http://localhost:3001/api/settings"');
     expect(deployScript).toContain('curl -s -o /dev/null -w \'%{http_code}\' --max-time 15 "$AUTH_HEALTH_URL"');
     expect(deployScript).toContain('auth_http=$AUTH_HTTP_CODE');
+    expect(deployScript).toContain('--check-health|--probe');
+    expect(deployScript).toContain('node scripts/post-deploy-probe.mjs');
   });
 });

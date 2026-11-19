@@ -42,8 +42,9 @@ MODE="deploy"
 for arg in "$@"; do
     case "$arg" in
         --check) MODE="check" ;;
+        --check-health|--probe) MODE="probe" ;;
         --force|--rebuild) MODE="force" ;;
-        *) echo "Argumen tidak dikenal: $arg (pilihan: --check, --force)"; exit 2 ;;
+        *) echo "Argumen tidak dikenal: $arg (pilihan: --check, --check-health, --force)"; exit 2 ;;
     esac
 done
 
@@ -98,6 +99,12 @@ if [ "$MODE" = "check" ]; then
     if [ -n "$NEED_REASON" ]; then log "CHECK hasil: BUTUH DEPLOY ($NEED_REASON)"; exit 1; fi
     log "CHECK hasil: SEHAT (git sinkron, build segar)"
     exit 0
+fi
+
+if [ "$MODE" = "probe" ]; then
+    log "Menjalankan post-deploy probe langsung..."
+    node scripts/post-deploy-probe.mjs
+    exit $?
 fi
 
 if [ -z "$NEED_REASON" ] && [ "$MODE" != "force" ]; then
