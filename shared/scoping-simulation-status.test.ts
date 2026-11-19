@@ -31,6 +31,54 @@ describe('decideSimulationTransition — SCOPING approval gates', () => {
       .toEqual({ ok: true, kind: 'transition', nextStatus: 'Approved', historyAction: 'Approve' });
   });
 
+  it('rejects self-approval for non-admin users in scoping (SoD violation)', () => {
+    const sodReject = decideSimulationTransition({
+      status: 'Pending CFO',
+      role: 'CFO',
+      action: 'Approve',
+      userId: 'cfo-1',
+      createdBy: 'cfo-1',
+    });
+    expect(sodReject).toEqual({
+      ok: false,
+      code: 'SIMULATION_SOD_VIOLATION',
+      status: 403,
+      message: 'Segregation of duties: Creator cannot approve their own simulation',
+    });
+  });
+
+  it('permits self-approval for Admin in scoping for testing purposes', () => {
+    const adminApprove = decideSimulationTransition({
+      status: 'Pending CFO',
+      role: 'Admin',
+      action: 'Approve',
+      userId: 'admin-1',
+      createdBy: 'admin-1',
+    });
+    expect(adminApprove).toEqual({
+      ok: true,
+      kind: 'transition',
+      nextStatus: 'Pending Komut',
+      historyAction: 'Approve',
+    });
+  });
+
+  it('allows different user to approve simulation', () => {
+    const validApprove = decideSimulationTransition({
+      status: 'Pending CFO',
+      role: 'CFO',
+      action: 'Approve',
+      userId: 'cfo-1',
+      createdBy: 'preparer-1',
+    });
+    expect(validApprove).toEqual({
+      ok: true,
+      kind: 'transition',
+      nextStatus: 'Pending Komut',
+      historyAction: 'Approve',
+    });
+  });
+
   it('forbids the wrong stage authority with 403', () => {
     const komutAtCfo = decideSimulationTransition({ status: 'Pending CFO', role: 'Commissioner', action: 'Approve' });
     expect(komutAtCfo.ok).toBe(false);

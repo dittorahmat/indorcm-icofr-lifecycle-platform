@@ -27,6 +27,7 @@
   "requestDeletion": "Ajukan Penghapusan",
   "approveDeletion": "Setujui Penghapusan",
   "rejectDeletion": "Tolak Penghapusan",
+  "sodViolationTooltip": "Pemisahan tugas (SoD): Anda tidak dapat menyetujui dokumen yang Anda buat sendiri.",
   "quickNotes": {
     "title": "Preset Catatan Cepat",
     "approvedAsPerAttachment": "Disetujui sesuai lampiran",

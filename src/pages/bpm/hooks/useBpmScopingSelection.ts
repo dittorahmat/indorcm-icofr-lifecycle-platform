@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
 import { MOCK_DEPARTMENTS } from '@shared/mock-data';
 import { Settings, User } from '@shared/types';
+import { can } from '@shared/entity-authority';
 import { useActiveSimulation, useSimulationSnapshot } from '@/hooks/use-bpm';
 import { useBPMAssertions } from './useBPMAssertions';
 
@@ -134,7 +135,7 @@ export function useBpmScopingSelection({
       deptIds.length > 0
         ? deptIds.map((id) => MOCK_DEPARTMENTS.find((d) => d.id === id)?.name).filter(Boolean).join(', ')
         : unassignedLabel;
-    if (currentUser.role === 'Line 2' || currentUser.role === 'Admin') {
+    if (can(currentUser.role, 'scoping:allocate-departments')) {
       return { departmentName: deptName, hasAccess: true };
     }
     const match = !!currentUser.departmentId && deptIds.includes(currentUser.departmentId);

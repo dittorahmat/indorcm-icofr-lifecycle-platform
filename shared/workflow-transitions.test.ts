@@ -33,13 +33,91 @@ describe('workflow-transitions single source (T2 RED)', () => {
     expect(d).toEqual({ ok: true, nextStatus: 'Ineffective' });
   });
 
-  it('routes SCOPING through CFO → Komut → Approved', () => {
-    expect(decideTransition({ entityType: 'SCOPING', currentStatus: 'Draft', action: 'Submit', role: line1 }))
-      .toEqual({ ok: true, nextStatus: 'Pending CFO' });
-    expect(decideTransition({ entityType: 'SCOPING', currentStatus: 'Pending CFO', action: 'Review', role: 'CFO' }))
-      .toEqual({ ok: true, nextStatus: 'Pending Komut' });
-    expect(decideTransition({ entityType: 'SCOPING', currentStatus: 'Pending Komut', action: 'Approve', role: 'Commissioner' }))
-      .toEqual({ ok: true, nextStatus: 'Approved' });
+  it('rejects self-approval for non-admin users (SoD violation)', () => {
+    // BPM Review step
+    expect(decideTransition({
+      entityType: 'BPM',
+      currentStatus: 'In Review',
+      action: 'Review',
+      role: line2,
+      userId: 'user-1',
+      createdBy: 'user-1',
+    })).toEqual({
+      ok: false,
+      code: 'SOD_VIOLATION',
+      status: 403,
+      message: 'Segregation of duties: Creator cannot approve their own submission',
+    });
+
+    // Scoping CFO review step
+    expect(decideTransition({
+      entityType: 'SCOPING',
+      currentStatus: 'Pending CFO',
+      action: 'Review',
+      role: 'CFO',
+      userId: 'cfo-user',
+      createdBy: 'cfo-user',
+    })).toEqual({
+      ok: false,
+      code: 'SOD_VIOLATION',
+      status: 403,
+      message: 'Segregation of duties: Creator cannot approve their own submission',
+    });
+
+    // CSA Approve step
+    expect(decideTransition({
+      entityType: 'CSA',
+      currentStatus: 'In Review',
+      action: 'Approve',
+      role: line2,
+      userId: 'line2-user',
+      createdBy: 'line2-user',
+    })).toEqual({
+      ok: false,
+      code: 'SOD_VIOLATION',
+      status: 403,
+      message: 'Segregation of duties: Creator cannot approve their own submission',
+    });
+  });
+
+  it('permits self-approval for Admin for testing purposes', () => {
+    expect(decideTransition({
+      entityType: 'BPM',
+      currentStatus: 'In Review',
+      action: 'Review',
+      role: 'Admin',
+      userId: 'admin-user',
+      createdBy: 'admin-user',
+    })).toEqual({
+      ok: true,
+      nextStatus: 'In Approval',
+    });
+
+    expect(decideTransition({
+      entityType: 'SCOPING',
+      currentStatus: 'Pending CFO',
+      action: 'Review',
+      role: 'Admin',
+      userId: 'admin-user',
+      createdBy: 'admin-user',
+    })).toEqual({
+      ok: true,
+      nextStatus: 'Pending Komut',
+    });
+  });
+
+  it('allows different user to approve', () => {
+    expect(decideTransition({
+      entityType: 'BPM',
+      currentStatus: 'In Review',
+      action: 'Review',
+      role: line2,
+      userId: 'reviewer-user',
+      createdBy: 'creator-user',
+    })).toEqual({
+      ok: true,
+      nextStatus: 'In Approval',
+    });
   });
 
   it('routes SCOPING rejection, resubmission and deletion review through the table', () => {

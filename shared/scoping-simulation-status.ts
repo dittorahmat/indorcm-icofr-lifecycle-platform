@@ -1,6 +1,6 @@
 import type { ApprovalHistoryEntry, SimulationStatus, WorkflowAction, WorkflowHistoryEntry } from './types/scoping';
 import type { UserRole } from './types/common';
-import { allowedRolesFor, requiresNoteFor, allowedActionsFor, workflowStatusesFor, WORKFLOW_TRANSITION_RULES } from './workflow-transitions';
+import { allowedRolesFor, requiresNoteFor, allowedActionsFor, workflowStatusesFor, WORKFLOW_TRANSITION_RULES, isProhibitedSelfApproval } from './workflow-transitions';
 
 /**
  * Single owner of the materiality-simulation approval lifecycle (arch round 8,
@@ -90,13 +90,16 @@ export function simulationApprovalStages(): SimulationStatus[] {
 export type SimulationDecisionCode =
   | 'SIMULATION_NOT_AWAITING_APPROVAL'
   | 'SIMULATION_ROLE_FORBIDDEN'
-  | 'SIMULATION_NOTE_REQUIRED';
+  | 'SIMULATION_NOTE_REQUIRED'
+  | 'SIMULATION_SOD_VIOLATION';
 
 export interface SimulationDecisionInput {
   status: SimulationStatus;
   role: UserRole;
   action: SimulationReviewAction;
   note?: string;
+  userId?: string;
+  createdBy?: string | null;
 }
 
 export type SimulationDecision =
@@ -139,6 +142,23 @@ export function decideSimulationTransition(input: SimulationDecisionInput): Simu
   const roles = allowedRolesFor('SCOPING', status, canonical);
   if (!roles.includes(role)) {
     return failure('SIMULATION_ROLE_FORBIDDEN', 403, `Role "${role}" cannot ${action.toLowerCase()} a simulation at "${status}"`);
+  }
+
+  // SoD Strict rule: creator cannot approve their own simulation unless Admin (for testing).
+  if (
+    action === 'Approve' &&
+    isProhibitedSelfApproval({
+      action: canonical,
+      userId: input.userId,
+      createdBy: input.createdBy,
+      role,
+    })
+  ) {
+    return failure(
+      'SIMULATION_SOD_VIOLATION',
+      403,
+      'Segregation of duties: Creator cannot approve their own simulation',
+    );
   }
 
   if (canonical === 'Approve Deletion') return { ok: true, kind: 'delete' };

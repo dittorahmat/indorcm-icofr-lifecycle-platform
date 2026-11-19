@@ -216,4 +216,52 @@ describe('End-to-End Security Hardening Regression Suite', () => {
       expect(assertConfirmToken({ DEV_CONFIRM_TOKEN: 'correct-token' }, 'correct-token')).toBe(true);
     });
   });
+
+  describe('SoD Enforcement on Lifecycle Endpoints', () => {
+    it('blocks self-approval of scoping simulation by creator', async () => {
+      const mockSim = {
+        id: 'sim-1',
+        organizationId: 'org-1',
+        name: 'Simulation 2026',
+        status: 'Pending CFO',
+        workflowStatus: 'Pending CFO',
+        createdBy: 'cfo-user-1',
+        history: [],
+      };
+
+      mockedGetDb.mockReturnValue(
+        stubDb({
+          select: () => ({
+            from: () => ({
+              where: () => ({
+                limit: async () => [mockSim],
+              }),
+            }),
+          }),
+        })
+      );
+
+      const scopingApp = new Hono<HonoEnv>();
+      scopingApp.use('*', async (c, next) => {
+        c.set('userId', 'cfo-user-1');
+        c.set('userRole', 'CFO');
+        c.set('organizationId', 'org-1');
+        c.env = { DATABASE_URL: 'postgres://dummy' } as HonoEnv['Bindings'];
+        await next();
+      });
+
+      const { default: lifecycleRoute } = await import('../scoping/scoping-simulation-lifecycle');
+      scopingApp.route('/', lifecycleRoute);
+
+      const res = await scopingApp.request('/simulations/sim-1/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note: 'Self approve' }),
+      });
+
+      expect(res.status).toBe(403);
+      const json = await res.json<{ error: string }>();
+      expect(json.error).toBe('SIMULATION_SOD_VIOLATION');
+    });
+  });
 });

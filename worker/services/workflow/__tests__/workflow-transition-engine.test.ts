@@ -213,4 +213,26 @@ describe('executeWorkflowTransition transactional seam (T2 RED)', () => {
       status: 404,
     });
   });
+
+  it('rejects self-approval with AppError(SOD_VIOLATION, 403) for non-admin creator', async () => {
+    f.rows.set(f.key('BPM', 'p1'), seedSnapshot({ status: 'In Review', createdBy: 'line2-creator' }));
+    await expect(
+      executeWorkflowTransition(
+        input({ entityType: 'BPM', entityId: 'p1', role: 'Line 2', userId: 'line2-creator', action: 'Review' }),
+        f.deps,
+      ),
+    ).rejects.toMatchObject({
+      code: 'SOD_VIOLATION',
+      status: 403,
+    });
+  });
+
+  it('permits self-approval for Admin for testing purposes in engine', async () => {
+    f.rows.set(f.key('BPM', 'p1'), seedSnapshot({ status: 'In Review', createdBy: 'admin-creator' }));
+    const r = await executeWorkflowTransition(
+      input({ entityType: 'BPM', entityId: 'p1', role: 'Admin', userId: 'admin-creator', action: 'Review' }),
+      f.deps,
+    );
+    expect(r.nextStatus).toBe('In Approval');
+  });
 });

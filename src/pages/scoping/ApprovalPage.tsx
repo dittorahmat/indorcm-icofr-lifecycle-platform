@@ -27,7 +27,9 @@ import { ApprovalHistoryTimeline } from '@/components/scoping/ApprovalHistoryTim
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { useTranslation } from 'react-i18next';
-import { useCurrentRole } from '@/hooks/use-current-role';
+import { useCurrentRole, useCurrentUser } from '@/hooks/use-current-role';
+import { can } from '@shared/entity-authority';
+import { isProhibitedSelfApproval } from '@shared/workflow-transitions';
 import { apiErrorMessage } from './hooks/scoping-materiality-view';
 
 export function ApprovalPage() {
@@ -38,6 +40,7 @@ export function ApprovalPage() {
   const [note, setNote] = React.useState("");
 
   const userRole = useCurrentRole();
+  const { data: currentUser } = useCurrentUser();
 
   const { data: simulations, isLoading } = useQuery({
     queryKey: ['simulations-pending'],
@@ -93,6 +96,13 @@ export function ApprovalPage() {
   }) || [];
   const queue = pendingSims.map(sim => ({ sim, status: resolveSimulationStatus(sim) }));
   const selectedStatus = selectedSim ? resolveSimulationStatus(selectedSim) : null;
+
+  const isSodSelfApproval = !can(userRole, 'workflow:bypass-sod') && isProhibitedSelfApproval({
+    action: selectedStatus === 'Pending Deletion Approval' ? 'Approve Deletion' : 'Approve',
+    userId: currentUser?.id,
+    createdBy: selectedSim?.createdBy,
+    role: userRole,
+  });
 
   const selectedSimId = selectedSim?.id;
 
@@ -286,9 +296,11 @@ export function ApprovalPage() {
                   </Button>
                   <Button 
                     onClick={() => { if (selectedSimId) approveMutation.mutate(selectedSimId); }}
-                    disabled={approveMutation.isPending || !selectedSimId}
+                    disabled={approveMutation.isPending || !selectedSimId || isSodSelfApproval}
+                    title={isSodSelfApproval ? t('approval.sodSelfApprovalBlocked') : undefined}
                     className={cn(
                       "gap-2 w-full sm:w-auto min-h-[44px]",
+                      isSodSelfApproval && "opacity-50 cursor-not-allowed",
                       selectedStatus === 'Pending Deletion Approval'
                         ? "bg-red-600 hover:bg-red-700"
                         : "bg-green-600 hover:bg-green-700"
