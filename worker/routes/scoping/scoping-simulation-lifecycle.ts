@@ -39,7 +39,14 @@ simulationLifecycle.post('/simulations/:id/approve', rbac(['CFO', 'Commissioner'
   if (!sim) return notFound(c, 'Simulation not found');
 
   const status = resolveSimulationStatus(sim);
-  const decision = decideSimulationTransition({ status, role: userRole, action: 'Approve', note: body.note });
+  const decision = decideSimulationTransition({
+    status,
+    role: userRole,
+    action: 'Approve',
+    note: body.note,
+    userId,
+    createdBy: sim.createdBy,
+  });
   if (decision.ok === false) return bad(c, decision.code, decision.status, decision.message);
 
   // Approving the deletion request removes the row; it is not a status transition.

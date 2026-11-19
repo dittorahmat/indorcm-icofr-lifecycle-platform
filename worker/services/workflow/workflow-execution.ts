@@ -181,7 +181,15 @@ export async function executeWorkflowTransition(
     throw new AppError('ENTITY_NOT_FOUND', `Workflow entity "${entityId}" not found`, 404);
   }
 
-  const decision = decideTransition({ entityType, currentStatus: snapshot.status, action, role, note: input.note });
+  const decision = decideTransition({
+    entityType,
+    currentStatus: snapshot.status,
+    action,
+    role,
+    note: input.note,
+    userId,
+    createdBy: snapshot.createdBy ?? snapshot.ownerId,
+  });
   if (decision.ok === false) {
     throw new AppError(decision.code, decision.message, decision.status);
   }
