@@ -154,6 +154,11 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
     *   **Beban Konstruksi Link Bersumber Tunggal:** Setiap pembentukan link ke BPM (mis. dari matriks RCM TLC, Key Control Explorer, atau workbench testing) WAJIB menggunakan pembangun URL terpusat `buildBpmDeepLinkUrl(diagramId, nodeId)` dan `formatBpmStepLabel` dari `src/utils/bpm-link.ts`. Dilarang menduplikasi interpolasi string manual query search params.
     *   **Buka di Tab Baru untuk Surface Referensi:** Tautan deep-link dari halaman pembacaan tabel matriks/laporan kerja WAJIB membuka tab baru (`target="_blank" rel="noopener noreferrer"`) agar pengguna tidak kehilangan konteks baca atau posisi scroll pada halaman kerja asal.
     *   **Redirect Fallback dengan Preservasi Query:** Router aplikasi di `src/main.tsx` wajib menyediakan route redirect fallback yang meneruskan query parameters dan hash (`RedirectWithSearch`) untuk setiap rute legacy guna mencegah pengguna terlempar ke halaman Login (`/`).
+16. **Pencegahan Self-Approval & Segregation of Duties (SoD Strict - Wajib):**
+    *   **Aturan SoD Inti:** Pengguna yang membuat/menginisiasi draf dokumen (`createdBy` atau `ownerId`) DILARANG KERAS menyetujui (`Review`, `Approve`, `Approve Deletion`, `Validate`) dokumennya sendiri (`userId === createdBy`). Penolakan wajib berstatus HTTP 403 Forbidden dengan error code `SOD_VIOLATION`.
+    *   **Pengecualian Pengujian Terbatas:** Pengecualian SoD hanya diberikan kepada Super Admin melalui kapabilitas resmi `can(role, 'workflow:bypass-sod')` di `shared/entity-authority.ts` untuk keperluan pemeliharaan atau skenario testing.
+    *   **Enforcement Mekanis Bebas Literal Peran:** Pemeriksaan peran di komponen UI (`WorkflowPanel`, `ApprovalPage`) dilarang membandingkan string literal (seperti `role !== 'Admin'`). Wajib menggunakan helper terpusat `isProhibitedSelfApproval` dari `shared/workflow-transitions.ts` dan evaluasi kapabilitas `can(role, 'workflow:bypass-sod')`. Gate otomatis `npm run check:authority-literals` mengunci aturan ini pada setiap commit.
+    *   **UI Disabled State & Tooltip:** Tombol aksi persetujuan pada draf buatan pengguna yang sedang login wajib dinonaktifkan (`disabled`) dengan atribut `title` yang memuat teks i18n penjelas (`workflow:sodViolationTooltip` / `approval.sodSelfApprovalBlocked`).
 
 ## Development Conventions
 

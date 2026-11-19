@@ -29,6 +29,8 @@ const EXPECTED: Record<Capability, readonly UserRole[]> = {
   'rcm:edit-verification-design': ['Admin', 'Line 2'],
   'rcm:manage-controls': ['Admin', 'Line 2'],
   'workflow:bypass-sod': ['Admin'],
+  'deficiency:edit-any-plan': ['Admin'],
+  'deficiency:create-plan': ['Admin', 'Line 1'],
   'admin:manage-users': ['Admin'],
 };
 

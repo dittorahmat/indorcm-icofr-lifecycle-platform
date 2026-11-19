@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { can } from '@shared/entity-authority';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DeficiencyCard } from '@/components/deficiencies/DeficiencyCard';
 import { cn } from '@/lib/utils';
@@ -129,7 +130,7 @@ export function BoardColumn({
                     )}
                   >
                     <div className="flex gap-2">
-                      {(status === 'Ineffective' || role === 'Admin') && (
+                      {(status === 'Ineffective' || can(role, 'deficiency:edit-any-plan')) && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -139,7 +140,7 @@ export function BoardColumn({
                           {t('actions.actionPlan', 'Action Plan')}
                         </Button>
                       )}
-                      {status === 'Ineffective' && ['Line 1', 'Admin'].includes(role) && (
+                      {status === 'Ineffective' && can(role, 'deficiency:create-plan') && (
                         <Button
                           size="sm"
                           className="flex-1 h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg justify-center"

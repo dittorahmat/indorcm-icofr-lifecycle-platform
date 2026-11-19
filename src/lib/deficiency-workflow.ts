@@ -1,4 +1,5 @@
 import type { DeficiencyWorkflowStatus } from '@shared/types';
+import { can } from '@shared/entity-authority';
 
 /**
  * Pure SK-5 transition resolver for the Deficiency Board Kanban
@@ -43,7 +44,7 @@ export function resolveWorkflowAction(
     };
   }
   // Direct jump authorized for Admin only.
-  if (role === 'Admin') {
+  if (can(role, 'admin:manage-users')) {
     if (target === 'Resolved') return { action: 'Approve', note: `Transitioned via Kanban board drag-and-drop to ${target}` };
     if (target === 'In Approval') return { action: 'Review', note: `Transitioned via Kanban board drag-and-drop to ${target}` };
     if (target === 'In Review') return { action: 'Submit', note: `Transitioned via Kanban board drag-and-drop to ${target}` };
