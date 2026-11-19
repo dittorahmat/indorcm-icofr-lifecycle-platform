@@ -159,7 +159,12 @@ export const WORKFLOW_TRANSITION_RULES: Record<WorkflowEntityType, Record<string
 
 export type TransitionDecision =
   | { ok: true; nextStatus: string }
-  | { ok: false; code: 'UNSUPPORTED_ENTITY' | 'INVALID_ACTION' | 'FORBIDDEN_TRANSITION' | 'NOTE_REQUIRED'; message: string; status: number };
+  | {
+      ok: false;
+      code: 'UNSUPPORTED_ENTITY' | 'INVALID_ACTION' | 'FORBIDDEN_TRANSITION' | 'NOTE_REQUIRED' | 'SOD_VIOLATION';
+      message: string;
+      status: number;
+    };
 
 export interface DecideTransitionInput {
   entityType: WorkflowEntityType;
@@ -167,11 +172,15 @@ export interface DecideTransitionInput {
   action: WorkflowAction;
   role: UserRole;
   note?: string;
+  userId?: string;
+  createdBy?: string | null;
 }
+
+const APPROVAL_ACTIONS: readonly WorkflowAction[] = ['Review', 'Approve', 'Approve Deletion'];
 
 /** Pure validation + next-status decision. No I/O, no throws. */
 export function decideTransition(input: DecideTransitionInput): TransitionDecision {
-  const { entityType, currentStatus, action, role, note } = input;
+  const { entityType, currentStatus, action, role, note, userId, createdBy } = input;
   const entityRules = WORKFLOW_TRANSITION_RULES[entityType];
   if (!entityRules) {
     return {
@@ -194,6 +203,23 @@ export function decideTransition(input: DecideTransitionInput): TransitionDecisi
       message: `Unauthorized role "${role}" for action "${action}" on ${entityType}`,
     };
   }
+
+  // SoD Strict rule: creator cannot approve their own submission unless Admin (for testing).
+  if (
+    APPROVAL_ACTIONS.includes(action) &&
+    userId &&
+    createdBy &&
+    userId === createdBy &&
+    role !== 'Admin'
+  ) {
+    return {
+      ok: false,
+      code: 'SOD_VIOLATION',
+      status: 403,
+      message: 'Segregation of duties: Creator cannot approve their own submission',
+    };
+  }
+
   if (stepRule.requiresNote?.includes(action) && (!note || !note.trim())) {
     return {
       ok: false, code: 'NOTE_REQUIRED', status: 400,
