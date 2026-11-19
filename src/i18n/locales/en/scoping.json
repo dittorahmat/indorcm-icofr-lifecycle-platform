@@ -62,7 +62,8 @@
     "approveToKomutBtn": "Approve to Chairman",
     "approveFinalBtn": "Approve Baseline",
     "approveFailed": "Failed to approve the simulation",
-    "rejectFailed": "Failed to reject the simulation"
+    "rejectFailed": "Failed to reject the simulation",
+    "sodSelfApprovalBlocked": "SoD Prevention: You created this simulation and cannot approve it yourself."
   },
   "uploadButton": "Upload GL",
   "emptyState": "Upload a GL file to start",

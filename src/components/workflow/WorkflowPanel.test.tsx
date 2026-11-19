@@ -37,6 +37,11 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+vi.mock('@/hooks/use-current-role', () => ({
+  useCurrentRole: vi.fn().mockReturnValue('Line 2'),
+  useCurrentUser: vi.fn().mockReturnValue({ data: { id: 'user-1', role: 'Line 2' } }),
+}));
+
 vi.mock('@/hooks/use-mobile', () => ({
   useIsMobile: vi.fn().mockReturnValue(true),
 }));
@@ -121,5 +126,21 @@ describe('WorkflowPanel Mobile Support', () => {
     const rejectButtons = screen.getAllByRole('button', { name: /status\.rejected/i });
     fireEvent.click(rejectButtons[rejectButtons.length - 1]);
     expect(beforeActionMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables approval button when current user is the creator (SoD strict)', () => {
+    render(
+      <WorkflowPanel
+        entityType="BPM"
+        entityId="proc-1"
+        currentStatus="In Review"
+        history={[]}
+        createdBy="user-1"
+      />
+    );
+
+    const reviewButton = screen.getByRole('button', { name: 'workflow:passReview' });
+    expect(reviewButton).toBeDisabled();
+    expect(reviewButton).toHaveAttribute('title', 'workflow:sodViolationTooltip');
   });
 });

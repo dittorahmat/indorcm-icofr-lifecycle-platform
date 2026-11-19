@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { WorkflowHistoryTimeline } from './WorkflowHistoryTimeline';
 import { useWorkflow } from '@/hooks/use-workflow';
+import { useCurrentUser } from '@/hooks/use-current-role';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
@@ -29,6 +30,7 @@ interface WorkflowPanelProps {
   /** Scoping keeps its lifecycle in `ApprovalHistoryEntry`; every other entity
    *  writes `WorkflowHistoryEntry`. The timeline renders both. */
   history: (WorkflowHistoryEntry | ApprovalHistoryEntry)[];
+  createdBy?: string | null;
   onStatusChange?: (newStatus: string) => void;
   className?: string;
   isDirty?: boolean;
@@ -38,10 +40,11 @@ interface WorkflowPanelProps {
 }
 
 export function WorkflowPanel({ 
-  entityType, entityId, currentStatus, history, onStatusChange, className, isDirty, beforeAction 
+  entityType, entityId, currentStatus, history, createdBy, onStatusChange, className, isDirty, beforeAction 
 }: WorkflowPanelProps) {
   const { t } = useTranslation(['common', 'bpm', 'deficiency', 'workflow']);
   const { executeAction, isPending } = useWorkflow(entityType, entityId);
+  const { data: currentUser } = useCurrentUser();
   
   const [note, setNote] = useState('');
   const [pendingActionId, setPendingActionId] = useState<WorkflowAction | null>(null);
@@ -117,15 +120,28 @@ export function WorkflowPanel({
   const renderButtons = () => {
     // Every action routes through the transactional engine via useWorkflow —
     // no demo bypass may skip validation.
+    const isApprovalAction = (actionId: WorkflowAction) =>
+      ['Review', 'Approve', 'Approve Deletion'].includes(actionId);
+
+    const isSodSelfApproval = (actionId: WorkflowAction) =>
+      isApprovalAction(actionId) &&
+      currentUser?.id &&
+      createdBy &&
+      currentUser.id === createdBy &&
+      currentUser.role !== 'Admin';
+
     return currentStep.actions.map((action) => {
       const Icon = action.icon;
+      const isSodBlocked = isSodSelfApproval(action.id);
+      const isDisabled = isPending || isSodBlocked;
       const shadcnVariant = (action.variant === 'outline' || action.variant === 'destructive') ? action.variant : 'default';
       const customClass = cn(
         "w-full gap-2 font-bold text-xs uppercase tracking-widest h-9",
         action.variant === 'indigo' && "bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-100",
         action.variant === 'emerald' && "bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-100",
         action.variant === 'amber' && "bg-amber-500 hover:bg-amber-600 shadow-md shadow-amber-100",
-        action.variant === 'outline' && "border-slate-200 text-slate-600 hover:bg-slate-50"
+        action.variant === 'outline' && "border-slate-200 text-slate-600 hover:bg-slate-50",
+        isSodBlocked && "opacity-50 cursor-not-allowed"
       );
 
       return (
@@ -134,7 +150,8 @@ export function WorkflowPanel({
           variant={shadcnVariant} 
           className={customClass}
           onClick={() => handleActionClick(action.id)}
-          disabled={isPending}
+          disabled={isDisabled}
+          title={isSodBlocked ? t('workflow:sodViolationTooltip') : undefined}
         >
           <Icon className="h-3.5 w-3.5" />
           {t(action.labelKey)}

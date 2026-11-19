@@ -27,6 +27,7 @@
   "requestDeletion": "Request Deletion",
   "approveDeletion": "Approve Deletion",
   "rejectDeletion": "Reject Deletion",
+  "sodViolationTooltip": "Segregation of duties: You cannot approve a submission you created.",
   "quickNotes": {
     "title": "Quick Preset Notes",
     "approvedAsPerAttachment": "Approved as per attachment",

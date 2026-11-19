@@ -12,10 +12,13 @@ import type { UserRole } from '@shared/types';
  * must treat that as "not yet allowed", never as "allowed".
  */
 export function useCurrentRole(): UserRole | undefined {
-  const { data } = useQuery({
-    queryKey: ['auth-me'],
-    queryFn: () => api<{ role: UserRole }>('/api/user/me'),
-  });
-
+  const { data } = useCurrentUser();
   return data?.role;
+}
+
+export function useCurrentUser(): { data: { id: string; role: UserRole; name?: string; departmentId?: string; level?: string } | undefined } {
+  return useQuery({
+    queryKey: ['auth-me'],
+    queryFn: () => api<{ id: string; role: UserRole; name?: string; departmentId?: string; level?: string }>('/api/user/me'),
+  });
 }
