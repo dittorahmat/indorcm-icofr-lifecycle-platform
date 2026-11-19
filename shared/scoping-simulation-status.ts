@@ -1,6 +1,6 @@
 import type { ApprovalHistoryEntry, SimulationStatus, WorkflowAction, WorkflowHistoryEntry } from './types/scoping';
 import type { UserRole } from './types/common';
-import { allowedRolesFor, requiresNoteFor, allowedActionsFor, workflowStatusesFor, WORKFLOW_TRANSITION_RULES } from './workflow-transitions';
+import { allowedRolesFor, requiresNoteFor, allowedActionsFor, workflowStatusesFor, WORKFLOW_TRANSITION_RULES, isProhibitedSelfApproval } from './workflow-transitions';
 
 /**
  * Single owner of the materiality-simulation approval lifecycle (arch round 8,
@@ -147,10 +147,12 @@ export function decideSimulationTransition(input: SimulationDecisionInput): Simu
   // SoD Strict rule: creator cannot approve their own simulation unless Admin (for testing).
   if (
     action === 'Approve' &&
-    input.userId &&
-    input.createdBy &&
-    input.userId === input.createdBy &&
-    role !== 'Admin'
+    isProhibitedSelfApproval({
+      action: canonical,
+      userId: input.userId,
+      createdBy: input.createdBy,
+      role,
+    })
   ) {
     return failure(
       'SIMULATION_SOD_VIOLATION',

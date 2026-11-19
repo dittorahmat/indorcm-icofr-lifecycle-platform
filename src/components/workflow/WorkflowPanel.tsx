@@ -15,13 +15,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { 
-  WorkflowEntityType, 
-  getWorkflowStep, 
-  getStatusBadgeClass, 
-  isWorkflowLocked 
+import {
+  WorkflowEntityType,
+  getWorkflowStep,
+  getStatusBadgeClass,
+  isWorkflowLocked,
 } from './workflow-blueprints';
 import { ActionConfirmationDialog } from './ActionConfirmationDialog';
+import { can } from '@shared/entity-authority';
+import { isProhibitedSelfApproval } from '@shared/workflow-transitions';
 
 interface WorkflowPanelProps {
   entityType: WorkflowEntityType;
@@ -120,15 +122,15 @@ export function WorkflowPanel({
   const renderButtons = () => {
     // Every action routes through the transactional engine via useWorkflow —
     // no demo bypass may skip validation.
-    const isApprovalAction = (actionId: WorkflowAction) =>
-      ['Review', 'Approve', 'Approve Deletion'].includes(actionId);
-
-    const isSodSelfApproval = (actionId: WorkflowAction) =>
-      isApprovalAction(actionId) &&
-      currentUser?.id &&
-      createdBy &&
-      currentUser.id === createdBy &&
-      currentUser.role !== 'Admin';
+    const isSodSelfApproval = (actionId: WorkflowAction) => {
+      if (can(currentUser?.role, 'workflow:bypass-sod')) return false;
+      return isProhibitedSelfApproval({
+        action: actionId,
+        userId: currentUser?.id,
+        createdBy,
+        role: currentUser?.role,
+      });
+    };
 
     return currentStep.actions.map((action) => {
       const Icon = action.icon;

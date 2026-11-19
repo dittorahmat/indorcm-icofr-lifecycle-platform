@@ -28,6 +28,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { useTranslation } from 'react-i18next';
 import { useCurrentRole, useCurrentUser } from '@/hooks/use-current-role';
+import { can } from '@shared/entity-authority';
+import { isProhibitedSelfApproval } from '@shared/workflow-transitions';
 import { apiErrorMessage } from './hooks/scoping-materiality-view';
 
 export function ApprovalPage() {
@@ -95,12 +97,12 @@ export function ApprovalPage() {
   const queue = pendingSims.map(sim => ({ sim, status: resolveSimulationStatus(sim) }));
   const selectedStatus = selectedSim ? resolveSimulationStatus(selectedSim) : null;
 
-  const isSodSelfApproval = Boolean(
-    currentUser?.id &&
-    selectedSim?.createdBy &&
-    currentUser.id === selectedSim.createdBy &&
-    userRole !== 'Admin'
-  );
+  const isSodSelfApproval = !can(userRole, 'workflow:bypass-sod') && isProhibitedSelfApproval({
+    action: selectedStatus === 'Pending Deletion Approval' ? 'Approve Deletion' : 'Approve',
+    userId: currentUser?.id,
+    createdBy: selectedSim?.createdBy,
+    role: userRole,
+  });
 
   const selectedSimId = selectedSim?.id;
 

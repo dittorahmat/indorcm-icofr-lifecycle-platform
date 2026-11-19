@@ -176,7 +176,20 @@ export interface DecideTransitionInput {
   createdBy?: string | null;
 }
 
-const APPROVAL_ACTIONS: readonly WorkflowAction[] = ['Review', 'Approve', 'Approve Deletion'];
+export const APPROVAL_ACTIONS: readonly WorkflowAction[] = ['Review', 'Approve', 'Approve Deletion'];
+
+export function isProhibitedSelfApproval(params: {
+  action?: WorkflowAction;
+  userId?: string | null;
+  createdBy?: string | null;
+  role?: string | null;
+}): boolean {
+  const { action, userId, createdBy, role } = params;
+  if (action && !APPROVAL_ACTIONS.includes(action)) return false;
+  if (!userId || !createdBy) return false;
+  if (userId !== createdBy) return false;
+  return role !== 'Admin';
+}
 
 /** Pure validation + next-status decision. No I/O, no throws. */
 export function decideTransition(input: DecideTransitionInput): TransitionDecision {
@@ -205,13 +218,7 @@ export function decideTransition(input: DecideTransitionInput): TransitionDecisi
   }
 
   // SoD Strict rule: creator cannot approve their own submission unless Admin (for testing).
-  if (
-    APPROVAL_ACTIONS.includes(action) &&
-    userId &&
-    createdBy &&
-    userId === createdBy &&
-    role !== 'Admin'
-  ) {
+  if (isProhibitedSelfApproval({ action, userId, createdBy, role })) {
     return {
       ok: false,
       code: 'SOD_VIOLATION',

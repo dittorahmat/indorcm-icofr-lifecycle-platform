@@ -27,6 +27,7 @@ export type Capability =
   | 'knowledge:manage-documents'
   | 'rcm:edit-verification-design'
   | 'rcm:manage-controls'
+  | 'workflow:bypass-sod'
   | 'admin:manage-users';
 
 /**
@@ -52,6 +53,8 @@ export const CAPABILITY_ROLES: Record<Capability, readonly UserRole[]> = {
   'knowledge:manage-documents': ['Line 2', 'Admin'],
   'rcm:edit-verification-design': ['Line 2', 'Admin'],
   'rcm:manage-controls': ['Line 2', 'Admin'],
+  /** Super admin test bypass for Segregation of Duties */
+  'workflow:bypass-sod': ['Admin'],
   'admin:manage-users': ['Admin'],
 };
 
