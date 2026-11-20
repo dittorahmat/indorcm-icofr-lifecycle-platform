@@ -1,13 +1,8 @@
 import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { api } from '@/lib/api-client';
 import { RCMControlMapping } from '@shared/types';
-import { Edit3, Check, Shield } from 'lucide-react';
-import { FileUp } from 'lucide-react';
+import { Edit3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
@@ -16,8 +11,8 @@ import { RCMImportWizardModal } from '@/components/rcm/import/RCMImportWizardMod
 import { RCM_NARRATIVE_WIDTHS } from '@/components/rcm/rcm-column-widths';
 import { exportRCMToExcel, getDefaultRcmSignoffs } from '@/lib/rcm-excel-export';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
-import { ASSERTION_FIELDS, IPO_FIELDS } from '@shared/assertion-fields';
 import { BooleanIndicator } from '@/components/rcm/BooleanIndicator';
+import { useRcmMatrixLifecycle } from './hooks/useRcmMatrixLifecycle';
 
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
@@ -49,54 +44,23 @@ interface RCMITGCPageProps {
 
 export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride }: RCMITGCPageProps) {
   const { t } = useTranslation(['rcm', 'common']);
-  const queryClient = useQueryClient();
   const { workingYear: globalWorkingYear } = useFiscalYearStore();
   const workingYear = workingYearOverride || globalWorkingYear;
-  const [searchTerm, setSearchTerm] = React.useState('');
-  const [editingItem, setEditingItem] = React.useState<RCMMatrixItem | null>(null);
-  const [isImportModalOpen, setIsImportModalOpen] = React.useState(false);
 
-  const { data: matrixData, isLoading } = useQuery({
-    queryKey: ['rcm-matrix-itgc', filterBpmId, workingYear],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (filterBpmId) params.append('bpmProcessId', filterBpmId);
-      if (workingYear) params.append('year', workingYear);
-      const queryStr = params.toString();
-      const url = queryStr ? `/api/rcm-matrix/itgc?${queryStr}` : '/api/rcm-matrix/itgc';
-      const res = await api<{ items: RCMMatrixItem[] }>(url);
-      return res;
-    },
-  });
-
-  const saveMutation = useMutation({
-    mutationFn: (values: any) => {
-      // 1. Reverse mapping: standardized UI names -> backend DB names
-      const dbValues: any = {
-        ...values,
-        controlName: values.mappedControlName,
-        controlDescription: values.mappedControlDescription,
-      };
-
-      // 2. Boolean normalization for IPO & Assertions (text columns in DB)
-      const booleanFields = [...IPO_FIELDS, ...ASSERTION_FIELDS];
-
-      booleanFields.forEach(field => {
-        if (typeof values[field] === 'boolean') {
-          dbValues[field] = values[field] ? 'Y' : 'N';
-        }
-      });
-
-      return api('/api/rcm-matrix/itgc/batch-update', { 
-        method: 'POST', 
-        body: JSON.stringify({ items: [dbValues] }) 
-      });
-    },
-    onSuccess: () => {
-      toast.success(t('rcm:matrix.save_success'));
-      queryClient.invalidateQueries({ queryKey: ['rcm-matrix-itgc'] });
-      setEditingItem(null);
-    }
+  const {
+    searchTerm,
+    setSearchTerm,
+    editingItem,
+    setEditingItem,
+    isImportModalOpen,
+    setIsImportModalOpen,
+    data: matrixData,
+    isLoading,
+    saveMutation,
+  } = useRcmMatrixLifecycle<RCMMatrixItem>({
+    tier: 'ITGC',
+    workingYear,
+    filterBpmId,
   });
 
   const items = matrixData?.items || [];
