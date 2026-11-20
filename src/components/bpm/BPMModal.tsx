@@ -220,48 +220,27 @@ export function BPMModal({
                 {/* Sub-tabs header for Lampiran 5.B, 5.A, 5.C */}
                 <div className="px-4 py-2 bg-white border-b flex items-center justify-between gap-3 shrink-0">
                   <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg border border-slate-200">
-                    <Button
-                      variant={activeRcmSubTab === 'tlc' ? 'default' : 'ghost'}
-                      size="xs"
-                      onClick={() => setActiveRcmSubTab('tlc')}
-                      className={cn(
-                        "h-7 min-h-[32px] px-3 text-xs font-bold gap-1.5 rounded-md transition-all",
-                        activeRcmSubTab === 'tlc' 
-                          ? "bg-indigo-600 text-white shadow-xs hover:bg-indigo-700" 
-                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
-                      )}
-                    >
-                      <FileText className="h-3.5 w-3.5" />
-                      Lampiran 5.b (TLC Matrix)
-                    </Button>
-                    <Button
-                      variant={activeRcmSubTab === 'elc' ? 'default' : 'ghost'}
-                      size="xs"
-                      onClick={() => setActiveRcmSubTab('elc')}
-                      className={cn(
-                        "h-7 min-h-[32px] px-3 text-xs font-bold gap-1.5 rounded-md transition-all",
-                        activeRcmSubTab === 'elc' 
-                          ? "bg-indigo-600 text-white shadow-xs hover:bg-indigo-700" 
-                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
-                      )}
-                    >
-                      <FileText className="h-3.5 w-3.5" />
-                      Lampiran 5.a (ELC Matrix)
-                    </Button>
-                    <Button
-                      variant={activeRcmSubTab === 'itgc' ? 'default' : 'ghost'}
-                      size="xs"
-                      onClick={() => setActiveRcmSubTab('itgc')}
-                      className={cn(
-                        "h-7 min-h-[32px] px-3 text-xs font-bold gap-1.5 rounded-md transition-all",
-                        activeRcmSubTab === 'itgc' 
-                          ? "bg-indigo-600 text-white shadow-xs hover:bg-indigo-700" 
-                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
-                      )}
-                    >
-                      <FileText className="h-3.5 w-3.5" />
-                      Lampiran 5.c (ITGC Matrix)
-                    </Button>
+                    {([
+                      { id: 'tlc', key: 'rcmSubtabs.tlc' },
+                      { id: 'elc', key: 'rcmSubtabs.elc' },
+                      { id: 'itgc', key: 'rcmSubtabs.itgc' }
+                    ] as const).map(tab => (
+                      <Button
+                        key={tab.id}
+                        variant={activeRcmSubTab === tab.id ? 'default' : 'ghost'}
+                        size="xs"
+                        onClick={() => setActiveRcmSubTab(tab.id)}
+                        className={cn(
+                          "h-7 min-h-[32px] px-3 text-xs font-bold gap-1.5 rounded-md transition-all",
+                          activeRcmSubTab === tab.id 
+                            ? "bg-indigo-600 text-white shadow-xs hover:bg-indigo-700" 
+                            : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                        )}
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                        {t(`modal.${tab.key}`)}
+                      </Button>
+                    ))}
                   </div>
                 </div>
 

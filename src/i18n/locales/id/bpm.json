@@ -250,6 +250,11 @@
       "csa": "Asesmen CSA",
       "verification": "Desain Verifikasi",
       "logs": "Log Perubahan (Lampiran 6)"
+    },
+    "rcmSubtabs": {
+      "tlc": "Lampiran 5.b (TLC Matrix)",
+      "elc": "Lampiran 5.a (ELC Matrix)",
+      "itgc": "Lampiran 5.c (ITGC Matrix)"
     }
 
   },
