@@ -296,7 +296,7 @@ export function DoDWorksheetDialog({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
           <Tabs defaultValue="matrix" className="w-full">
             <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1 mb-4">
             <TabsList className="flex sm:grid w-max min-w-full sm:w-full sm:grid-cols-3 bg-muted/50 p-1 rounded-md min-h-[44px] max-w-full gap-1">

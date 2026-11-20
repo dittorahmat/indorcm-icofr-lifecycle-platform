@@ -37,8 +37,8 @@ export function BoardToolbar({
   const { t } = useTranslation(['deficiency', 'workflow', 'common', 'reports']);
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-white rounded-xl border border-slate-200 shadow-xs">
-      <div className="flex min-w-0 max-w-full flex-col gap-3 sm:gap-4 w-full lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-3 p-3 sm:p-3.5 bg-white rounded-xl border border-slate-200 shadow-xs">
+      <div className="flex min-w-0 max-w-full flex-col gap-2.5 sm:gap-3 w-full lg:flex-row lg:items-center lg:justify-between">
         {/* Source Filters Bar */}
         <div className="flex flex-col gap-1.5 min-w-0 max-w-full">
           <span className="text-xs font-bold uppercase text-slate-500 tracking-wider ml-1">
