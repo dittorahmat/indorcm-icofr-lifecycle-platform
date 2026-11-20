@@ -26,28 +26,28 @@ export function TestingToolbar({
   const { t } = useTranslation(['testing', 'reports']);
 
   return (
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 bg-white rounded-xl border border-slate-200 shadow-xs">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 p-3 sm:p-3.5 bg-white rounded-xl border border-slate-200 shadow-xs">
       {/* Search Input */}
       <div className="relative group w-full sm:w-80">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
         <Input 
           placeholder={t('searchPlaceholder')} 
-          className="pl-9 h-11 sm:h-10 min-h-[44px] sm:min-h-0 w-full bg-slate-50/50 border-slate-200 text-base sm:text-xs font-medium rounded-lg focus:bg-white"
+          className="pl-8.5 h-10 sm:h-9 min-h-[44px] sm:min-h-0 w-full bg-slate-50/50 border-slate-200 text-base sm:text-xs font-medium rounded-lg focus:bg-white"
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
 
       {/* Filter and Action Buttons */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
-        <div className="flex items-center justify-between sm:justify-start gap-3 bg-slate-50/80 min-h-[44px] h-auto sm:h-10 py-2 sm:py-0 px-3.5 sm:px-4 rounded-lg border border-slate-200 shrink-0">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5">
+        <div className="flex items-center justify-between sm:justify-start gap-2.5 bg-slate-50/80 min-h-[44px] h-auto sm:h-9 py-1.5 sm:py-0 px-3 sm:px-3.5 rounded-lg border border-slate-200 shrink-0">
           <Switch 
             id="validated-filter" 
             checked={showOnlyValidated} 
             onCheckedChange={onToggleValidated} 
             className="data-[state=checked]:bg-secondary"
           />
-          <Label htmlFor="validated-filter" className="text-xs font-bold uppercase tracking-wider text-slate-700 cursor-pointer flex items-center gap-2 select-none">
+          <Label htmlFor="validated-filter" className="text-xs font-bold uppercase tracking-wider text-slate-700 cursor-pointer flex items-center gap-1.5 select-none">
             <UserCheck className="h-3.5 w-3.5 text-secondary shrink-0" /> {t('filterReady')}
           </Label>
         </div>
@@ -56,7 +56,7 @@ export function TestingToolbar({
           variant="outline"
           onClick={onExportExcel}
           disabled={isExportingExcel}
-          className="h-11 sm:h-10 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center px-4 gap-2 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider rounded-lg shadow-xs hover:bg-slate-50 shrink-0"
+          className="h-10 sm:h-9 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center px-3.5 gap-2 bg-white border-slate-200 text-xs font-bold uppercase tracking-wider rounded-lg shadow-xs hover:bg-slate-50 shrink-0"
         >
           {isExportingExcel ? (
             <Loader2 className="h-4 w-4 animate-spin" />

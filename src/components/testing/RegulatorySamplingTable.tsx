@@ -189,44 +189,44 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
         <Table className="min-w-[920px]">
           <TableHeader className="bg-slate-50/70 border-b border-slate-200">
             <TableRow>
-              <TableHead className="w-[50px] text-center text-xs uppercase font-bold text-slate-700">No</TableHead>
-              <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[260px]">
+              <TableHead className="w-[50px] text-center text-xs uppercase font-bold text-slate-700 py-2 px-2.5">No</TableHead>
+              <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[260px] py-2 px-3">
                 {t('sampling.ref', { defaultValue: 'Ref. Bukti Dokumen' })}
               </TableHead>
-              <TableHead className="w-[80px] text-center text-xs uppercase font-bold text-slate-700">Attr A</TableHead>
-              <TableHead className="w-[80px] text-center text-xs uppercase font-bold text-slate-700">Attr B</TableHead>
-              <TableHead className="w-[80px] text-center text-xs uppercase font-bold text-slate-700">Attr C</TableHead>
-              <TableHead className="w-[80px] text-center text-xs uppercase font-bold text-slate-700">Attr D</TableHead>
-              <TableHead className="w-[100px] text-center text-xs uppercase font-bold text-slate-700">
+              <TableHead className="w-[80px] text-center text-xs uppercase font-bold text-slate-700 py-2 px-2">Attr A</TableHead>
+              <TableHead className="w-[80px] text-center text-xs uppercase font-bold text-slate-700 py-2 px-2">Attr B</TableHead>
+              <TableHead className="w-[80px] text-center text-xs uppercase font-bold text-slate-700 py-2 px-2">Attr C</TableHead>
+              <TableHead className="w-[80px] text-center text-xs uppercase font-bold text-slate-700 py-2 px-2">Attr D</TableHead>
+              <TableHead className="w-[100px] text-center text-xs uppercase font-bold text-slate-700 py-2 px-2.5">
                 {t('sampling.status', { defaultValue: 'Hasil' })}
               </TableHead>
-              <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[280px]">
+              <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[280px] py-2 px-3">
                 {t('sampling.comments', { defaultValue: 'Catatan Auditor' })}
               </TableHead>
-              {!isReadOnly && <TableHead className="w-[50px]"></TableHead>}
+              {!isReadOnly && <TableHead className="w-[50px] py-2 px-2"></TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {fields.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isReadOnly ? 8 : 9} className="h-24 text-center text-slate-400 text-xs font-normal">
+                <TableCell colSpan={isReadOnly ? 8 : 9} className="h-20 text-center text-slate-400 text-xs font-normal">
                   {t('sampling.empty', { defaultValue: 'Belum ada sampel. Klik "Tambah Sampel" untuk memulai pengujian.' })}
                 </TableCell>
               </TableRow>
             ) : (
               fields.map((field, index) => (
                 <TableRow key={field.id} className={cn(field.status === 'Fail' && "bg-rose-50/40")}>
-                  <TableCell className="text-center font-mono text-xs font-semibold text-slate-600">{index + 1}</TableCell>
-                  <TableCell>
+                  <TableCell className="text-center font-mono text-xs font-semibold text-slate-600 py-2 px-2.5">{index + 1}</TableCell>
+                  <TableCell className="py-2 px-3">
                     <Input 
                       value={field.sampleRef} 
                       onChange={(e) => update(index, { ...field, sampleRef: e.target.value })}
                       disabled={isReadOnly}
-                      className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs font-medium rounded-lg"
+                      className="h-11 md:h-8 min-h-[44px] md:min-h-0 text-base md:text-xs font-medium rounded-lg"
                       placeholder="e.g. PO-4500982601"
                     />
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center py-2 px-2">
                     <Checkbox 
                       checked={Boolean(field.attrA)} 
                       onCheckedChange={() => toggleAttribute(index, 'attrA')}
@@ -234,7 +234,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                       className="data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                     />
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center py-2 px-2">
                     <Checkbox 
                       checked={Boolean(field.attrB)} 
                       onCheckedChange={() => toggleAttribute(index, 'attrB')}
@@ -242,7 +242,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                       className="data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                     />
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center py-2 px-2">
                     <Checkbox 
                       checked={Boolean(field.attrC)} 
                       onCheckedChange={() => toggleAttribute(index, 'attrC')}
@@ -250,7 +250,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                       className="data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                     />
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center py-2 px-2">
                     <Checkbox 
                       checked={Boolean(field.attrD)} 
                       onCheckedChange={() => toggleAttribute(index, 'attrD')}
@@ -258,7 +258,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                       className="data-[state=checked]:bg-secondary data-[state=checked]:border-secondary"
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-2 px-2.5">
                     <div className="flex justify-center">
                       <div className={cn(
                         "flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-bold uppercase",
@@ -269,26 +269,26 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-2 px-3">
                     <Input 
                       value={field.comments || ''} 
                       onChange={(e) => update(index, { ...field, comments: e.target.value })}
                       disabled={isReadOnly}
-                      className="h-11 md:h-9 min-h-[44px] md:min-h-0 text-base md:text-xs rounded-lg"
+                      className="h-11 md:h-8 min-h-[44px] md:min-h-0 text-base md:text-xs rounded-lg"
                       placeholder={t('sampling.commentPlaceholder', { defaultValue: 'Catatan untuk sampel ini...' })}
                     />
                   </TableCell>
                   {!isReadOnly && (
-                    <TableCell>
+                    <TableCell className="py-2 px-2 text-center">
                       <Button 
                         type="button" 
                         variant="ghost" 
                         size="icon" 
                         onClick={() => remove(index)}
                         aria-label={t('sampling.remove', { defaultValue: 'Hapus sampel' })}
-                        className="h-11 w-11 md:h-9 md:w-9 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 text-slate-400 hover:text-rose-600 shrink-0"
+                        className="h-11 w-11 md:h-7 md:w-7 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 text-slate-400 hover:text-rose-600 shrink-0 rounded-md"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </TableCell>
                   )}

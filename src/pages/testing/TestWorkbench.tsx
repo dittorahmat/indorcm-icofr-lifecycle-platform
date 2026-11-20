@@ -127,7 +127,7 @@ export function TestWorkbench() {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="max-w-6xl mx-auto space-y-6 pb-6 md:pb-8"
+        className="max-w-6xl mx-auto space-y-4 pb-6 md:pb-8"
       >
         {/* 1. Header Banner */}
         <motion.div variants={itemVariants}>
