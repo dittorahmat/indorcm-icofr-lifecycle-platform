@@ -5,9 +5,9 @@ import {
   detectGLColumns, 
   filterEmptyRows,
   validateGLMapping,
-  getWorkbookSheetsMeta,
   SheetMeta
-} from '@/lib/compliance-utils';
+} from '@shared/ingestion';
+import { getWorkbookSheetsMeta } from '@/lib/compliance-utils';
 import { GLRow } from '@shared/types';
 
 export interface SheetCandidate {
