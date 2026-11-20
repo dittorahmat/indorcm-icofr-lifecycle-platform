@@ -41,6 +41,7 @@
     "check:no-window-print": "node scripts/check-no-window-print.mjs",
     "check:number-inputs": "node scripts/check-number-inputs.mjs",
     "check:font-slop": "node scripts/check-font-slop.mjs",
+    "check:dialog-padding": "node scripts/check-dialog-padding.mjs",
     "check:contrast": "node scripts/check-contrast-slop.mjs",
     "check:theme-tokens": "node scripts/check-theme-tokens.mjs",
     "check:authority-literals": "node scripts/check-authority-literals.mjs",

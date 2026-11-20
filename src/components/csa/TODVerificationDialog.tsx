@@ -267,7 +267,7 @@ export function TODVerificationDialog({
       {isMobile ? (
         <Sheet open={open} onOpenChange={handleOpenChange}>
           <SheetContent side="bottom" className="h-[92dvh] max-h-[92dvh] p-0 flex flex-col border-t rounded-t-lg overflow-hidden bg-background">
-            <SheetHeader className="p-3.5 sm:p-4 bg-mancity-pattern text-primary-foreground shrink-0 text-left">
+            <SheetHeader className="p-4 sm:p-5 bg-mancity-pattern text-primary-foreground shrink-0 text-left">
               {headerContent}
             </SheetHeader>
             <div className="flex-1 overflow-hidden flex flex-col">

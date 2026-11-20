@@ -42,6 +42,7 @@ node scripts/check-ocr-constants.mjs || exit 1
 node scripts/check-no-window-print.mjs || exit 1
 node scripts/check-number-inputs.mjs || exit 1
 node scripts/check-font-slop.mjs || exit 1
+node scripts/check-dialog-padding.mjs || exit 1
 node scripts/check-contrast-slop.mjs || exit 1
 node scripts/check-theme-tokens.mjs || exit 1
 node scripts/check-authority-literals.mjs || exit 1
