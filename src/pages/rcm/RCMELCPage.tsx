@@ -1,10 +1,9 @@
 import React from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { Control, Organization } from '@shared/types';
-import { Check, Edit3 } from 'lucide-react';
-import { FileUp } from 'lucide-react';
+import { Edit3, FileUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
@@ -12,12 +11,12 @@ import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
 import { RCMImportWizardModal } from '@/components/rcm/import/RCMImportWizardModal';
 import { RCM_NARRATIVE_WIDTHS } from '@/components/rcm/rcm-column-widths';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 import { useFiscalYearStore } from '@/store/useFiscalYearStore';
 import { RolloverPrompt } from '@/components/layout/RolloverPrompt';
 import { RolloverCard } from '@/components/layout/RolloverCard';
 import { exportRCMToExcel, getDefaultRcmSignoffs } from '@/lib/rcm-excel-export';
 import { BooleanIndicator } from '@/components/rcm/BooleanIndicator';
+import { useRcmMatrixLifecycle } from './hooks/useRcmMatrixLifecycle';
 
 const COSO_PRINCIPLES = Array.from({ length: 17 }, (_, i) => i + 1);
 
@@ -29,60 +28,33 @@ interface RCMELCPageProps {
 
 export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli }: RCMELCPageProps) {
   const { t } = useTranslation(['rcm', 'common']);
-  const queryClient = useQueryClient();
   const { workingYear: globalYear } = useFiscalYearStore();
   const workingYear = workingYearOverride || globalYear;
   const [selectedOrgId, setSelectedOrgId] = React.useState<string>('all');
-  const [editingItem, setEditingItem] = React.useState<any | null>(null);
-  const [isRolloverOpen, setIsRolloverOpen] = React.useState(false);
-  const [isImportModalOpen, setIsImportModalOpen] = React.useState(false);
 
-  const rolloverMutation = useMutation({
-    mutationFn: (data: { sourceYear: string, targetYear: string, force?: boolean }) => 
-      api('/api/migration/rollover', { method: 'POST', body: JSON.stringify(data) }),
-    onSuccess: () => {
-      queryClient.invalidateQueries();
-      toast.success(t('scoping:rollover.success'));
-      setIsRolloverOpen(false);
-    },
-    onError: (err: any) => {
-      toast.error(t('scoping:rollover.error', { error: err.message }));
-    }
-  });
-
-  const { data: controlsData, isLoading: isLoadingControls } = useQuery({
-    queryKey: ['controls-elc', workingYear, relevantFsli],
-    queryFn: () => api<{ items: Control[] }>(`/api/controls?level=ELC&year=${workingYear}`),
-    staleTime: 30000,
+  const {
+    searchTerm,
+    setSearchTerm,
+    editingItem,
+    setEditingItem,
+    isRolloverOpen,
+    setIsRolloverOpen,
+    isImportModalOpen,
+    setIsImportModalOpen,
+    data: controlsData,
+    isLoading: isLoadingControls,
+    refresh,
+    saveMutation,
+    rolloverMutation,
+  } = useRcmMatrixLifecycle<Control>({
+    tier: 'ELC',
+    workingYear,
   });
 
   const { data: orgsData } = useQuery({
     queryKey: ['organizations-list'],
     queryFn: () => api<{ organizations: Organization[] }>('/api/auth/organization/list'),
     staleTime: 300000,
-  });
-
-  const saveMutation = useMutation({
-    mutationFn: (values: any) => {
-      // Reverse mapping: standardized UI names -> backend DB names
-      const dbValues = {
-        ...values,
-        name: values.mappedControlName,
-        description: values.mappedControlDescription,
-      };
-      
-      const targetId = values.mappingId || values.id;
-      
-      return api(`/api/controls/${targetId}`, {
-        method: 'PUT',
-        body: JSON.stringify(dbValues)
-      });
-    },
-    onSuccess: () => {
-      toast.success(t('rcm:matrix.save_success'));
-      queryClient.invalidateQueries({ queryKey: ['controls-elc'] });
-      setEditingItem(null);
-    }
   });
 
   const elcItems = React.useMemo(() => {
@@ -170,7 +142,7 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
           subtitle={t('rcm:matrix.subtitle_elc')}
           searchTerm=""
           onSearchChange={() => {}}
-          onRefresh={() => queryClient.invalidateQueries({ queryKey: ['controls-elc'] })}
+          onRefresh={refresh}
           onExport={() => exportRCMToExcel(elcItems, {
             matrixType: 'ELC',
             filename: `RCM_ELC_Matrix_${workingYear}_${new Date().toISOString().split('T')[0]}.xlsx`,
