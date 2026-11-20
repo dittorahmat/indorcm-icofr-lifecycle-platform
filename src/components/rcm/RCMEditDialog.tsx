@@ -65,13 +65,13 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-full sm:max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col p-0 overflow-hidden border-slate-300 shadow-2xl rounded-none sm:rounded-lg">
-        <DialogHeader className="p-4 sm:p-6 pb-2 bg-slate-50 border-b border-slate-200 shrink-0">
-          <div className="flex items-center gap-2.5 sm:gap-3">
-             <div className="bg-indigo-600 p-1.5 sm:p-2 rounded-lg text-white shadow-sm shrink-0">
-                <ShieldAlert className="h-4 w-4 sm:h-5 sm:w-5" />
+        <DialogHeader className="p-3.5 sm:p-4 pb-2 bg-slate-50 border-b border-slate-200 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5">
+             <div className="bg-indigo-600 p-1.5 rounded-lg text-white shadow-sm shrink-0">
+                <ShieldAlert className="h-4 w-4" />
              </div>
              <div className="min-w-0 flex-1">
-                <DialogTitle className="text-base sm:text-xl font-black tracking-tight text-slate-900 truncate">
+                <DialogTitle className="text-sm sm:text-base font-black tracking-tight text-slate-900 truncate">
                   {t('matrix.control_name')}: {data?.controlCode || '-'}
                 </DialogTitle>
                 <DialogDescription className="text-xs font-bold uppercase tracking-wider text-slate-500 mt-0.5 truncate">
@@ -376,7 +376,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
               </ScrollArea>
             </Tabs>
 
-            <DialogFooter className="p-4 sm:p-6 bg-slate-50 border-t border-slate-200 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-6 flex-col-reverse sm:flex-row gap-2">
+            <DialogFooter className="p-3 sm:p-4 bg-slate-50 border-t border-slate-200 shrink-0 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-4 flex-col-reverse sm:flex-row gap-2">
                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
                   <div className="flex items-center gap-2">
                     {form.formState.isDirty && (
