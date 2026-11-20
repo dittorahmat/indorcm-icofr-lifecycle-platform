@@ -121,6 +121,10 @@ export function useRcmMatrixLifecycle<T = Record<string, unknown>>({
     },
   });
 
+  const refresh = React.useCallback(() => {
+    queryClient.invalidateQueries({ queryKey });
+  }, [queryClient, queryKey]);
+
   return {
     searchTerm,
     setSearchTerm,
@@ -132,6 +136,7 @@ export function useRcmMatrixLifecycle<T = Record<string, unknown>>({
     setIsImportModalOpen,
     data,
     isLoading,
+    refresh,
     queryClient,
     queryKey,
     saveMutation,

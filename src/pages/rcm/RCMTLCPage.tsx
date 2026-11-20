@@ -71,7 +71,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
     setIsImportModalOpen,
     data: matrixData,
     isLoading,
-    queryClient,
+    refresh,
     saveMutation,
     rolloverMutation,
   } = useRcmMatrixLifecycle<RCMMatrixItem>({
@@ -266,7 +266,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
           subtitle={t('rcm:matrix.subtitle_tlc')}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
-          onRefresh={() => queryClient.invalidateQueries({ queryKey: ['rcm-matrix-tlc'] })}
+          onRefresh={refresh}
           onExport={() => exportRCMToExcel(filteredItems, {
             matrixType: 'TLC',
             filename: `RCM_TLC_Matrix_${workingYear}_${new Date().toISOString().split('T')[0]}.xlsx`,

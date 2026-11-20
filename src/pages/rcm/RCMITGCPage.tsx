@@ -56,7 +56,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
     setIsImportModalOpen,
     data: matrixData,
     isLoading,
-    queryClient,
+    refresh,
     saveMutation,
   } = useRcmMatrixLifecycle<RCMMatrixItem>({
     tier: 'ITGC',
@@ -158,7 +158,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
           subtitle={t('rcm:matrix.subtitle_itgc')}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
-          onRefresh={() => queryClient.invalidateQueries({ queryKey: ['rcm-matrix-itgc'] })}
+          onRefresh={refresh}
           onExport={() => exportRCMToExcel(filteredItems, {
             matrixType: 'ITGC',
             filename: `RCM_ITGC_Matrix_${new Date().toISOString().split('T')[0]}.xlsx`,
