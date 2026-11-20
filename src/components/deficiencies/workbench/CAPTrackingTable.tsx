@@ -115,19 +115,19 @@ export function CAPTrackingTable({
       <Table className="min-w-[1040px]">
         <TableHeader className="bg-slate-50/70 border-b border-slate-200">
           <TableRow>
-            <TableHead className="w-[110px] text-xs uppercase font-bold text-slate-700">Kode Temuan</TableHead>
-            <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[340px]">Uraian Temuan & Kontrol</TableHead>
-            <TableHead className="w-[90px] text-center text-xs uppercase font-bold text-slate-700">Keparahan</TableHead>
-            <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[180px]">Owner / PIC</TableHead>
-            <TableHead className="w-[130px] text-xs uppercase font-bold text-slate-700">Target Deadline</TableHead>
-            <TableHead className="w-[140px] text-center text-xs uppercase font-bold text-slate-700">Status CAP</TableHead>
-            <TableHead className="w-[120px] text-center text-xs uppercase font-bold text-slate-700">Aksi</TableHead>
+            <TableHead className="w-[110px] text-xs uppercase font-bold text-slate-700 py-2 px-3">Kode Temuan</TableHead>
+            <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[340px] py-2 px-3">Uraian Temuan & Kontrol</TableHead>
+            <TableHead className="w-[90px] text-center text-xs uppercase font-bold text-slate-700 py-2 px-3">Keparahan</TableHead>
+            <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[180px] py-2 px-3">Owner / PIC</TableHead>
+            <TableHead className="w-[130px] text-xs uppercase font-bold text-slate-700 py-2 px-3">Target Deadline</TableHead>
+            <TableHead className="w-[140px] text-center text-xs uppercase font-bold text-slate-700 py-2 px-3">Status CAP</TableHead>
+            <TableHead className="w-[120px] text-center text-xs uppercase font-bold text-slate-700 py-2 px-3">Aksi</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {deficiencies.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="h-32 text-center text-slate-400 text-xs font-normal">
+              <TableCell colSpan={7} className="h-32 text-center text-slate-400 text-xs font-normal py-2 px-3">
                 {t('captable.empty', { defaultValue: 'Tidak ada defisiensi yang sesuai dengan filter.' })}
               </TableCell>
             </TableRow>
@@ -140,10 +140,10 @@ export function CAPTrackingTable({
 
               return (
                 <TableRow key={d.id} className="hover:bg-slate-50/60 transition-colors">
-                  <TableCell className="font-mono text-xs font-bold text-primary">
+                  <TableCell className="font-mono text-xs font-bold text-primary py-2 px-3">
                     {d.controlCode || d.id}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-2 px-3">
                     <div className="space-y-0.5">
                       <p className="text-xs font-bold text-slate-900 leading-snug">
                         {d.controlName || d.description}
@@ -153,16 +153,16 @@ export function CAPTrackingTable({
                       </p>
                     </div>
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center py-2 px-3">
                     {getSeverityBadge(d.severity)}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-2 px-3">
                     <div className="flex items-center gap-1.5 text-xs text-slate-700 font-medium">
                       <User className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                       <span className="truncate">{plan?.picName || t('card.picUnassigned', { defaultValue: 'TBD' })}</span>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-2 px-3">
                     <div className="flex items-center gap-1.5 text-xs font-medium">
                       <Clock className={cn("h-3.5 w-3.5 shrink-0", isOverdue ? "text-rose-500" : "text-slate-400")} />
                       <span className={cn(isOverdue && "text-rose-600 font-bold")}>
@@ -170,10 +170,10 @@ export function CAPTrackingTable({
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center py-2 px-3">
                     {getWorkflowBadge(plan)}
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="text-center py-2 px-3">
                     <div className="flex items-center justify-center gap-1">
                       <Button
                         variant="ghost"

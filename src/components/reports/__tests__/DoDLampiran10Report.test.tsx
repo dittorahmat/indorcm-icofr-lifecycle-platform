@@ -355,4 +355,10 @@ describe('DoDLampiran10Report Component', () => {
     expect(screen.queryAllByText('DEF-001')).toHaveLength(0);
     expect(screen.getAllByText('DEF-002')).toHaveLength(2);
   });
+
+  it('renders with compact table padding py-2 px-3', () => {
+    const { container } = render(<DoDLampiran10Report deficiencies={mockDeficiencies} controls={mockControls} />);
+    const tableCells = container.querySelectorAll('td.py-2.px-3');
+    expect(tableCells.length).toBeGreaterThan(0);
+  });
 });

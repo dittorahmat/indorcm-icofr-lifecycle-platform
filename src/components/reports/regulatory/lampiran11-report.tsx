@@ -84,8 +84,8 @@ export function Lampiran11Report({ deficiencies = [] }: Lampiran11ReportProps) {
 
   return (
     <Card className="border border-border shadow-sm rounded-lg bg-card">
-      <CardContent className="p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
+      <CardContent className="p-4 sm:p-5 space-y-3.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-3">
           <div className="space-y-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="outline" className="text-xs font-bold uppercase tracking-wider text-primary border-primary">
@@ -171,12 +171,12 @@ export function Lampiran11Report({ deficiencies = [] }: Lampiran11ReportProps) {
           <Table className="min-w-[800px]">
             <TableHeader className="bg-slate-50 border-b">
               <TableRow>
-                <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800">{t('findings.columns.no')}</TableHead>
-                <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800">{t('findings.columns.ref')}</TableHead>
-                <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800">{t('findings.columns.description')}</TableHead>
-                <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800">{t('findings.columns.severity')}</TableHead>
-                <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800 text-right">{t('findings.columns.exposure')}</TableHead>
-                <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800">{t('findings.columns.status')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 px-3 text-slate-800">{t('findings.columns.no')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 px-3 text-slate-800">{t('findings.columns.ref')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 px-3 text-slate-800">{t('findings.columns.description')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 px-3 text-slate-800">{t('findings.columns.severity')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 px-3 text-slate-800 text-right">{t('findings.columns.exposure')}</TableHead>
+                <TableHead className="text-xs font-semibold uppercase py-2 px-3 text-slate-800">{t('findings.columns.status')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -189,16 +189,16 @@ export function Lampiran11Report({ deficiencies = [] }: Lampiran11ReportProps) {
               ) : (
                 significant.map((d, index) => (
                   <TableRow key={d.id || index} className="border-b hover:bg-slate-50/50">
-                    <TableCell className="text-center text-xs text-slate-500">{index + 1}</TableCell>
-                    <TableCell className="font-mono text-xs font-bold">{findingRowId(d, index)}</TableCell>
-                    <TableCell className="text-xs max-w-[320px]">{d.description || '-'}</TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className="text-center text-xs text-slate-500 py-2 px-3">{index + 1}</TableCell>
+                    <TableCell className="font-mono text-xs font-bold py-2 px-3">{findingRowId(d, index)}</TableCell>
+                    <TableCell className="text-xs max-w-[320px] py-2 px-3">{d.description || '-'}</TableCell>
+                    <TableCell className="text-center py-2 px-3">
                       <ReportSeverityBadge outline severity={d.severity} />
                     </TableCell>
-                    <TableCell className="text-right font-mono text-xs">
+                    <TableCell className="text-right font-mono text-xs py-2 px-3">
                       {formatExposureValue(d.exposureValue)}
                     </TableCell>
-                    <TableCell className="text-xs">{d.status || '-'}</TableCell>
+                    <TableCell className="text-xs py-2 px-3">{d.status || '-'}</TableCell>
                   </TableRow>
                 ))
               )}

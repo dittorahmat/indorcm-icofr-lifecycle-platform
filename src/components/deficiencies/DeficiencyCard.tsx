@@ -124,9 +124,9 @@ export function DeficiencyCard({ deficiency, actionPlan, draggable = true }: Def
         
         <CardHeader
           {...(draggable ? listeners : {})}
-          className="flex flex-col min-[420px]:flex-row min-[420px]:items-start justify-between p-5 pb-3 cursor-grab active:cursor-grabbing select-none flex-wrap gap-2 min-w-0"
+          className="flex flex-col min-[420px]:flex-row min-[420px]:items-start justify-between p-3.5 pb-2.5 cursor-grab active:cursor-grabbing select-none flex-wrap gap-2 min-w-0"
         >
-          <div className="space-y-2 w-full pr-2">
+          <div className="space-y-1.5 w-full pr-2">
              <div className="flex flex-wrap items-center gap-1.5">
                 <Badge className={cn("text-xs font-semibold uppercase tracking-wider px-2 py-0.5 border-none shadow-none rounded-md", severityClass)}>
                    {t(severityLabelKey(deficiency.severity), { ns: 'reports' })}
@@ -165,11 +165,11 @@ export function DeficiencyCard({ deficiency, actionPlan, draggable = true }: Def
           </div>
         </CardHeader>
 
-        <CardContent className="p-5 pt-0 space-y-4">
+        <CardContent className="p-3.5 pt-0 space-y-3">
           {/* PROMINENT RISK DESCRIPTION BOX */}
           {deficiency.riskDescription && (
-             <div className="p-2.5 bg-rose-50/70 border border-rose-200/80 rounded-lg text-rose-950 text-xs leading-relaxed flex items-start gap-2">
-               <AlertTriangle className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
+             <div className="p-2 bg-rose-50/70 border border-rose-200/80 rounded-lg text-rose-950 text-xs leading-relaxed flex items-start gap-2">
+               <AlertTriangle className="h-3.5 w-3.5 text-rose-500 shrink-0 mt-0.5" />
                <div>
                    <span className="font-bold text-rose-900 block text-xs uppercase tracking-wider mb-0.5">
                      {t('card.riskAffected', { defaultValue: 'Affected Risk' })} {deficiency.riskCode ? `(${deficiency.riskCode})` : ''}:
@@ -181,7 +181,7 @@ export function DeficiencyCard({ deficiency, actionPlan, draggable = true }: Def
 
           {/* FINDING / JUSTIFICATION NOTE BOX */}
           {deficiency.controlName && (
-             <div className="p-3 bg-amber-50/60 border border-amber-200/80 rounded-lg text-slate-700 text-xs leading-relaxed">
+             <div className="p-2.5 bg-amber-50/60 border border-amber-200/80 rounded-lg text-slate-700 text-xs leading-relaxed">
                 <span className="font-bold text-amber-900 block text-xs uppercase tracking-wider mb-0.5">{t('card.evalNote', { defaultValue: 'Evaluation Note / Test Finding:' })}</span>
                {deficiency.description}
              </div>
@@ -207,8 +207,8 @@ export function DeficiencyCard({ deficiency, actionPlan, draggable = true }: Def
              )}
           </div>
 
-          <div className="pt-3 border-t border-slate-50">
-             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-[0.15em] mb-2">
+          <div className="pt-2.5 border-t border-slate-100">
+             <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-[0.15em] mb-1.5">
                 <Users className="h-3 w-3 text-slate-300" /> {t('card.reportDistribution', 'Report Distribution')}
              </div>
              <div className="flex flex-wrap gap-1.5">

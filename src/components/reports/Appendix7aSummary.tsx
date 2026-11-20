@@ -102,17 +102,17 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
                     const isControlEffective = stats.fail === 0;
                     return (
                       <TableRow key={id} className="divide-x border-b-2 border-slate-100">
-                        <TableCell className="text-xs font-bold text-center">{idx + 1}</TableCell>
-                        <TableCell className="py-4">
+                        <TableCell className="text-xs font-bold text-center py-2 px-3">{idx + 1}</TableCell>
+                        <TableCell className="py-2 px-3">
                            <div className="flex flex-col gap-1">
                               <span className="font-mono text-xs font-bold text-indigo-600">{id}</span>
                               <span className="text-xs font-black text-slate-800">{stats.name}</span>
                            </div>
                         </TableCell>
-                        <TableCell className="text-center font-bold text-xs">{stats.total}</TableCell>
-                        <TableCell className="text-center font-bold text-xs text-emerald-600">{stats.pass}</TableCell>
-                        <TableCell className="text-center font-bold text-xs text-rose-600">{stats.fail}</TableCell>
-                        <TableCell className="text-center">
+                        <TableCell className="text-center font-bold text-xs py-2 px-3">{stats.total}</TableCell>
+                        <TableCell className="text-center font-bold text-xs text-emerald-600 py-2 px-3">{stats.pass}</TableCell>
+                        <TableCell className="text-center font-bold text-xs text-rose-600 py-2 px-3">{stats.fail}</TableCell>
+                        <TableCell className="text-center py-2 px-3">
                            <Badge className={cn(
                              "text-xs font-black uppercase px-3",
                              isControlEffective ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"

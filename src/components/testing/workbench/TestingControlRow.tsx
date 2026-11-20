@@ -51,12 +51,12 @@ export function TestingControlRow({
     >
       {/* CARD HEADER / TRIGGER */}
       <div 
-        className="p-4 sm:p-5 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 hover:bg-slate-50/60 transition-colors"
+        className="p-3 sm:p-3.5 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 hover:bg-slate-50/60 transition-colors"
         onClick={onToggleExpand}
       >
-        <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+        <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
           <div className={cn(
-            "h-10 w-10 sm:h-11 sm:w-11 rounded-lg flex items-center justify-center shrink-0 border transition-all duration-200 mt-0.5 sm:mt-0",
+            "h-9 w-9 sm:h-9.5 sm:w-9.5 rounded-lg flex items-center justify-center shrink-0 border transition-all duration-200 mt-0.5 sm:mt-0",
             isExpanded 
               ? "bg-primary border-primary text-on-primary" 
               : "bg-surface-container border-outline-variant/30 text-primary group-hover:bg-surface-container-high",

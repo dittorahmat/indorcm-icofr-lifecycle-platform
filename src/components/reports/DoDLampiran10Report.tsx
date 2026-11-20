@@ -35,7 +35,7 @@ export function DoDLampiran10Report({
 
   return (
     <Card className="border border-border shadow-sm rounded-lg bg-card">
-      <CardContent className="p-6 space-y-6">
+      <CardContent className="p-4 sm:p-5 space-y-4">
         <DoDReportHeader
           isExporting={isExporting}
           onExport={() => void handleExportExcel()}

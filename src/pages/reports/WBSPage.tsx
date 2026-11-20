@@ -71,7 +71,7 @@ export function WBSPage() {
 
   return (
     <AppLayout container>
-      <div className="space-y-6 min-w-0">
+      <div className="space-y-4 min-w-0">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Whistleblowing Recap</h1>
@@ -82,43 +82,43 @@ export function WBSPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           <Card className="bg-amber-50 border-amber-200">
-            <CardHeader className="pb-2">
+            <CardHeader className="p-3 sm:p-3.5 pb-1 sm:pb-1.5">
               <CardTitle className="text-xs font-bold uppercase text-amber-800">Total Indicators</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 sm:p-3.5 pt-0">
               <div className="text-2xl font-bold text-amber-900">{mockWBS.length}</div>
             </CardContent>
           </Card>
           <Card className="bg-red-50 border-red-200">
-            <CardHeader className="pb-2">
+            <CardHeader className="p-3 sm:p-3.5 pb-1 sm:pb-1.5">
               <CardTitle className="text-xs font-bold uppercase text-red-800">Financial Impact</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 sm:p-3.5 pt-0">
               <div className="text-2xl font-bold text-red-900">{mockWBS.filter(w => w.isFinancialImpact).length}</div>
             </CardContent>
           </Card>
           <Card className="bg-blue-50 border-blue-200">
-            <CardHeader className="pb-2">
+            <CardHeader className="p-3 sm:p-3.5 pb-1 sm:pb-1.5">
               <CardTitle className="text-xs font-bold uppercase text-blue-800">Investigating</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 sm:p-3.5 pt-0">
               <div className="text-2xl font-bold text-blue-900">{mockWBS.filter(w => w.status === 'Investigating').length}</div>
             </CardContent>
           </Card>
           <Card className="bg-green-50 border-green-200">
-            <CardHeader className="pb-2">
+            <CardHeader className="p-3 sm:p-3.5 pb-1 sm:pb-1.5">
               <CardTitle className="text-xs font-bold uppercase text-green-800">Confirmed</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 sm:p-3.5 pt-0">
               <div className="text-2xl font-bold text-green-900">{mockWBS.filter(w => w.status === 'Confirmed').length}</div>
             </CardContent>
           </Card>
         </div>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="p-3 sm:p-4 pb-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <CardTitle>Fraud Risk Indicators Matrix</CardTitle>
               <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
@@ -132,15 +132,15 @@ export function WBSPage() {
                   {isExportingExcel ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                   {t('wbs.exportExcel', { defaultValue: 'Ekspor Excel' })}
                 </Button>
-                <div className="flex items-center gap-2 flex-1 sm:flex-none">
+                <div className="flex items-center gap-2 flex-1 sm:none">
                   <Search className="h-4 w-4 text-muted-foreground shrink-0" />
                   <Input placeholder="Search reports..." className="h-11 sm:h-8 min-h-[44px] sm:min-h-0 w-full sm:w-[200px] text-base sm:text-sm" />
                 </div>
               </div>
             </div>
-            <CardDescription>Recap of reports from Whistleblowing System affecting Financial Reporting.</CardDescription>
+            <CardDescription className="text-xs">Recap of reports from Whistleblowing System affecting Financial Reporting.</CardDescription>
           </CardHeader>
-          <CardContent className="p-4 sm:p-6">
+          <CardContent className="p-3 sm:p-4 pt-2">
             <div className="mb-4 md:hidden">
               <MobileDesktopBanner recordCount={mockWBS.length} />
             </div>
@@ -178,29 +178,29 @@ export function WBSPage() {
             <Table className="min-w-[720px]">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="text-right">Est. Impact</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Related Controls</TableHead>
+                  <TableHead className="py-2 px-3 text-xs">Date</TableHead>
+                  <TableHead className="py-2 px-3 text-xs">Category</TableHead>
+                  <TableHead className="py-2 px-3 text-xs">Description</TableHead>
+                  <TableHead className="py-2 px-3 text-xs text-right">Est. Impact</TableHead>
+                  <TableHead className="py-2 px-3 text-xs">Status</TableHead>
+                  <TableHead className="py-2 px-3 text-xs">Related Controls</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {mockWBS.map((report) => (
                   <TableRow key={report.id}>
-                    <TableCell className="text-xs whitespace-nowrap">{new Date(report.reportDate).toLocaleDateString()}</TableCell>
-                    <TableCell>
+                    <TableCell className="py-2 px-3 text-xs whitespace-nowrap">{new Date(report.reportDate).toLocaleDateString()}</TableCell>
+                    <TableCell className="py-2 px-3">
                       <Badge variant="outline" className="text-xs">{report.category}</Badge>
                     </TableCell>
-                    <TableCell className="max-w-[300px]">
+                    <TableCell className="py-2 px-3 max-w-[300px]">
                       <div className="text-sm font-medium">{report.description}</div>
-                      <div className="text-xs text-muted-foreground font-mono mt-1">{report.id}</div>
+                      <div className="text-xs text-muted-foreground font-mono mt-0.5">{report.id}</div>
                     </TableCell>
-                    <TableCell className="text-right font-mono text-xs text-red-600 font-bold">
+                    <TableCell className="py-2 px-3 text-right font-mono text-xs text-red-600 font-bold">
                       {formatIDR(report.impactMagnitude)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-2 px-3">
                       <Badge className={
                         report.status === 'Investigating' ? "bg-amber-100 text-amber-700 hover:bg-amber-100" :
                         report.status === 'Confirmed' ? "bg-red-100 text-red-700 hover:bg-red-100" :
@@ -209,7 +209,7 @@ export function WBSPage() {
                         {report.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="py-2 px-3">
                       <div className="flex gap-1 flex-wrap">
                         {report.relatedControlIds?.map(c => (
                           <Badge key={c} variant="secondary" className="text-xs cursor-pointer hover:bg-primary hover:text-white transition-colors">
@@ -226,7 +226,7 @@ export function WBSPage() {
           </CardContent>
         </Card>
 
-        <div className="bg-muted/30 p-4 sm:p-6 rounded-lg border flex items-start gap-3 sm:gap-4">
+        <div className="bg-muted/30 p-3 sm:p-4 rounded-lg border flex items-start gap-3 sm:gap-4">
           <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
           <div className="space-y-1">
             <h4 className="font-bold text-sm">Regulatory Compliance Note</h4>

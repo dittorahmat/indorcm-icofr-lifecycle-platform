@@ -37,7 +37,7 @@ export function DeficiencyBoard() {
 
   return (
     <AppLayout container>
-      <motion.div initial="hidden" animate="visible" variants={containerVariants} className="flex flex-col h-full space-y-6 pb-10">
+      <motion.div initial="hidden" animate="visible" variants={containerVariants} className="flex flex-col h-full space-y-4 pb-10">
         {/* 1. Sovereign Governance Header Banner */}
         <motion.div variants={itemVariants}>
           <DeficiencyHeaderBanner

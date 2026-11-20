@@ -30,7 +30,7 @@ export function Appendix10Page(): JSX.Element {
 
   return (
     <AppLayout container>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <PageHeader
           title={t('dodReport.title', { defaultValue: 'LAMPIRAN 10' })}
           description={t('dodReport.subtitle', {

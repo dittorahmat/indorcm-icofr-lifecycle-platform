@@ -177,4 +177,13 @@ describe('TestWorkbench', () => {
     ]);
     expect(options.filename).toBe(`TOD_TOE_Kertas_Kerja_${new Date().getFullYear()}.xlsx`);
   });
+
+  it('renders with compact visual layout classes conforming to density guidelines', () => {
+    pageState.records = [validatedControl];
+    pageState.processes = [];
+
+    const { container } = render(<TestWorkbench />);
+    const mainContainer = container.querySelector('.space-y-4');
+    expect(mainContainer).toBeInTheDocument();
+  });
 });

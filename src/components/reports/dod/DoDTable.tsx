@@ -93,13 +93,13 @@ function DoDTableRow({ row, index }: { row: FormattedDoDRow; index: number }) {
 
   return (
     <TableRow key={`${row.ref}-${index}`} className="border-b border-border hover:bg-muted/40 transition-colors">
-      <TableCell className="font-mono text-xs font-bold text-foreground border-r border-border py-3">
+      <TableCell className="font-mono text-xs font-bold text-foreground border-r border-border py-2 px-3">
         {row.ref}
       </TableCell>
-      <TableCell className="text-xs text-foreground font-medium border-r border-border py-3 max-w-[280px]">
+      <TableCell className="text-xs text-foreground font-medium border-r border-border py-2 px-3 max-w-[280px]">
         {row.description}
       </TableCell>
-      <TableCell className="text-center border-r border-border py-3">
+      <TableCell className="text-center border-r border-border py-2 px-3">
         {row.isRemediated ? (
           <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 font-semibold text-xs rounded-md">
             {yesLabel}
@@ -110,31 +110,31 @@ function DoDTableRow({ row, index }: { row: FormattedDoDRow; index: number }) {
           </Badge>
         )}
       </TableCell>
-      <TableCell className="text-xs text-muted-foreground border-r border-border py-3 font-medium">
+      <TableCell className="text-xs text-muted-foreground border-r border-border py-2 px-3 font-medium">
         {row.ineffectivePeriod}
       </TableCell>
-      <TableCell className="text-right font-mono text-xs font-semibold text-foreground border-r border-border py-3">
+      <TableCell className="text-right font-mono text-xs font-semibold text-foreground border-r border-border py-2 px-3">
         {formatIDR(row.exposureValue)}
       </TableCell>
-      <TableCell className="text-center border-r border-border py-3">
+      <TableCell className="text-center border-r border-border py-2 px-3">
         <Badge className={sev.className}>{t(sev.labelKey)}</Badge>
       </TableCell>
 
-      <TableCell className="text-xs text-foreground font-medium border-r border-border py-3">
+      <TableCell className="text-xs text-foreground font-medium border-r border-border py-2 px-3">
         {row.impactedAccount}
       </TableCell>
-      <TableCell className="text-xs text-muted-foreground border-r border-border py-3">
+      <TableCell className="text-xs text-muted-foreground border-r border-border py-2 px-3">
         {row.cosoComponent}
       </TableCell>
-      <TableCell className="text-xs text-foreground font-medium border-r border-border py-3">
+      <TableCell className="text-xs text-foreground font-medium border-r border-border py-2 px-3">
         {row.businessProcess}
       </TableCell>
-      <TableCell className="text-xs text-muted-foreground border-r border-border py-3">
+      <TableCell className="text-xs text-muted-foreground border-r border-border py-2 px-3">
         {row.businessUnit}
       </TableCell>
 
       {ASSERTION_COLS.map((col) => (
-        <TableCell key={col.key} className="text-center font-bold text-xs border-r border-border py-3 text-blue-700">
+        <TableCell key={col.key} className="text-center font-bold text-xs border-r border-border py-2 px-3 text-blue-700">
           {checkMark(row.assertions[col.key])}
         </TableCell>
       ))}
@@ -142,7 +142,7 @@ function DoDTableRow({ row, index }: { row: FormattedDoDRow; index: number }) {
       {BOX_COLS.map((col, i) => (
         <TableCell
           key={col.key}
-          className={`text-center text-xs font-semibold py-3 ${i < BOX_COLS.length - 1 ? 'border-r border-border' : ''}`}
+          className={`text-center text-xs font-semibold py-2 px-3 ${i < BOX_COLS.length - 1 ? 'border-r border-border' : ''}`}
         >
           {row.boxes[col.key] ? (
             <span className={BOX_YES_CLASS[col.key]}>{yesLabel}</span>
@@ -179,20 +179,20 @@ export function DoDTable({ rows, showFullTable }: { rows: FormattedDoDRow[]; sho
             </TableRow>
 
             <TableRow className="border-b border-border text-left">
-              <TableHead className="w-[120px] text-xs font-semibold text-slate-800 border-r border-border py-2.5">{t('dodReport.table.col1')}</TableHead>
-              <TableHead className="min-w-[200px] text-xs font-semibold text-slate-800 border-r border-border py-2.5">{t('dodReport.table.col2')}</TableHead>
-              <TableHead className="w-[100px] text-xs font-semibold text-center text-slate-800 border-r border-border py-2.5">{t('dodReport.table.col3')}</TableHead>
-              <TableHead className="w-[130px] text-xs font-semibold text-slate-800 border-r border-border py-2.5">{t('dodReport.table.col4')}</TableHead>
-              <TableHead className="w-[150px] text-xs font-semibold text-right text-slate-800 border-r border-border py-2.5">{t('dodReport.table.col5')}</TableHead>
-              <TableHead className="w-[180px] text-xs font-semibold text-center text-slate-800 border-r border-border py-2.5">{t('dodReport.table.col6')}</TableHead>
+              <TableHead className="w-[120px] text-xs font-semibold text-slate-800 border-r border-border py-2 px-3">{t('dodReport.table.col1')}</TableHead>
+              <TableHead className="min-w-[200px] text-xs font-semibold text-slate-800 border-r border-border py-2 px-3">{t('dodReport.table.col2')}</TableHead>
+              <TableHead className="w-[100px] text-xs font-semibold text-center text-slate-800 border-r border-border py-2 px-3">{t('dodReport.table.col3')}</TableHead>
+              <TableHead className="w-[130px] text-xs font-semibold text-slate-800 border-r border-border py-2 px-3">{t('dodReport.table.col4')}</TableHead>
+              <TableHead className="w-[150px] text-xs font-semibold text-right text-slate-800 border-r border-border py-2 px-3">{t('dodReport.table.col5')}</TableHead>
+              <TableHead className="w-[180px] text-xs font-semibold text-center text-slate-800 border-r border-border py-2 px-3">{t('dodReport.table.col6')}</TableHead>
 
-              <TableHead className="w-[160px] text-xs font-semibold text-slate-800 border-r border-border py-2.5">{t('dodReport.table.col7')}</TableHead>
-              <TableHead className="w-[140px] text-xs font-semibold text-slate-800 border-r border-border py-2.5">{t('dodReport.table.col8')}</TableHead>
-              <TableHead className="w-[150px] text-xs font-semibold text-slate-800 border-r border-border py-2.5">{t('dodReport.table.col9')}</TableHead>
-              <TableHead className="w-[140px] text-xs font-semibold text-slate-800 border-r border-border py-2.5">{t('dodReport.table.col10')}</TableHead>
+              <TableHead className="w-[160px] text-xs font-semibold text-slate-800 border-r border-border py-2 px-3">{t('dodReport.table.col7')}</TableHead>
+              <TableHead className="w-[140px] text-xs font-semibold text-slate-800 border-r border-border py-2 px-3">{t('dodReport.table.col8')}</TableHead>
+              <TableHead className="w-[150px] text-xs font-semibold text-slate-800 border-r border-border py-2 px-3">{t('dodReport.table.col9')}</TableHead>
+              <TableHead className="w-[140px] text-xs font-semibold text-slate-800 border-r border-border py-2 px-3">{t('dodReport.table.col10')}</TableHead>
 
               {ASSERTION_COLS.map((col) => (
-                <TableHead key={col.key} className="w-[50px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2.5">
+                <TableHead key={col.key} className="w-[50px] text-xs font-semibold text-center text-blue-900 border-r border-border py-2 px-3">
                   <DodHeadTip label={col.label} tipBase={col.tip} tone="blue" />
                 </TableHead>
               ))}
@@ -200,7 +200,7 @@ export function DoDTable({ rows, showFullTable }: { rows: FormattedDoDRow[]; sho
               {BOX_COLS.map((col) => (
                 <TableHead
                   key={col.key}
-                  className={`w-[95px] text-xs font-semibold text-center text-amber-900 py-2.5 ${col.key !== 'box7' ? 'border-r border-border' : ''}`}
+                  className={`w-[95px] text-xs font-semibold text-center text-amber-900 py-2 px-3 ${col.key !== 'box7' ? 'border-r border-border' : ''}`}
                 >
                   <DodHeadTip label={col.label} tipBase={col.tip} tone="amber" />
                 </TableHead>

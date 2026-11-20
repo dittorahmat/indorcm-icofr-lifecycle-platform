@@ -85,7 +85,7 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
                     <TableHead className="text-xs font-black text-primary-foreground w-10 text-center">NO</TableHead>
                     <TableHead className="text-xs font-black text-primary-foreground min-w-[150px]">REFERENSI SAMPEL / TRANSAKSI</TableHead>
                     {controlIds.map(id => (
-                      <TableHead key={id} className="text-xs font-black text-primary-foreground text-center border-l border-white/10 uppercase py-4">
+                      <TableHead key={id} className="text-xs font-black text-primary-foreground text-center border-l border-white/10 uppercase py-2 px-3">
                         <div className="flex flex-col gap-1">
                           <span>{controlMap[id]?.code || id}</span>
                           <span className="text-xs opacity-60 font-normal leading-tight line-clamp-2">{controlMap[id]?.name}</span>
@@ -97,10 +97,10 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
                 <TableBody>
                   {record.samples?.map((sample, sIdx) => (
                     <TableRow key={sample.id} className="divide-x border-b-2 border-slate-100">
-                      <TableCell className="text-xs font-bold text-center">{sIdx + 1}</TableCell>
-                      <TableCell className="py-4">
+                      <TableCell className="text-xs font-bold text-center py-2 px-3">{sIdx + 1}</TableCell>
+                      <TableCell className="py-2 px-3">
                         <div className="text-xs font-black">{sample.sampleRef}</div>
-                        <div className="text-xs text-slate-400 font-mono mt-1">ID: {sample.glRowId?.substring(0,8)}</div>
+                        <div className="text-xs text-slate-400 font-mono mt-0.5">ID: {sample.glRowId?.substring(0,8)}</div>
                       </TableCell>
                       {controlIds.map(cId => {
                         const res = (sample.controlResults as any)?.[cId];
