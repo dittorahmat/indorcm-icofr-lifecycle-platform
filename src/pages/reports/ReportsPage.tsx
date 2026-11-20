@@ -66,27 +66,27 @@ function TestingResultTableRow({ row }: { row: TestingResultRow }) {
   const { t } = useTranslation('reports');
   return (
     <TableRow className="hover:bg-muted/30">
-      <TableCell className="text-center text-xs font-medium text-muted-foreground">{row.no}</TableCell>
-      <TableCell className="py-3">
+      <TableCell className="text-center text-xs font-medium text-muted-foreground py-2 px-3">{row.no}</TableCell>
+      <TableCell className="py-2 px-3">
         <div className="space-y-0.5">
           <p className="text-xs font-bold text-blue-800 uppercase tracking-tighter">{row.process}</p>
           <p className="text-xs text-slate-600 line-clamp-1">{row.subProcess}</p>
         </div>
       </TableCell>
-      <TableCell className="py-3">
+      <TableCell className="py-2 px-3">
         <div className="space-y-0.5">
           <p className="text-xs font-bold text-primary leading-none">{row.controlCode}</p>
           <p className="text-xs font-medium leading-tight text-slate-700 line-clamp-2">{row.controlName}</p>
         </div>
       </TableCell>
-      <TableCell className="text-center">
+      <TableCell className="text-center py-2 px-3">
         <div className="flex flex-wrap justify-center gap-0.5">
           {row.assertions.map((assertion) => (
             <Badge key={assertion} variant="outline" className="text-xs h-3.5 px-1 bg-slate-50">{assertion.substring(0, 1)}</Badge>
           ))}
         </div>
       </TableCell>
-      <TableCell className="text-center">
+      <TableCell className="text-center py-2 px-3">
         <Badge variant="outline" className={cn(
           'text-xs h-5',
           row.type === 'TOD' ? 'border-blue-200 text-blue-700 bg-blue-50' : 'border-purple-200 text-purple-700 bg-purple-50',
@@ -94,8 +94,8 @@ function TestingResultTableRow({ row }: { row: TestingResultRow }) {
           {row.type}
         </Badge>
       </TableCell>
-      <TableCell className="text-center text-xs font-medium text-slate-600 font-mono">{row.method}</TableCell>
-      <TableCell className="text-center">
+      <TableCell className="text-center text-xs font-medium text-slate-600 font-mono py-2 px-3">{row.method}</TableCell>
+      <TableCell className="text-center py-2 px-3">
         <div className="flex flex-col items-center gap-1">
           <div className="flex gap-0.5">
             {[1, 2, 3, 4, 5, 6].map((step) => (
@@ -111,8 +111,8 @@ function TestingResultTableRow({ row }: { row: TestingResultRow }) {
           <span className="text-xs font-bold text-slate-500">{row.attributeCount}/6 Criteria</span>
         </div>
       </TableCell>
-      <TableCell className="text-center text-xs font-mono font-bold text-slate-600">{row.sample}</TableCell>
-      <TableCell className="text-center">
+      <TableCell className="text-center text-xs font-mono font-bold text-slate-600 py-2 px-3">{row.sample}</TableCell>
+      <TableCell className="text-center py-2 px-3">
         <Badge className={cn(
           'text-xs uppercase font-bold',
           row.result === 'Effective' ? 'bg-green-100 text-green-700 hover:bg-green-100 border-green-200' : 'bg-red-100 text-red-700 hover:bg-red-100 border-red-200',
@@ -120,7 +120,7 @@ function TestingResultTableRow({ row }: { row: TestingResultRow }) {
           {row.result === 'Effective' ? <><CheckCircle2 className="h-2 w-2 mr-1" /> {t('reports:testing.effective').toUpperCase()}</> : <><XCircle className="h-2 w-2 mr-1" /> {t('reports:testing.ineffective').toUpperCase()}</>}
         </Badge>
       </TableCell>
-      <TableCell className="py-3 text-xs text-muted-foreground leading-relaxed">
+      <TableCell className="py-2 px-3 text-xs text-muted-foreground leading-relaxed">
         <p className="line-clamp-3">&quot;{row.notes}&quot;</p>
         <p className="text-xs mt-1 uppercase font-bold">Audit Ref: {row.id.substring(0, 8).toUpperCase()}</p>
       </TableCell>
@@ -201,7 +201,7 @@ export function ReportsPage() {
 
   return (
     <AppLayout container>
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         <PageHeader 
           title={t('pageTitle')} 
           description={t('pageDescription')}
@@ -234,7 +234,7 @@ export function ReportsPage() {
             />
           </TabsContent>
 
-          <TabsContent value="audit" className="pt-6 space-y-6">
+          <TabsContent value="audit" className="pt-4 space-y-4">
             <CollapsibleFilterCard
               title={t('testing.filters.title')}
               testId="reports-audit-filters"
@@ -295,11 +295,11 @@ export function ReportsPage() {
             </CollapsibleFilterCard>
 
             <Card className="border-slate-200 shadow-sm overflow-hidden">
-              <CardHeader className="bg-slate-50/50 border-b py-4">
+              <CardHeader className="bg-slate-50/50 border-b py-3 px-4 sm:px-6">
                 <CardTitle className="text-base font-bold text-slate-900">{t('testing.title')}</CardTitle>
                 <CardDescription className="text-xs">{t('testing.description')}</CardDescription>
               </CardHeader>
-              <CardContent className="pt-6">
+              <CardContent className="pt-4 p-3 sm:p-4">
                 <div className="mb-4 md:hidden">
                   <MobileDesktopBanner recordCount={testingRows.length} />
                 </div>
@@ -315,16 +315,16 @@ export function ReportsPage() {
                   <Table className="min-w-[880px]">
                     <TableHeader className="bg-slate-50/80">
                       <TableRow>
-                        <TableHead className="w-[40px] text-xs uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.no')}</TableHead>
-                        <TableHead className="w-[180px] text-xs uppercase font-bold text-slate-500 tracking-wider">{t('testing.table.process')}</TableHead>
-                        <TableHead className="w-[180px] text-xs uppercase font-bold text-slate-500 tracking-wider">{t('testing.table.control')}</TableHead>
-                        <TableHead className="w-[120px] text-xs uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.assertion')}</TableHead>
-                        <TableHead className="w-[60px] text-xs uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.type')}</TableHead>
-                        <TableHead className="w-[80px] text-xs uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.method')}</TableHead>
-                        <TableHead className="text-xs uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.criteria')}</TableHead>
-                        <TableHead className="w-[60px] text-xs uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.sample')}</TableHead>
-                        <TableHead className="w-[90px] text-xs uppercase font-bold text-center text-slate-500 tracking-wider">{t('testing.table.result')}</TableHead>
-                        <TableHead className="w-[200px] text-xs uppercase font-bold text-left text-slate-500 tracking-wider">{t('testing.table.notes')}</TableHead>
+                        <TableHead className="w-[40px] text-xs uppercase font-bold text-center text-slate-500 tracking-wider py-2 px-3">{t('testing.table.no')}</TableHead>
+                        <TableHead className="w-[180px] text-xs uppercase font-bold text-slate-500 tracking-wider py-2 px-3">{t('testing.table.process')}</TableHead>
+                        <TableHead className="w-[180px] text-xs uppercase font-bold text-slate-500 tracking-wider py-2 px-3">{t('testing.table.control')}</TableHead>
+                        <TableHead className="w-[120px] text-xs uppercase font-bold text-center text-slate-500 tracking-wider py-2 px-3">{t('testing.table.assertion')}</TableHead>
+                        <TableHead className="w-[60px] text-xs uppercase font-bold text-center text-slate-500 tracking-wider py-2 px-3">{t('testing.table.type')}</TableHead>
+                        <TableHead className="w-[80px] text-xs uppercase font-bold text-center text-slate-500 tracking-wider py-2 px-3">{t('testing.table.method')}</TableHead>
+                        <TableHead className="text-xs uppercase font-bold text-center text-slate-500 tracking-wider py-2 px-3">{t('testing.table.criteria')}</TableHead>
+                        <TableHead className="w-[60px] text-xs uppercase font-bold text-center text-slate-500 tracking-wider py-2 px-3">{t('testing.table.sample')}</TableHead>
+                        <TableHead className="w-[90px] text-xs uppercase font-bold text-center text-slate-500 tracking-wider py-2 px-3">{t('testing.table.result')}</TableHead>
+                        <TableHead className="w-[200px] text-xs uppercase font-bold text-left text-slate-500 tracking-wider py-2 px-3">{t('testing.table.notes')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
