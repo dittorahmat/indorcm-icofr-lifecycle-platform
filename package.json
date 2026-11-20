@@ -66,7 +66,8 @@
     "db:backfill-role": "npx tsx scripts/backfill-member-role.ts",
     "db:extensions": "node scripts/db-extensions.mjs",
     "db:extensions:psql": "psql \"$DATABASE_URL\" -f scripts/db-extensions.sql",
-    "db:check": "node scripts/db-check.mjs"
+    "check:env-drift": "node scripts/check-env-drift.mjs",
+    "db:check": "node scripts/db-check.mjs && npm run check:env-drift"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

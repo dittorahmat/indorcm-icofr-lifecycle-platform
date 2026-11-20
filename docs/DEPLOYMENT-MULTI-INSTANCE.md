@@ -98,6 +98,8 @@ Karena itu schema instance baru dibuat dengan `drizzle-kit push` (`schemaFilter:
 
 ## Auto-deploy dari `main`
 
+> **PENTING (Dashboard-Only):** Cloudflare Workers Builds (koneksi Git) adalah konfigurasi **Dashboard-Only**. Cloudflare tidak menyediakan perintah CLI `wrangler` untuk mengikat webhook GitHub ke Worker. Pendaftaran wajib dilakukan sekali per Worker lewat Cloudflare Dashboard.
+
 Keempat instance deploy dari branch `main`:
 
 1. Cloudflare Dashboard → Worker `icofr-trial` (dan instance lainnya) → Settings → Build → Connect to Git.
