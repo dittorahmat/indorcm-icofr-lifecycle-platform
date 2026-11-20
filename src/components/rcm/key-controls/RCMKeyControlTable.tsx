@@ -22,16 +22,16 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
       <table className="w-full text-left min-w-[1280px] border-collapse">
         <thead>
           <tr className="bg-surface-container text-on-surface-variant font-bold text-xs uppercase tracking-wider border-b border-slate-200">
-            <th className="py-3 px-4 w-44">{t('explorer.table.riskId', { defaultValue: 'ID & Risiko' })}</th>
-            <th className="py-3 px-4 w-36">{t('explorer.table.fsli', { defaultValue: 'Akun Signifikan (FSLI)' })}</th>
-            <th className="py-3 px-4 w-40">{t('explorer.table.controlId', { defaultValue: 'ID Kontrol & Status' })}</th>
-            <th className="py-3 px-4 min-w-[360px]">{t('explorer.table.controlActivity', { defaultValue: 'Aktivitas Pengendalian' })}</th>
-            <th className="py-3 px-4 w-40">{t('explorer.table.processSub', { defaultValue: 'Proses & Subproses' })}</th>
-            <th className="py-3 px-4 w-36">{t('explorer.table.typeNature', { defaultValue: 'Tipe & Sifat' })}</th>
-            <th className="py-3 px-4 w-32">{t('explorer.table.automation', { defaultValue: 'Automasi & App' })}</th>
-            <th className="py-3 px-4 w-32 text-center">{t('explorer.table.bpmNode', { defaultValue: 'Simpul BPM' })}</th>
-            <th className="py-3 px-4 w-28 text-center">{t('explorer.table.designStatus', { defaultValue: 'Status TOD' })}</th>
-            <th className="py-3 px-4 w-20 text-center">{t('explorer.table.action', { defaultValue: 'Aksi' })}</th>
+            <th className="py-2 px-3 w-40">{t('explorer.table.riskId', { defaultValue: 'ID & Risiko' })}</th>
+            <th className="py-2 px-3 w-32">{t('explorer.table.fsli', { defaultValue: 'Akun Signifikan (FSLI)' })}</th>
+            <th className="py-2 px-3 w-36">{t('explorer.table.controlId', { defaultValue: 'ID Kontrol & Status' })}</th>
+            <th className="py-2 px-3 min-w-[340px]">{t('explorer.table.controlActivity', { defaultValue: 'Aktivitas Pengendalian' })}</th>
+            <th className="py-2 px-3 w-36">{t('explorer.table.processSub', { defaultValue: 'Proses & Subproses' })}</th>
+            <th className="py-2 px-3 w-32">{t('explorer.table.typeNature', { defaultValue: 'Tipe & Sifat' })}</th>
+            <th className="py-2 px-3 w-28">{t('explorer.table.automation', { defaultValue: 'Automasi & App' })}</th>
+            <th className="py-2 px-3 w-28 text-center">{t('explorer.table.bpmNode', { defaultValue: 'Simpul BPM' })}</th>
+            <th className="py-2 px-3 w-24 text-center">{t('explorer.table.designStatus', { defaultValue: 'Status TOD' })}</th>
+            <th className="py-2 px-3 w-16 text-center">{t('explorer.table.action', { defaultValue: 'Aksi' })}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 text-on-surface text-xs font-normal">
@@ -62,8 +62,8 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                   className="hover:bg-surface-container-low/60 transition-colors"
                 >
                   {/* ID & Risk */}
-                  <td className="py-3 px-4 align-top">
-                    <div className="flex flex-col gap-1">
+                  <td className="py-2 px-3 align-top">
+                    <div className="flex flex-col gap-0.5">
                       <span className="font-mono font-bold text-primary">
                         {item.rcmId || 'R-ICOFR'}
                       </span>
@@ -86,8 +86,8 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                   </td>
 
                   {/* FSLI Account */}
-                  <td className="py-3 px-4 align-top">
-                    <div className="flex flex-col gap-1">
+                  <td className="py-2 px-3 align-top">
+                    <div className="flex flex-col gap-0.5">
                       <span className="font-semibold text-primary line-clamp-2">
                         {item.fsliName || item.affectedFsliItem || '-'}
                       </span>
@@ -100,8 +100,8 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                   </td>
 
                   {/* Control ID & Key status */}
-                  <td className="py-3 px-4 align-top">
-                    <div className="flex flex-col gap-1">
+                  <td className="py-2 px-3 align-top">
+                    <div className="flex flex-col gap-0.5">
                       <span className="font-mono font-bold text-primary">
                         {item.controlCode || 'C-CTRL'}
                       </span>
@@ -117,8 +117,8 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                   </td>
 
                   {/* Control Activity */}
-                  <td className="py-3 px-4 align-top">
-                    <div className="flex flex-col gap-1">
+                  <td className="py-2 px-3 align-top">
+                    <div className="flex flex-col gap-0.5">
                       <span className="font-semibold text-primary leading-snug">
                         {item.mappedControlName || item.baseControlName || '-'}
                       </span>
@@ -134,7 +134,7 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                   </td>
 
                   {/* Process & Subprocess */}
-                  <td className="py-3 px-4 align-top">
+                  <td className="py-2 px-3 align-top">
                     <div className="flex flex-col gap-0.5">
                       <span className="font-semibold text-slate-900">
                         {item.processName || item.parentProcessName || '-'}
@@ -146,7 +146,7 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                   </td>
 
                   {/* Type & Nature */}
-                  <td className="py-3 px-4 align-top">
+                  <td className="py-2 px-3 align-top">
                     <div className="flex flex-col gap-0.5 text-xs">
                       <span
                         className={cn(
@@ -166,8 +166,8 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                   </td>
 
                   {/* Automation & App */}
-                  <td className="py-3 px-4 align-top">
-                    <div className="flex flex-col gap-1">
+                  <td className="py-2 px-3 align-top">
+                    <div className="flex flex-col gap-0.5">
                       <span className="font-mono text-xs font-semibold text-primary px-1.5 py-0.5 rounded bg-surface-container w-fit">
                         {item.supportingApp || item.itApplication || 'ERP / Core'}
                       </span>
@@ -178,13 +178,13 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                   </td>
 
                   {/* BPM Node Linkage */}
-                  <td className="py-3 px-4 align-top text-center">
+                  <td className="py-2 px-3 align-top text-center">
                     {hasBpmLink ? (
                       <Link
                         to={bpmTarget}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 font-mono text-xs font-bold text-secondary bg-secondary/10 border border-secondary/20 hover:bg-secondary/20 px-2 py-1 rounded transition-colors"
+                        className="inline-flex items-center gap-1 font-mono text-xs font-bold text-secondary bg-secondary/10 border border-secondary/20 hover:bg-secondary/20 px-2 py-0.5 rounded transition-colors"
                         title={t('explorer.table.openBpmTooltip', { defaultValue: 'Buka Simpul BPM di Tab Baru' })}
                       >
                         <span>{formatBpmStepLabel(item.nodeId, bpmCode || 'BPM', 12)}</span>
@@ -196,14 +196,14 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                   </td>
 
                   {/* TOD Design Status */}
-                  <td className="py-3 px-4 align-top text-center">
+                  <td className="py-2 px-3 align-top text-center">
                     {item.conclusion === 'Effective' || !item.conclusion ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container font-bold text-xs">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container font-bold text-xs">
                         <CheckCircle className="h-3 w-3" />
                         EFFECTIVE
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold text-xs">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 font-bold text-xs">
                         <AlertCircle className="h-3 w-3" />
                         INEFFECTIVE
                       </span>
@@ -211,16 +211,16 @@ export function RCMKeyControlTable({ items, isLoading, onViewDetail }: RCMKeyCon
                   </td>
 
                   {/* Actions */}
-                  <td className="py-3 px-4 align-top text-center">
+                  <td className="py-2 px-3 align-top text-center">
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
                       onClick={() => onViewDetail?.(item)}
-                      className="h-8 w-8 p-0 rounded hover:bg-surface-container text-primary"
+                      className="h-7 w-7 p-0 rounded hover:bg-surface-container text-primary"
                       title={t('explorer.table.viewDetail', { defaultValue: 'Lihat Detail & Audit Trail' })}
                     >
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-3.5 w-3.5" />
                     </Button>
                   </td>
                 </tr>

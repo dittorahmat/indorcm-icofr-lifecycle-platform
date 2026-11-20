@@ -63,9 +63,9 @@ export function RCMKeyControlExplorer({ workingYear }: RCMKeyControlExplorerProp
   };
 
   return (
-    <div className="flex flex-col space-y-6">
+    <div className="flex flex-col space-y-4">
       {/* Top Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
             {t('sidebar:groups.cluster3_risk_control', { defaultValue: 'Tata Kelola & Ruang Lingkup' })}
