@@ -180,4 +180,21 @@ describe('RCM Key Control Explorer & Sovereign Governance Components', () => {
     const objPillars = screen.getAllByText('Pencapaian Objektif');
     expect(objPillars.length).toBeGreaterThanOrEqual(1);
   });
+
+  it('renders table cells and action buttons with compact high-density classes', async () => {
+    const { container } = renderExplorer();
+
+    expect(await screen.findByText('C-R2R-01.01')).toBeInTheDocument();
+
+    // Check table cell density padding py-2
+    const tableCells = container.querySelectorAll('tbody td');
+    expect(tableCells.length).toBeGreaterThan(0);
+    const compactCell = Array.from(tableCells).some((td) => td.className.includes('py-2'));
+    expect(compactCell).toBe(true);
+
+    // Check action button compact size h-7
+    const actionBtns = container.querySelectorAll('tbody td button');
+    const compactBtn = Array.from(actionBtns).some((btn) => btn.className.includes('h-7'));
+    expect(compactBtn).toBe(true);
+  });
 });

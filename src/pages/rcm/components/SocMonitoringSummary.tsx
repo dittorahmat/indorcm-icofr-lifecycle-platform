@@ -72,19 +72,19 @@ export function SocMonitoringSummary({
   };
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
       {SUMMARY_ITEMS.map((item) => {
         const Icon = item.icon;
         return (
           <Card key={item.id} className={item.cardClassName}>
-            <CardHeader className="pb-2">
-              <CardTitle className={cn('text-xs font-bold uppercase flex items-center gap-2', item.titleClassName)}>
-                <Icon className="h-4 w-4" />
+            <CardHeader className="p-3 sm:p-4 pb-1 sm:pb-1.5">
+              <CardTitle className={cn('text-xs font-bold uppercase flex items-center gap-1.5', item.titleClassName)}>
+                <Icon className="h-3.5 w-3.5" />
                 {t(item.labelKey, { defaultValue: item.label })}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className={cn('text-2xl font-bold', item.valueClassName)}>{counts[item.id]}</div>
+            <CardContent className="p-3 sm:p-4 pt-0">
+              <div className={cn('text-xl sm:text-2xl font-bold', item.valueClassName)}>{counts[item.id]}</div>
             </CardContent>
           </Card>
         );

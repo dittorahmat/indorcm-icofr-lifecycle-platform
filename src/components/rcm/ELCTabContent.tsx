@@ -24,16 +24,16 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="space-y-8"
+      className="space-y-4"
     >
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 flex-wrap min-w-0 max-w-full bg-slate-900 p-5 sm:p-6 rounded-lg text-white shadow-sm border border-slate-800 relative">
-        <div className="space-y-1 relative z-10 min-w-0">
-          <h3 className="text-lg sm:text-xl font-bold tracking-tight text-white truncate min-w-0 max-w-full">{t('matrix.title_elc')}</h3>
-          <p className="text-slate-300 text-xs sm:text-sm font-normal leading-relaxed max-w-xl">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 flex-wrap min-w-0 max-w-full bg-slate-900 p-4 sm:p-4.5 rounded-lg text-white shadow-sm border border-slate-800 relative">
+        <div className="space-y-0.5 relative z-10 min-w-0">
+          <h3 className="text-base sm:text-lg font-bold tracking-tight text-white truncate min-w-0 max-w-full">{t('matrix.title_elc')}</h3>
+          <p className="text-slate-300 text-xs font-normal leading-relaxed max-w-xl">
             {t('matrix.subtitle_elc')}
           </p>
         </div>
-        <Button onClick={() => onCreateControl({ level: 'ELC' })} className="h-10 min-h-[44px] gap-2 bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all font-semibold text-xs uppercase tracking-wider px-4 rounded-lg relative z-10 shrink-0">
+        <Button onClick={() => onCreateControl({ level: 'ELC' })} className="h-9 sm:h-8 min-h-[44px] sm:min-h-0 gap-2 bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all font-semibold text-xs uppercase tracking-wider px-3.5 rounded-lg relative z-10 shrink-0">
            <PlusCircle className="h-4 w-4" /> {t('matrix.properties.tambah_risiko_baru')}
         </Button>
       </div>
@@ -43,10 +43,10 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
         <Table className="min-w-[960px]">
           <TableHeader className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
             <TableRow>
-              <TableHead className="w-[280px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 px-6 py-3.5">{t('matrix.properties.coso_section')}</TableHead>
-              <TableHead className="min-w-[340px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-3.5">{t('matrix.risk_description')}</TableHead>
-              <TableHead className="w-[160px] text-center font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-3.5">Audit Status</TableHead>
-              <TableHead className="w-[60px] text-right px-6 py-3.5"></TableHead>
+              <TableHead className="w-[280px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 px-4 py-2.5">{t('matrix.properties.coso_section')}</TableHead>
+              <TableHead className="min-w-[340px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.risk_description')}</TableHead>
+              <TableHead className="w-[160px] text-center font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-2.5">Audit Status</TableHead>
+              <TableHead className="w-[60px] text-right px-4 py-2.5"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -58,10 +58,10 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
                 <React.Fragment key={principle.id}>
                   {(principle.id === 1 || principle.id === 6 || principle.id === 10 || principle.id === 13 || principle.id === 16) && (
                     <TableRow className="bg-slate-100/50 border-y border-slate-200/60">
-                      <TableCell colSpan={4} className="py-3 px-8">
-                        <div className="flex items-center gap-3">
+                      <TableCell colSpan={4} className="py-2 px-4 sm:px-6">
+                        <div className="flex items-center gap-2">
                           <Zap className="h-3.5 w-3.5 text-indigo-500" />
-                          <span className="text-xs font-bold uppercase text-slate-900 tracking-[0.25em]">{principle.component}</span>
+                          <span className="text-xs font-bold uppercase text-slate-900 tracking-[0.2em]">{principle.component}</span>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -70,10 +70,10 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
                     "group transition-colors",
                     hasGap ? "bg-rose-50/30 hover:bg-rose-50/50" : "hover:bg-slate-50/50"
                   )}>
-                    <TableCell className="align-top py-6 px-6 border-r border-slate-100">
-                      <div className="flex gap-3">
+                    <TableCell className="align-top py-3 sm:py-4 px-4 sm:px-6 border-r border-slate-100">
+                      <div className="flex gap-2.5">
                         <div className={cn(
-                          "h-7 w-7 rounded-lg flex items-center justify-center text-xs font-semibold shrink-0 border transition-all",
+                          "h-6 w-6 rounded-md flex items-center justify-center text-xs font-semibold shrink-0 border transition-all",
                           hasGap 
                             ? "bg-rose-100 border-rose-300 text-rose-800" 
                             : "bg-indigo-50 border-indigo-200 text-indigo-700"
@@ -81,17 +81,17 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
                           {principle.id}
                         </div>
                         <div className="space-y-0.5">
-                           <span className={cn("text-sm font-semibold leading-tight block", hasGap ? "text-rose-900" : "text-slate-900")}>
+                           <span className={cn("text-xs sm:text-sm font-semibold leading-tight block", hasGap ? "text-rose-900" : "text-slate-900")}>
                               {principle.name}
                            </span>
                            <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">Prinsip {principle.id}</span>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="py-6 px-6">
-                      <div className="space-y-4">
+                    <TableCell className="py-3 sm:py-4 px-4 sm:px-6">
+                      <div className="space-y-2.5">
                         {relatedControls.length > 0 ? relatedControls.map(ctrl => (
-                          <div key={ctrl.id} className="flex flex-col p-4 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm transition-all group/item relative">
+                          <div key={ctrl.id} className="flex flex-col p-3 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm transition-all group/item relative">
                             <div className="flex justify-between items-start flex-wrap gap-2">
                               <div className="flex items-center gap-2">
                                  <Badge variant="outline" className="text-xs font-mono h-5 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold">{ctrl.code || 'ELC'}</Badge>
@@ -101,14 +101,14 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
                                 <Edit2 className="h-3.5 w-3.5 text-slate-400" />
                               </Button>
                             </div>
-                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 line-clamp-2 leading-relaxed font-normal">{ctrl.description}</p>
-                            <div className="flex items-center gap-6 mt-4">
-                               <div className="flex items-center gap-2">
+                            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1.5 line-clamp-2 leading-relaxed font-normal">{ctrl.description}</p>
+                            <div className="flex items-center gap-4 mt-2.5">
+                               <div className="flex items-center gap-1.5">
                                   <Target className="h-3.5 w-3.5 text-slate-400" />
                                   <span className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">{ctrl.frequency}</span>
                                </div>
                                {ctrl.attachmentUrl && (
-                                 <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer">
+                                 <div className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer">
                                    <FileDown className="h-3.5 w-3.5" />
                                    <span className="text-xs font-medium uppercase tracking-wider">Policy Doc</span>
                                  </div>
@@ -116,27 +116,27 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
                             </div>
                           </div>
                         )) : (
-                          <div className="flex flex-col items-center justify-center py-6 px-4 bg-rose-50/40 dark:bg-rose-950/20 border border-dashed border-rose-200 dark:border-rose-900 rounded-lg">
-                             <ShieldAlert className="h-5 w-5 text-rose-500 mb-1.5" />
+                          <div className="flex flex-col items-center justify-center py-4 px-3 bg-rose-50/40 dark:bg-rose-950/20 border border-dashed border-rose-200 dark:border-rose-900 rounded-lg">
+                             <ShieldAlert className="h-4 w-4 text-rose-500 mb-1" />
                              <span className="text-xs text-rose-600 dark:text-rose-400 font-semibold uppercase tracking-wider text-center">{t('matrix.properties.warnings.unsaved_changes')}</span>
                           </div>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="text-center py-5">
+                    <TableCell className="text-center py-3 sm:py-4">
                        {relatedControls.length > 0 ? (
                          <div className="flex flex-col items-center gap-1">
-                            <Badge className="bg-emerald-600 text-white border-none font-semibold text-xs uppercase tracking-wider px-2.5 h-5 shadow-none">{t('common:status.mapped')}</Badge>
+                            <Badge className="bg-emerald-600 text-white border-none font-semibold text-xs uppercase tracking-wider px-2 h-5 shadow-none">{t('common:status.mapped')}</Badge>
                             <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400 uppercase">Effective</span>
                          </div>
                        ) : (
                          <div className="flex flex-col items-center gap-1">
-                            <Badge className="bg-rose-600 text-white border-none font-semibold text-xs uppercase tracking-wider px-2.5 h-5">Critical Gap</Badge>
+                            <Badge className="bg-rose-600 text-white border-none font-semibold text-xs uppercase tracking-wider px-2 h-5">Critical Gap</Badge>
                             <span className="text-xs font-medium text-rose-700 dark:text-rose-400 uppercase">Remediation Needed</span>
                          </div>
                        )}
                     </TableCell>
-                    <TableCell className="text-right py-5 pr-6">
+                    <TableCell className="text-right py-3 sm:py-4 pr-4 sm:pr-6">
                        <Button 
                         variant="ghost" 
                         size="icon" 

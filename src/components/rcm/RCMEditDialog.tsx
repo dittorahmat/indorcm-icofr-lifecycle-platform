@@ -65,7 +65,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-full sm:max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] flex flex-col p-0 overflow-hidden border-slate-300 shadow-2xl rounded-none sm:rounded-lg">
-        <DialogHeader className="p-3.5 sm:p-4 pb-2 bg-slate-50 border-b border-slate-200 shrink-0">
+        <DialogHeader className="p-4 sm:p-5 pb-2.5 sm:pb-3 bg-slate-50 border-b border-slate-200 shrink-0">
           <div className="flex items-center gap-2 sm:gap-2.5">
              <div className="bg-indigo-600 p-1.5 rounded-lg text-white shadow-sm shrink-0">
                 <ShieldAlert className="h-4 w-4" />
@@ -84,8 +84,8 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <Tabs defaultValue="general" className="flex-1 flex flex-col min-h-0 overflow-hidden">
-              <div className="px-3 sm:px-6 bg-slate-50 border-b border-slate-200 overflow-x-auto shrink-0">
-                <TabsList className="bg-transparent h-11 sm:h-12 p-0 gap-4 sm:gap-8 justify-start w-max">
+              <div className="px-4 sm:px-6 bg-slate-50 border-b border-slate-200 overflow-x-auto shrink-0">
+                <TabsList className="bg-transparent h-10 sm:h-11 p-0 gap-4 sm:gap-6 justify-start w-max">
                   <TabsTrigger
                     value="general"
                     className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-600 data-[state=active]:border-b-2 data-[state=active]:border-indigo-600 rounded-none h-full px-0 font-bold uppercase text-xs tracking-wider"
@@ -113,7 +113,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                 </TabsList>
               </div>
 
-              <ScrollArea className="flex-1 p-6">
+              <ScrollArea className="flex-1 p-4 sm:p-5">
                 {/* General Info Tab */}
                 <TabsContent value="general" className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -376,7 +376,7 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
               </ScrollArea>
             </Tabs>
 
-            <DialogFooter className="p-3 sm:p-4 bg-slate-50 border-t border-slate-200 shrink-0 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-4 flex-col-reverse sm:flex-row gap-2">
+            <DialogFooter className="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] sm:pb-4 flex-col-reverse sm:flex-row gap-2">
                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 w-full">
                   <div className="flex items-center gap-2">
                     {form.formState.isDirty && (
@@ -386,10 +386,10 @@ export function RCMEditDialog({ open, onOpenChange, data, onSave, isSaving }: RC
                     )}
                   </div>
                    <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 text-xs font-bold px-4 sm:px-6 rounded-md">
+                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto h-11 sm:h-9 min-h-[44px] text-xs font-bold px-4 sm:px-6 rounded-md">
                       {t('common:actions.cancel')}
                     </Button>
-                    <Button type="submit" disabled={isSaving || !form.formState.isDirty} className="w-full sm:w-auto h-11 sm:h-9 min-h-[44px] sm:min-h-0 bg-indigo-600 hover:bg-indigo-700 text-xs font-bold px-4 sm:px-8 shadow-sm rounded-md">
+                    <Button type="submit" disabled={isSaving || !form.formState.isDirty} className="w-full sm:w-auto h-11 sm:h-9 min-h-[44px] bg-indigo-600 hover:bg-indigo-700 text-xs font-bold px-4 sm:px-8 shadow-sm rounded-md">
                       {isSaving ? t('matrix.dialog.saving') : t('matrix.dialog.update_mapping')}
                     </Button>
                   </div>

@@ -35,19 +35,19 @@ export function TLCTabContent({
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="space-y-6"
+      className="space-y-4"
     >
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 flex-wrap min-w-0 max-w-full bg-white p-4 sm:p-5 rounded-lg border border-slate-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 flex-wrap min-w-0 max-w-full bg-white p-3 sm:p-4 rounded-lg border border-slate-200 shadow-sm">
         <div className="relative flex-1 group">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
           <Input 
             placeholder={t('matrix.subtitle_tlc')} 
-            className="pl-10 h-10 min-h-[44px] bg-slate-50 border-slate-200 text-base sm:text-sm font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500/10 transition-all rounded-lg" 
+            className="pl-10 h-9 sm:h-8 min-h-[44px] sm:min-h-0 bg-slate-50 border-slate-200 text-base sm:text-xs font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500/10 transition-all rounded-lg" 
             value={searchTerm} 
             onChange={(e) => onSearchChange(e.target.value)} 
           />
         </div>
-        <Button onClick={() => navigate('/rcm/tlc')} className="h-10 min-h-[44px] gap-2 bg-mancity-pattern hover:opacity-90 shadow-sm transition-all font-bold text-xs uppercase tracking-wider px-4 rounded-lg text-primary-foreground shrink-0">
+        <Button onClick={() => navigate('/rcm/tlc')} className="h-9 sm:h-8 min-h-[44px] sm:min-h-0 gap-2 bg-mancity-pattern hover:opacity-90 shadow-sm transition-all font-bold text-xs uppercase tracking-wider px-3.5 rounded-lg text-primary-foreground shrink-0">
           <LayoutDashboard className="h-4 w-4" /> {t('matrix.open_matrix_tlc')}
         </Button>
       </div>
@@ -57,12 +57,12 @@ export function TLCTabContent({
         <Table className="min-w-[960px]">
           <TableHeader className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
             <TableRow>
-              <TableHead className="w-[140px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 px-4 py-3.5">{t('matrix.control_ref')}</TableHead>
-              <TableHead className="min-w-[280px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-3.5">{t('matrix.control_name')}</TableHead>
-              <TableHead className="w-[130px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-3.5">{t('matrix.nature')}</TableHead>
-              <TableHead className="w-[130px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 text-center py-3.5">{t('matrix.risk_rating')}</TableHead>
-              <TableHead className="w-[160px] text-center font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-3.5">{t('common:icofr.linkedTo')} ELC</TableHead>
-              <TableHead className="w-[60px] text-right py-3.5 px-4"></TableHead>
+              <TableHead className="w-[140px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 px-3 py-2.5">{t('matrix.control_ref')}</TableHead>
+              <TableHead className="min-w-[280px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.control_name')}</TableHead>
+              <TableHead className="w-[130px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.nature')}</TableHead>
+              <TableHead className="w-[130px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 text-center py-2.5">{t('matrix.risk_rating')}</TableHead>
+              <TableHead className="w-[160px] text-center font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-2.5">{t('common:icofr.linkedTo')} ELC</TableHead>
+              <TableHead className="w-[60px] text-right py-2.5 px-3"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -72,41 +72,41 @@ export function TLCTabContent({
               <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400">{t('common:status.noData', { defaultValue: 'Tidak ada rekaman TLC ditemukan.' })}</TableCell></TableRow>
             ) : filteredTlc.map((ctrl, i) => (
               <TableRow key={ctrl.id} className={cn("group hover:bg-slate-50 transition-colors", i % 2 === 1 && "bg-slate-50/40")}>
-                <TableCell className="font-mono text-xs font-semibold text-slate-700 px-4 py-3">{ctrl.code}</TableCell>
-                <TableCell className="py-3">
+                <TableCell className="font-mono text-xs font-semibold text-slate-700 px-3 py-2">{ctrl.code}</TableCell>
+                <TableCell className="py-2">
                   <div className="flex flex-col space-y-0.5">
                     <span className="text-xs text-slate-900 font-medium leading-snug">{ctrl.name}</span>
                     <span className="text-xs text-slate-600 line-clamp-1 font-normal leading-normal">{ctrl.description}</span>
                   </div>
                 </TableCell>
-                <TableCell className="py-3">
-                  <Badge variant="outline" className="text-xs font-medium uppercase tracking-wider h-6 px-2 bg-slate-50 border-slate-200 text-slate-700">
+                <TableCell className="py-2">
+                  <Badge variant="outline" className="text-xs font-medium uppercase tracking-wider h-5 px-2 bg-slate-50 border-slate-200 text-slate-700">
                     {ctrl.nature}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-center py-3">
+                <TableCell className="text-center py-2">
                   <Badge className={cn(
-                    "text-xs font-medium h-6 px-2 uppercase tracking-wider shadow-none border", 
+                    "text-xs font-medium h-5 px-2 uppercase tracking-wider shadow-none border", 
                     RISK_RATING_TONE_CLASS[riskRatingTone(ctrl.riskRating)]
                   )}>
                     {ctrl.riskRating}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-center py-3">
+                <TableCell className="text-center py-2">
                   <div className="flex justify-center">
                     {ctrl.relatedControlIds && ctrl.relatedControlIds.length > 0 ? (
-                      <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 font-semibold gap-1.5 py-0.5 px-2.5 text-xs">
-                        <ShieldCheck className="h-3.5 w-3.5" /> {ctrl.relatedControlIds.length} {t('status.mapped', { ns: 'common' })}
+                      <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 font-semibold gap-1 py-0 px-2 text-xs">
+                        <ShieldCheck className="h-3 w-3" /> {ctrl.relatedControlIds.length} {t('status.mapped', { ns: 'common' })}
                       </Badge>
                     ) : <span className="text-xs text-slate-400 font-normal">No Link</span>}
                   </div>
                 </TableCell>
-                <TableCell className="text-right py-3 px-4">
+                <TableCell className="text-right py-2 px-3">
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     aria-label="Edit control"
-                    className="h-8 w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-8 md:w-8 text-slate-400 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus-visible:!opacity-100 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all rounded-md" 
+                    className="h-8 w-8 min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-7 md:w-7 text-slate-400 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 focus-visible:!opacity-100 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all rounded-md" 
                     onClick={() => onEditControl(ctrl)}
                   >
                     <Edit2 className="h-3.5 w-3.5" />

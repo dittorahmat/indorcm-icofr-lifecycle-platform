@@ -26,21 +26,21 @@ export function SocRepository({ reports, isLoading, onReview }: SocRepositoryPro
 
   return (
     <Card className="shadow-sm">
-      <CardHeader>
-        <CardTitle>
+      <CardHeader className="p-4 sm:p-5 pb-2 sm:pb-3">
+        <CardTitle className="text-base sm:text-lg font-bold">
           {t('rcm:soc.reports.title', { defaultValue: 'Service Organization Control (SOC) Repository' })}
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-xs">
           {t('rcm:soc.reports.description', {
             defaultValue: 'Formal review of third-party assurance reports to ensure financial reporting data integrity.',
           })}
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-0 sm:p-6">
-        <div className="px-4 pt-4 sm:px-0 sm:pt-0">
+      <CardContent className="p-0 sm:p-5">
+        <div className="px-3 pt-3 sm:px-0 sm:pt-0">
           <MobileDesktopBanner recordCount={reports.length} />
         </div>
-        <div className="block md:hidden space-y-3 px-4 sm:px-0">
+        <div className="block md:hidden space-y-2.5 px-3 sm:px-0">
           {isLoading ? (
             <p className="text-center py-8 text-xs text-muted-foreground">
               {t('rcm:soc.loading_reports', { defaultValue: 'Loading SOC data...' })}
@@ -56,13 +56,13 @@ export function SocRepository({ reports, isLoading, onReview }: SocRepositoryPro
         <div className="hidden md:block overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
           <Table className="min-w-[720px]">
             <TableHeader>
-              <TableRow>
-                <TableHead>{t('rcm:soc.table.vendor_name', { defaultValue: 'Vendor Name' })}</TableHead>
-                <TableHead>{t('rcm:soc.table.report_type', { defaultValue: 'Report Type' })}</TableHead>
-                <TableHead>{t('rcm:soc.table.coverage_period', { defaultValue: 'Coverage Period' })}</TableHead>
-                <TableHead>{t('rcm:soc.table.status', { defaultValue: 'Status' })}</TableHead>
-                <TableHead>{t('rcm:soc.table.evaluation', { defaultValue: 'Evaluation' })}</TableHead>
-                <TableHead className="text-right">{t('rcm:soc.table.actions', { defaultValue: 'Actions' })}</TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="py-2.5 px-3 text-xs">{t('rcm:soc.table.vendor_name', { defaultValue: 'Vendor Name' })}</TableHead>
+                <TableHead className="py-2.5 px-3 text-xs">{t('rcm:soc.table.report_type', { defaultValue: 'Report Type' })}</TableHead>
+                <TableHead className="py-2.5 px-3 text-xs">{t('rcm:soc.table.coverage_period', { defaultValue: 'Coverage Period' })}</TableHead>
+                <TableHead className="py-2.5 px-3 text-xs">{t('rcm:soc.table.status', { defaultValue: 'Status' })}</TableHead>
+                <TableHead className="py-2.5 px-3 text-xs">{t('rcm:soc.table.evaluation', { defaultValue: 'Evaluation' })}</TableHead>
+                <TableHead className="py-2.5 px-3 text-xs text-right">{t('rcm:soc.table.actions', { defaultValue: 'Actions' })}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -190,5 +190,32 @@ describe('ScopingComponents', () => {
       expect(screen.getByText(/1 In-Scope/i)).toBeInTheDocument();
       expect(screen.getByText(/1 Out-of-Scope/i)).toBeInTheDocument();
     });
+
+    it('renders compact table cells with py-2 padding in SubsidiaryAllocationGrid', () => {
+      const mockItems = [
+        {
+          id: 'alloc-1',
+          code: 'SUB-A',
+          name: 'PT Semen Alpha',
+          segmentType: 'Holding',
+          balanceValue: 50_000_000_000,
+          percentageContribution: 50,
+          processCount: 10,
+          scopingStatus: 'In-Scope' as const,
+          qualitativeReason: 'EBITDA tinggi',
+        },
+      ];
+
+      const { container } = render(
+        <I18nextProvider i18n={i18n}>
+          <SubsidiaryAllocationGrid items={mockItems} />
+        </I18nextProvider>
+      );
+
+      const cells = container.querySelectorAll('tbody td');
+      expect(cells.length).toBeGreaterThan(0);
+      const isCompact = Array.from(cells).every((td) => td.className.includes('py-2'));
+      expect(isCompact).toBe(true);
+    });
   });
 });

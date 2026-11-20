@@ -37,7 +37,7 @@ export function ApplicationTableRow({
       className="hover:bg-indigo-50/30 transition-colors cursor-pointer group"
       onClick={() => onView(application)}
     >
-      <TableCell className="font-semibold text-slate-800 whitespace-nowrap">
+      <TableCell className="py-2 px-3 font-semibold text-slate-800 whitespace-nowrap text-xs">
         <div className="flex items-center gap-2">
           <span className="group-hover:text-indigo-600 group-hover:underline transition-colors">
             {application.name}
@@ -45,7 +45,7 @@ export function ApplicationTableRow({
           <Button
             variant="ghost"
             size="sm"
-            className="h-11 sm:h-6 min-h-[44px] sm:min-h-0 px-2 sm:px-1.5 text-xs text-indigo-600 hover:bg-indigo-50 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-visible:opacity-100 focus-visible:opacity-100 transition-opacity"
+            className="h-11 sm:h-5 min-h-[44px] sm:min-h-0 px-2 sm:px-1.5 text-xs text-indigo-600 hover:bg-indigo-50 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-visible:opacity-100 focus-visible:opacity-100 transition-opacity"
             onClick={(event) => {
               event.stopPropagation();
               onView(application);
@@ -55,14 +55,14 @@ export function ApplicationTableRow({
           </Button>
         </div>
       </TableCell>
-      <TableCell>
+      <TableCell className="py-2 px-3">
         <SocBadge spec={significanceBadge(!!application.isSignificant)} />
       </TableCell>
-      <TableCell>
+      <TableCell className="py-2 px-3">
         <div className="flex flex-wrap gap-1">
           {businessOwners.length > 0 ? (
             businessOwners.map((owner) => (
-              <Badge key={owner} variant="secondary" className="text-xs bg-slate-100 text-slate-700 font-normal">
+              <Badge key={owner} variant="secondary" className="text-xs bg-slate-100 text-slate-700 font-normal h-5 px-1.5">
                 {owner}
               </Badge>
             ))
@@ -71,11 +71,11 @@ export function ApplicationTableRow({
           )}
         </div>
       </TableCell>
-      <TableCell>
+      <TableCell className="py-2 px-3">
         <div className="flex flex-wrap gap-1">
           {applicationOwners.length > 0 ? (
             applicationOwners.map((owner) => (
-              <Badge key={owner} variant="secondary" className="text-xs bg-indigo-50 text-indigo-700 font-normal border border-indigo-100">
+              <Badge key={owner} variant="secondary" className="text-xs bg-indigo-50 text-indigo-700 font-normal border border-indigo-100 h-5 px-1.5">
                 {owner}
               </Badge>
             ))
@@ -84,14 +84,14 @@ export function ApplicationTableRow({
           )}
         </div>
       </TableCell>
-      <TableCell onClick={(event) => event.stopPropagation()}>
+      <TableCell className="py-2 px-3" onClick={(event) => event.stopPropagation()}>
         {application.architectureDocUrl || application.architectureDocName ? (
           <a
             href={application.architectureDocUrl || '#'}
             target="_blank"
             rel="noreferrer"
             download={application.architectureDocName || 'Architecture.pdf'}
-            className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors text-xs font-medium border border-blue-200 max-w-[160px] truncate"
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors text-xs font-medium border border-blue-200 max-w-[160px] truncate"
             title={application.architectureDocName || t('rcm:soc.table.architecture_doc', { defaultValue: 'Architecture Document' })}
           >
             <FileSearch className="h-3.5 w-3.5 flex-shrink-0 text-blue-600" />
@@ -103,24 +103,24 @@ export function ApplicationTableRow({
           </span>
         )}
       </TableCell>
-      <TableCell>
+      <TableCell className="py-2 px-3">
         <SocBadge spec={criticalityBadge(application.criticality)} />
       </TableCell>
-      <TableCell>
+      <TableCell className="py-2 px-3">
         <SocBadge spec={itgcStatusBadge(application.statusITGC)} />
       </TableCell>
-      <TableCell>
-        <span className={`font-bold ${application.linkedControlCount === 0 ? 'text-destructive' : 'text-slate-600'}`}>
+      <TableCell className="py-2 px-3">
+        <span className={`font-bold text-xs ${application.linkedControlCount === 0 ? 'text-destructive' : 'text-slate-600'}`}>
           {application.linkedControlCount || 0}
         </span>
       </TableCell>
-      <TableCell>
+      <TableCell className="py-2 px-3">
         <TooltipProvider>
           <div className="flex gap-1 flex-wrap">
             {mappedAreas.map((area) => (
               <Tooltip key={area}>
                 <TooltipTrigger asChild>
-                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 uppercase font-black cursor-help">
+                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 uppercase font-black cursor-help h-5 px-1.5">
                     {area
                       .split(' ')
                       .map((word) => word[0])
@@ -140,25 +140,25 @@ export function ApplicationTableRow({
           </div>
         </TooltipProvider>
       </TableCell>
-      <TableCell className="text-right" onClick={(event) => event.stopPropagation()}>
+      <TableCell className="py-2 px-3 text-right" onClick={(event) => event.stopPropagation()}>
         <div className="flex flex-wrap justify-end gap-1">
           <Button
             variant="ghost"
             size="icon"
             aria-label={t('common:actions.edit', { defaultValue: 'Edit application' })}
-            className="h-11 w-11 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-slate-400 hover:text-indigo-600"
+            className="h-11 w-11 sm:h-7 sm:w-7 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-slate-400 hover:text-indigo-600"
             onClick={() => onEdit(application)}
           >
-            <Edit className="h-4 w-4" />
+            <Edit className="h-3.5 w-3.5" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             aria-label={t('common:actions.delete', { defaultValue: 'Remove application' })}
-            className="h-11 w-11 sm:h-8 sm:w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-slate-400 hover:text-destructive"
+            className="h-11 w-11 sm:h-7 sm:w-7 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-slate-400 hover:text-destructive"
             onClick={() => onDelete(application)}
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
       </TableCell>

@@ -136,12 +136,12 @@ export function SubsidiaryAllocationGrid({
         <table className="w-full text-left border-collapse min-w-[700px]">
           <thead className="bg-surface-container-low text-muted-foreground text-xs font-semibold">
             <tr>
-              <th className="py-2.5 px-4 rounded-l-lg">{t('subsidiaryGrid.colEntity')}</th>
-              <th className="py-2.5 px-3 text-right">{t('subsidiaryGrid.colBalance')}</th>
-              <th className="py-2.5 px-3 text-right">{t('subsidiaryGrid.colContribution')}</th>
-              <th className="py-2.5 px-3 text-center">{t('subsidiaryGrid.colProcesses')}</th>
-              <th className="py-2.5 px-3">{t('subsidiaryGrid.colQualitativeReason')}</th>
-              <th className="py-2.5 px-4 text-center rounded-r-lg">{t('subsidiaryGrid.colStatus')}</th>
+              <th className="py-2 px-3 sm:px-4 rounded-l-lg">{t('subsidiaryGrid.colEntity')}</th>
+              <th className="py-2 px-2.5 sm:px-3 text-right">{t('subsidiaryGrid.colBalance')}</th>
+              <th className="py-2 px-2.5 sm:px-3 text-right">{t('subsidiaryGrid.colContribution')}</th>
+              <th className="py-2 px-2.5 sm:px-3 text-center">{t('subsidiaryGrid.colProcesses')}</th>
+              <th className="py-2 px-2.5 sm:px-3">{t('subsidiaryGrid.colQualitativeReason')}</th>
+              <th className="py-2 px-3 sm:px-4 text-center rounded-r-lg">{t('subsidiaryGrid.colStatus')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/20 text-xs">
@@ -151,9 +151,9 @@ export function SubsidiaryAllocationGrid({
 
               return (
                 <tr key={row.id} className="hover:bg-muted/40 transition-colors">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-surface-container-high text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                  <td className="py-2 px-3 sm:px-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-surface-container-high text-primary flex items-center justify-center font-bold text-xs shrink-0">
                         {row.code.substring(0, 3)}
                       </div>
                       <div className="flex flex-col min-w-0">
@@ -165,30 +165,30 @@ export function SubsidiaryAllocationGrid({
                     </div>
                   </td>
 
-                  <td className="py-3 px-3 text-right font-mono font-semibold text-primary">
+                  <td className="py-2 px-2.5 sm:px-3 text-right font-mono font-semibold text-primary">
                     {formatIDR(row.balanceValue)}
                   </td>
 
-                  <td className="py-3 px-3 text-right">
+                  <td className="py-2 px-2.5 sm:px-3 text-right">
                     <span className="font-mono font-bold text-primary">
                       {row.percentageContribution.toFixed(1)}%
                     </span>
                   </td>
 
-                  <td className="py-3 px-3 text-center">
+                  <td className="py-2 px-2.5 sm:px-3 text-center">
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-high text-primary font-bold">
                       <Layers className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
                       {row.processCount}
                     </span>
                   </td>
 
-                  <td className="py-3 px-3 max-w-xs">
+                  <td className="py-2 px-2.5 sm:px-3 max-w-xs">
                     <p className="text-xs text-muted-foreground truncate" title={row.qualitativeReason}>
                       {row.qualitativeReason || '-'}
                     </p>
                   </td>
 
-                  <td className="py-3 px-4 text-center">
+                  <td className="py-2 px-3 sm:px-4 text-center">
                     {isInScope && (
                       <Badge className="bg-secondary-container text-on-secondary-container font-bold text-xs uppercase px-2 py-0.5 border-none">
                         <CheckCircle2 className="h-3 w-3 mr-1" aria-hidden="true" />

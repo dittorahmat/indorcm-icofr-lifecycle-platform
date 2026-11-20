@@ -99,7 +99,7 @@ export function RCMList() {
         className="flex flex-col space-y-6 pb-10"
       >
         <Tabs defaultValue="explorer" className="w-full">
-          <motion.div variants={itemVariants} className="bg-slate-100/50 p-1 border border-slate-200 rounded-lg max-w-full overflow-x-auto touch-pan-x overscroll-x-contain mb-6 no-scrollbar">
+          <motion.div variants={itemVariants} className="bg-slate-100/50 p-1 border border-slate-200 rounded-lg max-w-full overflow-x-auto touch-pan-x overscroll-x-contain mb-4 no-scrollbar">
             <TabsList className="bg-transparent h-auto p-0 flex gap-1 w-max min-w-full">
               {[
                 { value: 'explorer', label: t('explorer.tabs.keyControlsExplorer', { defaultValue: 'Key Control Explorer' }), count: tlcControls.filter(c => c.isKeyControl).length, icon: Compass },
@@ -111,7 +111,7 @@ export function RCMList() {
                 <TabsTrigger 
                   key={tab.value}
                   value={tab.value} 
-                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-primary transition-all font-bold text-xs uppercase tracking-wider py-2.5 px-5 min-h-[44px] text-slate-500 flex items-center gap-2 whitespace-nowrap"
+                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-primary transition-all font-bold text-xs uppercase tracking-wider py-2 px-4 min-h-[44px] text-slate-500 flex items-center gap-2 whitespace-nowrap"
                 >
                   {tab.icon && <tab.icon className="h-4 w-4 shrink-0 text-secondary" />}
                   <span>{tab.label}</span>
@@ -124,11 +124,11 @@ export function RCMList() {
           </motion.div>
 
           <AnimatePresence mode="wait">
-            <TabsContent value="explorer" className="space-y-6 m-0 outline-none">
+            <TabsContent value="explorer" className="space-y-4 m-0 outline-none">
               <RCMKeyControlExplorer workingYear={workingYear} />
             </TabsContent>
 
-            <TabsContent value="tlc" className="space-y-6 m-0 outline-none">
+            <TabsContent value="tlc" className="space-y-4 m-0 outline-none">
               <TLCTabContent 
                 filteredTlc={filteredTlc}
                 controlsLoading={controlsLoading}

@@ -36,16 +36,16 @@ export function RCMPageHeader({
 }: RCMPageHeaderProps) {
   const { t } = useTranslation('rcm');
   return (
-    <div className="p-4 pb-2 space-y-3 shrink-0 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 z-10 print:hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 flex-wrap min-w-0 max-w-full">
+    <div className="p-3 sm:p-3.5 pb-2 space-y-2.5 shrink-0 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 z-10 print:hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 flex-wrap min-w-0 max-w-full">
         <div className="flex items-center gap-2 min-w-[200px] max-w-full flex-1">
-          <SidebarTrigger className="h-11 w-11 min-h-[44px] min-w-[44px] text-slate-700 dark:text-slate-300 shrink-0 rounded-md" />
+          <SidebarTrigger className="h-10 w-10 sm:h-9 sm:w-9 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-slate-700 dark:text-slate-300 shrink-0 rounded-md" />
           <div className="min-w-0">
-            <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 leading-none truncate min-w-0">{title}</h1>
-            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mt-1 truncate min-w-0">{subtitle}</p>
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 leading-none truncate min-w-0">{title}</h1>
+            <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mt-0.5 truncate min-w-0">{subtitle}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 min-w-0 max-w-full sm:max-w-[58%] flex-nowrap sm:flex-wrap sm:justify-end overflow-x-auto sm:overflow-visible touch-pan-x overscroll-x-contain pb-1 sm:pb-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 max-w-full sm:max-w-[58%] flex-nowrap sm:flex-wrap sm:justify-end overflow-x-auto sm:overflow-visible touch-pan-x overscroll-x-contain pb-1 sm:pb-0">
           {children}
           {onExport && (
             <Button 
@@ -76,7 +76,7 @@ export function RCMPageHeader({
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
         <div className="relative max-w-md w-full">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input

@@ -176,7 +176,7 @@ export function RCMTable({
                   <React.Fragment key={`${row.mappingId || row.id || 'row'}-${idx}`}>
                     {groupRow}
                     <tr className={cn(
-                      "group transition-all border-b border-slate-200 h-14 relative hover:z-10",
+                      "group transition-all border-b border-slate-200 h-11 sm:h-12 relative hover:z-10",
                       rowBg,
                       rowClassName?.(row, idx)
                     )}>
@@ -185,7 +185,7 @@ export function RCMTable({
                           <td 
                             key={`cell-${col.id}-${cIdx}`}
                             className={cn(
-                              "px-3 border-r border-slate-100 py-2 text-xs transition-colors duration-200",
+                              "px-2.5 sm:px-3 border-r border-slate-100 py-1.5 sm:py-2 text-xs transition-colors duration-200",
                               col.align === 'center' ? "text-center" : col.align === 'right' ? "text-right" : undefined,
                               "group-hover:bg-indigo-50/70 group-hover:border-indigo-100/50",
                               col.className

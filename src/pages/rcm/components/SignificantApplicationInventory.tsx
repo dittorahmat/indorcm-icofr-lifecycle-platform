@@ -31,21 +31,21 @@ export function SignificantApplicationInventory({
 
   return (
     <Card className="shadow-sm">
-      <CardHeader>
-        <CardTitle>
+      <CardHeader className="p-4 sm:p-5 pb-2 sm:pb-3">
+        <CardTitle className="text-base sm:text-lg font-bold">
           {t('rcm:soc.applications.title', { defaultValue: 'Significant Application Inventory' })}
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-xs">
           {t('rcm:soc.applications.description', {
             defaultValue: 'Inventory of IT assets affecting ICOFR and their ITGC status (Tabel 1).',
           })}
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-0 sm:p-6">
-        <div className="px-4 pt-4 sm:px-0 sm:pt-0">
+      <CardContent className="p-0 sm:p-5">
+        <div className="px-3 pt-3 sm:px-0 sm:pt-0">
           <MobileDesktopBanner recordCount={applications.length} />
         </div>
-        <div className="block md:hidden space-y-3 px-4 sm:px-0">
+        <div className="block md:hidden space-y-2.5 px-3 sm:px-0">
           {isLoading ? (
             <p className="text-center py-8 text-xs text-muted-foreground">
               {t('rcm:soc.loading', { defaultValue: 'Loading...' })}
@@ -70,17 +70,17 @@ export function SignificantApplicationInventory({
         <div className="hidden md:block overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
           <Table className="min-w-[880px]">
             <TableHeader>
-              <TableRow>
-                <TableHead>{t('rcm:soc.table.application_name', { defaultValue: 'Application Name' })}</TableHead>
-                <TableHead>{t('rcm:soc.table.icofr_scope', { defaultValue: 'ICOFR Scope (Y/N)' })}</TableHead>
-                <TableHead>{t('rcm:soc.table.business_owner', { defaultValue: 'Business Owner' })}</TableHead>
-                <TableHead>{t('rcm:soc.table.application_owner', { defaultValue: 'Application Owner' })}</TableHead>
-                <TableHead>{t('rcm:soc.table.architecture', { defaultValue: 'Application Architecture' })}</TableHead>
-                <TableHead>{t('rcm:soc.table.criticality', { defaultValue: 'Criticality' })}</TableHead>
-                <TableHead>{t('rcm:soc.table.itgc_status', { defaultValue: 'ITGC Status' })}</TableHead>
-                <TableHead>{t('rcm:soc.table.linked_controls', { defaultValue: 'Linked Controls' })}</TableHead>
-                <TableHead>{t('rcm:soc.table.itgc_areas', { defaultValue: 'ITGC Areas (Table 1 Mapping)' })}</TableHead>
-                <TableHead className="text-right">{t('rcm:soc.table.actions', { defaultValue: 'Actions' })}</TableHead>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="py-2.5 px-3 text-xs">{t('rcm:soc.table.application_name', { defaultValue: 'Application Name' })}</TableHead>
+                <TableHead className="py-2.5 px-3 text-xs">{t('rcm:soc.table.icofr_scope', { defaultValue: 'ICOFR Scope (Y/N)' })}</TableHead>
+                <TableHead className="py-2.5 px-3 text-xs">{t('rcm:soc.table.business_owner', { defaultValue: 'Business Owner' })}</TableHead>
+                <TableHead className="py-2.5 px-3 text-xs">{t('rcm:soc.table.application_owner', { defaultValue: 'Application Owner' })}</TableHead>
+                <TableHead className="py-2.5 px-3 text-xs">{t('rcm:soc.table.architecture', { defaultValue: 'Application Architecture' })}</TableHead>
+                <TableHead className="py-2.5 px-3 text-xs">{t('rcm:soc.table.criticality', { defaultValue: 'Criticality' })}</TableHead>
+                <TableHead className="py-2.5 px-3 text-xs">{t('rcm:soc.table.itgc_status', { defaultValue: 'ITGC Status' })}</TableHead>
+                <TableHead className="py-2.5 px-3 text-xs">{t('rcm:soc.table.linked_controls', { defaultValue: 'Linked Controls' })}</TableHead>
+                <TableHead className="py-2.5 px-3 text-xs">{t('rcm:soc.table.itgc_areas', { defaultValue: 'ITGC Areas (Table 1 Mapping)' })}</TableHead>
+                <TableHead className="py-2.5 px-3 text-xs text-right">{t('rcm:soc.table.actions', { defaultValue: 'Actions' })}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
