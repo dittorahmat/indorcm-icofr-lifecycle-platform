@@ -1,23 +1,23 @@
-# Deployment Multi-Instance (Primary + Demo + Test)
+# Deployment Multi-Instance (Primary + Demo + Test + Trial)
 
-Dokumen ini menjelaskan cara kerja tiga instance dari satu source tree, cara bootstrap instance baru, dan checklist rilis.
+Dokumen ini menjelaskan cara kerja empat instance dari satu source tree, cara bootstrap instance baru, dan checklist rilis.
 
 ## Matriks instance
 
-| Item | Primary | Demo | Test |
-|---|---|---|---|
-| Worker name | `icofr` | `icofr-demo` | `icofr-test` |
-| Host | `https://icofr.tech1solusi.workers.dev` | `https://icofr-demo.tech1solusi.workers.dev` | `https://icofr-test.tech1solusi.workers.dev` |
-| Wrangler config | `wrangler.jsonc` | `wrangler.demo.jsonc` | `wrangler.test.jsonc` |
-| Build artifact | `dist/icofr/wrangler.json` | `dist/icofr_demo/wrangler.json` | `dist/icofr_test/wrangler.json` (plugin menormalkan nama folder ke underscore) |
-| Build / deploy | `build` / `deploy` | `build:demo` / `deploy:demo` | `build:test` / `deploy:test` |
-| R2 bucket | `icofr-documents` | `icofr-documents-demo` | `icofr-documents-test` |
-| Database variable di `.env` | `DATABASE_URL` | `DEMO_DATABASE_URL` | `TEST_DATABASE_URL` |
-| `SOURCE_DATABASE_URL` | — | primary | primary |
-| `BETTER_AUTH_SECRET` | milik primary | **wajib baru**, terpisah | **wajib baru**, terpisah |
-| `BETTER_AUTH_URL` | secret Worker (dashboard), bukan var di `wrangler.jsonc` | var di `wrangler.demo.jsonc` | var di `wrangler.test.jsonc` |
-| `ENV` | belum di-set | `production` | `production` |
-| `SKIP_LICENSE` | `true` | `true` | `true` |
+| Item | Primary | Demo | Test | Trial |
+|---|---|---|---|---|
+| Worker name | `icofr` | `icofr-demo` | `icofr-test` | `icofr-trial` |
+| Host | `https://icofr.tech1solusi.workers.dev` | `https://icofr-demo.tech1solusi.workers.dev` | `https://icofr-test.tech1solusi.workers.dev` | `https://icofr-trial.tech1solusi.workers.dev` |
+| Wrangler config | `wrangler.jsonc` | `wrangler.demo.jsonc` | `wrangler.test.jsonc` | `wrangler.trial.jsonc` |
+| Build artifact | `dist/icofr/wrangler.json` | `dist/icofr_demo/wrangler.json` | `dist/icofr_test/wrangler.json` | `dist/icofr_trial/wrangler.json` |
+| Build / deploy | `build` / `deploy` | `build:demo` / `deploy:demo` | `build:test` / `deploy:test` | `build:trial` / `deploy:trial` |
+| R2 bucket | `icofr-documents` | `icofr-documents-demo` | `icofr-documents-test` | `icofr-documents-trial` |
+| Database variable di `.env` | `DATABASE_URL` | `DEMO_DATABASE_URL` | `TEST_DATABASE_URL` | `TRIAL_DATABASE_URL` |
+| `SOURCE_DATABASE_URL` | — | primary | primary | primary |
+| `BETTER_AUTH_SECRET` | milik primary | **wajib baru**, terpisah | **wajib baru**, terpisah | **wajib baru**, terpisah |
+| `BETTER_AUTH_URL` | secret Worker (dashboard), bukan var di `wrangler.jsonc` | var di `wrangler.demo.jsonc` | var di `wrangler.test.jsonc` | var di `wrangler.trial.jsonc` |
+| `ENV` | belum di-set | `production` | `production` | `production` |
+| `SKIP_LICENSE` | `true` | `true` | `true` | `true` |
 
 Data tidak pernah dibagi: database, bucket, dan secret sesi terpisah. Setelah clone identitas awal, tidak ada sinkronisasi data antar instance. `.env` hanya dibaca script lokal (clone, Drizzle, extension, dev); Worker memakai secret miliknya sendiri di Cloudflare.
 
@@ -98,13 +98,13 @@ Karena itu schema instance baru dibuat dengan `drizzle-kit push` (`schemaFilter:
 
 ## Auto-deploy dari `main`
 
-Ketiga instance deploy dari branch `main`:
+Keempat instance deploy dari branch `main`:
 
-1. Cloudflare Dashboard → Worker `icofr-test` → Settings → Build → Connect to Git (koneksi Git yang sama dengan demo).
+1. Cloudflare Dashboard → Worker `icofr-trial` (dan instance lainnya) → Settings → Build → Connect to Git.
 2. Repository root, production branch `main`.
 3. Build command: `npm run build`
-4. Deploy command: `npx wrangler deploy -c dist/icofr_test/wrangler.json`
-5. Build environment variable: `WRANGLER_CONFIG=wrangler.test.jsonc`
+4. Deploy command: `npx wrangler deploy -c dist/icofr_trial/wrangler.json` (atau sesuai instance masing-masing)
+5. Build environment variable: `WRANGLER_CONFIG=wrangler.trial.jsonc`
 6. Preview deployments: **off**.
 
 Deploy command sengaja menunjuk artifact eksplisit. `.wrangler/deploy/config.json` selalu ditimpa build terakhir; mengandalkannya membuat `wrangler deploy` polos bisa menimpa Worker yang salah setelah build target lain.

@@ -56,6 +56,8 @@
     "deploy:demo": "bun run build:demo && wrangler deploy -c dist/icofr_demo/wrangler.json",
     "build:test": "cross-env WRANGLER_CONFIG=wrangler.test.jsonc bun run build",
     "deploy:test": "bun run build:test && wrangler deploy -c dist/icofr_test/wrangler.json",
+    "build:trial": "cross-env WRANGLER_CONFIG=wrangler.trial.jsonc bun run build",
+    "deploy:trial": "bun run build:trial && wrangler deploy -c dist/icofr_trial/wrangler.json",
     "clone:identity": "npx tsx scripts/clone-identity-to-tenant.ts",
     "cf-typegen": "wrangler types",
     "release:whitelabel": "npx tsx scripts/release-whitelabel.ts",

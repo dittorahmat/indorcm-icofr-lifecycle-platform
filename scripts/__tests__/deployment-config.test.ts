@@ -55,6 +55,14 @@ const INSTANCES: InstanceSpec[] = [
     buildScript: 'build:test',
     deployScript: 'deploy:test',
   },
+  {
+    file: 'wrangler.trial.jsonc',
+    name: 'icofr-trial',
+    bucket: 'icofr-documents-trial',
+    authUrl: 'https://icofr-trial.tech1solusi.workers.dev',
+    buildScript: 'build:trial',
+    deployScript: 'deploy:trial',
+  },
 ];
 
 const SHARED_KEYS = [
@@ -74,6 +82,7 @@ const SECRET_NAMES = [
   'TARGET_DATABASE_URL',
   'DEMO_DATABASE_URL',
   'TEST_DATABASE_URL',
+  'TRIAL_DATABASE_URL',
 ];
 
 const ALLOWED_VAR_KEYS = ['BETTER_AUTH_URL', 'ENV', 'SKIP_LICENSE'];
