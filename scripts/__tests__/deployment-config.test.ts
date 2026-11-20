@@ -212,3 +212,13 @@ for (const spec of INSTANCES) {
     });
   });
 }
+
+describe('.env.example environment documentation', () => {
+  it('documents target database connection string variables for all isolated instances', () => {
+    const envExample = readFileSync(path.join(root, '.env.example'), 'utf8');
+    for (const spec of INSTANCES.filter((i) => !i.primary)) {
+      const targetVar = `${spec.name.replace(/^icofr-/, '').toUpperCase()}_DATABASE_URL`;
+      expect(envExample, `.env.example missing ${targetVar}`).toContain(targetVar);
+    }
+  });
+});
