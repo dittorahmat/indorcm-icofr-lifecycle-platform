@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { RCMControlMapping } from '@shared/types';
-import { Edit3 } from 'lucide-react';
+import { Edit3, FileUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
@@ -56,6 +56,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
     setIsImportModalOpen,
     data: matrixData,
     isLoading,
+    queryClient,
     saveMutation,
   } = useRcmMatrixLifecycle<RCMMatrixItem>({
     tier: 'ITGC',

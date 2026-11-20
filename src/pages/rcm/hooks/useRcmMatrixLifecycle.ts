@@ -132,6 +132,8 @@ export function useRcmMatrixLifecycle<T = Record<string, unknown>>({
     setIsImportModalOpen,
     data,
     isLoading,
+    queryClient,
+    queryKey,
     saveMutation,
     rolloverMutation,
   };

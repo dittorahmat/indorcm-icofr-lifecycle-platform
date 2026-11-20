@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { RCMControlMapping } from '@shared/types';
-import { Edit3, ExternalLink } from 'lucide-react';
+import { Edit3, ExternalLink, FileUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
@@ -71,6 +71,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
     setIsImportModalOpen,
     data: matrixData,
     isLoading,
+    queryClient,
     saveMutation,
     rolloverMutation,
   } = useRcmMatrixLifecycle<RCMMatrixItem>({
