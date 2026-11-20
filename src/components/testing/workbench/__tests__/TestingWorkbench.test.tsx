@@ -56,8 +56,7 @@ describe('TestingWorkbench', () => {
       expect(rootDiv.className).toContain('bg-white');
       expect(rootDiv.className).toContain('dark:bg-card');
       expect(rootDiv.className).toContain('text-foreground');
-      expect(rootDiv.className).toContain('border-l-4');
-      expect(rootDiv.className).toContain('border-l-secondary');
+      expect(rootDiv.className).toContain('border-border/80');
 
       // Anti-slop: dark containers and glow circles removed
       expect(rootDiv.className).not.toContain('bg-primary-container');

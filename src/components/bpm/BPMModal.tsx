@@ -30,6 +30,7 @@ import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { WorkflowPanel } from '../workflow/WorkflowPanel';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { isFieldLini1 } from '@/lib/field-lini1';
+import { cn } from '@/lib/utils';
 
 interface BPMModalProps {
   isOpen: boolean;
@@ -60,6 +61,7 @@ export function BPMModal({
   const queryClient = useQueryClient();
   const { isDirty: globalDirty } = useUnsavedChangesContext();
   const [activeTab, setActiveTab] = React.useState(initialTab);
+  const [activeRcmSubTab, setActiveRcmSubTab] = React.useState<'tlc' | 'elc' | 'itgc'>('tlc');
   const [selectedSamples, setSelectedSamples] = React.useState<TransactionDetail[]>([]);
 
   const handleOpenChange = React.useCallback((open: boolean) => {
@@ -214,26 +216,51 @@ export function BPMModal({
                 />
               </TabsContent>
 
-              <TabsContent value="rcm" className="m-0 focus-visible:ring-0 h-full overflow-auto p-4">
-                <div className="space-y-8 max-w-full">
-                   <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                      <div className="bg-indigo-50 p-3 border-b font-bold text-indigo-900 text-xs uppercase tracking-widest flex items-center gap-2">
-                        <FileText className="h-4 w-4" /> Lampiran 5.b - TLC Matrix
-                      </div>
+              <TabsContent value="rcm" className="m-0 focus-visible:ring-0 h-full flex flex-col min-h-0 overflow-hidden bg-slate-50">
+                {/* Sub-tabs header for Lampiran 5.B, 5.A, 5.C */}
+                <div className="px-4 py-2 bg-white border-b flex items-center justify-between gap-3 shrink-0">
+                  <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg border border-slate-200">
+                    {([
+                      { id: 'tlc', key: 'rcmSubtabs.tlc' },
+                      { id: 'elc', key: 'rcmSubtabs.elc' },
+                      { id: 'itgc', key: 'rcmSubtabs.itgc' }
+                    ] as const).map(tab => (
+                      <Button
+                        key={tab.id}
+                        variant={activeRcmSubTab === tab.id ? 'default' : 'ghost'}
+                        size="xs"
+                        onClick={() => setActiveRcmSubTab(tab.id)}
+                        className={cn(
+                          "h-7 min-h-[32px] px-3 text-xs font-bold gap-1.5 rounded-md transition-all",
+                          activeRcmSubTab === tab.id 
+                            ? "bg-indigo-600 text-white shadow-xs hover:bg-indigo-700" 
+                            : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                        )}
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                        {t(`modal.${tab.key}`)}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sub-tab view panels with dedicated scrollbars */}
+                <div className="flex-1 min-h-0 relative flex flex-col overflow-hidden">
+                  {activeRcmSubTab === 'tlc' && (
+                    <div className="flex-1 min-h-0 flex flex-col bg-white">
                       <RCMTLCPage embedded={true} filterBpmId={bpmProcessId} workingYearOverride={year} noGLFilter={noGL} />
-                   </div>
-                   <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                      <div className="bg-slate-50 p-3 border-b font-bold text-slate-900 text-xs uppercase tracking-widest flex items-center gap-2">
-                        <FileText className="h-4 w-4" /> Lampiran 5.a - ELC Matrix
-                      </div>
+                    </div>
+                  )}
+                  {activeRcmSubTab === 'elc' && (
+                    <div className="flex-1 min-h-0 flex flex-col bg-white">
                       <RCMELCPage embedded={true} workingYearOverride={year} relevantFsli={fsliName} />
-                   </div>
-                   <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                      <div className="bg-blue-50 p-3 border-b font-bold text-blue-900 text-xs uppercase tracking-widest flex items-center gap-2">
-                        <FileText className="h-4 w-4" /> Lampiran 5.c - ITGC Matrix
-                      </div>
+                    </div>
+                  )}
+                  {activeRcmSubTab === 'itgc' && (
+                    <div className="flex-1 min-h-0 flex flex-col bg-white">
                       <RCMITGCPage embedded={true} filterBpmId={bpmProcessId} workingYearOverride={year} />
-                   </div>
+                    </div>
+                  )}
                 </div>
               </TabsContent>
 

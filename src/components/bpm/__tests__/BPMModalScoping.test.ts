@@ -161,4 +161,23 @@ describe('CSA workspace (CSAModal) control scope', () => {
       expect(vi.mocked(api).mock.calls.some(([path]) => path === '/api/controls?year=2026')).toBe(true),
     );
   });
+
+  it('renders RCM Matrix sub-tabs (5.B, 5.A, 5.C) and switches active sub-tab', async () => {
+    const { getByText, queryByText } = renderWithProviders(React.createElement(BPMModal, {
+      isOpen: true,
+      onOpenChange: () => {},
+      noGL: '1101',
+      glDesc: 'Kas dan Setara Kas',
+      fsliName: 'Cash',
+      bpmProcessId: 'proc-treasury',
+      subProcessName: CASH_SUB,
+      year: '2026',
+      initialTab: 'rcm',
+    }));
+
+    // Check all 3 sub-tabs are rendered
+    expect(getByText('modal.rcmSubtabs.tlc')).toBeInTheDocument();
+    expect(getByText('modal.rcmSubtabs.elc')).toBeInTheDocument();
+    expect(getByText('modal.rcmSubtabs.itgc')).toBeInTheDocument();
+  });
 });

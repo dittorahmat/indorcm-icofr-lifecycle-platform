@@ -51,8 +51,7 @@ describe('Executive Dashboard Sovereign Governance Components', () => {
     const rootDiv = container.firstChild as HTMLElement;
     expect(rootDiv.className).toContain('bg-gradient-to-r');
     expect(rootDiv.className).toContain('from-sky-50');
-    expect(rootDiv.className).toContain('border-l-sky-600');
-    expect(rootDiv.className).toContain('border-l-4');
+    expect(rootDiv.className).toContain('border-sky-200/80');
   });
 
   it('renders ExecutiveStatCards with 4 primary executive metrics', () => {

@@ -43,10 +43,10 @@ export function ExecutiveHeaderBanner({
             </span>
           </div>
 
-          <h1 className="font-display text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-snug">
+          <h1 className="font-display text-base sm:text-lg lg:text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-snug">
             {t('executiveBanner.headline')}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-normal leading-relaxed">
+          <p className="text-xs text-slate-700 dark:text-slate-300 font-normal leading-relaxed">
             {t('executiveBanner.subheadline')}
           </p>
         </div>

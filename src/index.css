@@ -287,6 +287,34 @@
     background: hsl(var(--muted-foreground) / 0.5);
   }
 
+  /* Always-Visible Contrast Scrollbar for Large Enterprise Data Grids */
+  .scrollbar-contrast {
+    @apply overflow-auto;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.45) hsl(var(--muted) / 0.3);
+  }
+
+  .scrollbar-contrast::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-contrast::-webkit-scrollbar-track {
+    background: hsl(var(--muted) / 0.2);
+    border-radius: 4px;
+  }
+
+  .scrollbar-contrast::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.35);
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+
+  .scrollbar-contrast::-webkit-scrollbar-thumb:hover,
+  .scrollbar-contrast::-webkit-scrollbar-thumb:active {
+    background: hsl(var(--muted-foreground) / 0.6);
+  }
+
   /* Hide scrollbar for horizontal pill/tab rails on mobile (keeps scroll) */
   .no-scrollbar {
     -ms-overflow-style: none;

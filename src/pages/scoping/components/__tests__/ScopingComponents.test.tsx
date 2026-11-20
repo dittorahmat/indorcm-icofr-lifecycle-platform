@@ -38,8 +38,7 @@ describe('ScopingComponents', () => {
       // Verify Light Sovereign styling classes
       const rootDiv = container.firstChild as HTMLElement;
       expect(rootDiv.className).toContain('bg-white');
-      expect(rootDiv.className).toContain('border-l-4');
-      expect(rootDiv.className).toContain('border-l-secondary');
+      expect(rootDiv.className).toContain('border-border/80');
 
       // Anti-slop typography checks
       const html = container.innerHTML;
