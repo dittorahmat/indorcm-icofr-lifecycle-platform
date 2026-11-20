@@ -70,6 +70,14 @@ const ANTISLOP = [
     "selector": "TemplateElement[value.raw=/animate-(pulse|ping|bounce)/]",
     "message": "No distracting animations (template-literal part): animation only for isolated loading state with an eslint-disable reason."
   },
+  {
+    "selector": "Literal[value=/border-l-4\\s+border-l-(secondary|sky-600|primary)/]",
+    "message": "No unilateral thick accent border on sovereign cards/banners: keep surfaces symmetric with `border border-border/80` or `border border-sky-200/80`."
+  },
+  {
+    "selector": "TemplateElement[value.raw=/border-l-4\\s+border-l-(secondary|sky-600|primary)/]",
+    "message": "No unilateral thick accent border (template-literal part): keep surfaces symmetric with `border border-border/80`."
+  },
 ];
 
 // Shared-header squeeze guard (Deficiency Board desktop collapse, issue #59).
