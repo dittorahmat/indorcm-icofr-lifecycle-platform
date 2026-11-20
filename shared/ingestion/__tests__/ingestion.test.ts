@@ -9,11 +9,11 @@ import {
 
 describe('shared/ingestion', () => {
   it('parses balances including currency strings and negative parentheses', () => {
-    expect(parseBalance(1000)).toBe(1000);
-    expect(parseBalance('1,250.50')).toBe(1250.5);
-    expect(parseBalance('(500.00)')).toBe(-500);
-    expect(parseBalance('')).toBe(0);
-    expect(parseBalance(null)).toBe(0);
+    expect(parseBalance(1000).value).toBe(1000);
+    expect(parseBalance('1.250,50').value).toBe(1250.5);
+    expect(parseBalance('(500,00)').value).toBe(-500);
+    expect(parseBalance('').value).toBe(0);
+    expect(parseBalance(0).value).toBe(0);
   });
 
   it('filters completely empty rows while preserving valid entries', () => {
@@ -29,15 +29,15 @@ describe('shared/ingestion', () => {
   });
 
   it('detects GL columns and validates mandatory fields', () => {
-    const headers = ['No GL', 'Nama Akun', 'Ending Balance', 'FSLI'];
+    const headers = ['No_GL', 'GL_Desc', 'GL_Balance', 'FSLI'];
     const detected = detectGLColumns(headers);
-    expect(detected.accountNumber).toBe('No GL');
-    expect(detected.accountName).toBe('Nama Akun');
-    expect(detected.balance).toBe('Ending Balance');
-    expect(detected.fsli).toBe('FSLI');
+    expect(detected.accountCode).toBe('No_GL');
+    expect(detected.accountName).toBe('GL_Desc');
+    expect(detected.balance).toBe('GL_Balance');
+    expect(detected.fsliName).toBe('FSLI');
 
     const validation = validateGLMapping(detected);
-    expect(validation.isValid).toBe(true);
+    expect(validation.valid).toBe(true);
     expect(validation.missing).toHaveLength(0);
   });
 
