@@ -350,4 +350,10 @@ describe('DeficiencyCard source badge', () => {
       expect(className).not.toMatch(/backdrop-blur/);
     });
   });
+
+  it('renders board with compact container spacing space-y-4', () => {
+    const { container } = renderBoard();
+    const mainContainer = container.querySelector('.space-y-4');
+    expect(mainContainer).toBeInTheDocument();
+  });
 });

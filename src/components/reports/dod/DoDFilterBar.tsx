@@ -36,19 +36,19 @@ export function DoDFilterBar({
       testId="dod-filters"
       className="print:hidden"
     >
-      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 print:hidden bg-muted/40 p-3 rounded-md border border-border">
-        <div className="relative flex-1 min-w-0 w-full sm:w-auto sm:min-w-[220px]">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2.5 print:hidden bg-muted/40 p-2.5 sm:p-3 rounded-md border border-border">
+        <div className="relative flex-1 min-w-0 w-full sm:w-auto sm:min-w-[200px]">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={t('dodReport.filters.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9 h-9 text-xs font-medium rounded-md bg-background"
+            className="pl-8 h-8 text-xs font-medium rounded-md bg-background"
           />
         </div>
 
         <Select value={severityFilter} onValueChange={onSeverityChange}>
-          <SelectTrigger className="w-full sm:w-[200px] h-9 text-xs font-medium rounded-md bg-background">
+          <SelectTrigger className="w-full sm:w-[180px] h-8 text-xs font-medium rounded-md bg-background">
             <SelectValue placeholder={t('dodReport.filters.allSeverities')} />
           </SelectTrigger>
           <SelectContent>
@@ -60,7 +60,7 @@ export function DoDFilterBar({
         </Select>
 
         <Select value={remediationFilter} onValueChange={onRemediationChange}>
-          <SelectTrigger className="w-full sm:w-[180px] h-9 text-xs font-medium rounded-md bg-background">
+          <SelectTrigger className="w-full sm:w-[160px] h-8 text-xs font-medium rounded-md bg-background">
             <SelectValue placeholder={t('dodReport.filters.allRemediation')} />
           </SelectTrigger>
           <SelectContent>

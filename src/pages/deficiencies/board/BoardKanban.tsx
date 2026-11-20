@@ -95,7 +95,7 @@ export function BoardKanban({
               ))}
             </div>
           ) : (
-            <div className="kanban-rail flex gap-8 pb-4 h-full min-h-[600px]">
+            <div className="kanban-rail flex gap-4 sm:gap-6 pb-4 h-full min-h-[600px]">
               {KANBAN_COLUMNS.map((status) => (
                 <BoardColumn key={status} status={status} {...columnProps} />
               ))}

@@ -125,7 +125,7 @@ export function DoDSummaryCards({
   ];
 
   return (
-    <div className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 print:grid-cols-5">
+    <div className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 print:grid-cols-5">
       {cards.map((card) => {
         const theme = THEME[card.theme];
         return (
@@ -135,11 +135,11 @@ export function DoDSummaryCards({
             onClick={card.onClick}
             title={t(card.hintKey)}
             className={cn(
-              'text-left p-3 rounded-lg border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2',
+              'text-left p-2.5 sm:p-3 rounded-lg border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2',
               card.active ? theme.ring : theme.card,
             )}
           >
-            <div className={cn('text-xs font-semibold uppercase flex items-center justify-between flex-wrap gap-2', theme.label)}>
+            <div className={cn('text-xs font-semibold uppercase flex items-center justify-between flex-wrap gap-1.5', theme.label)}>
               <span>{t(card.titleKey)}</span>
               {card.active && (
                 <span className={cn('text-xs font-bold px-1.5 py-0.5 rounded border', theme.badge)}>
@@ -147,7 +147,7 @@ export function DoDSummaryCards({
                 </span>
               )}
             </div>
-            <div className={cn('text-lg font-bold mt-1', theme.value)}>{card.count}</div>
+            <div className={cn('text-base sm:text-lg font-bold mt-0.5', theme.value)}>{card.count}</div>
           </button>
         );
       })}

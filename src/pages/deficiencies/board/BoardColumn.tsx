@@ -75,16 +75,16 @@ export function BoardColumn({
         fullWidth ? 'w-full' : 'w-80 max-w-[85vw] sm:max-w-none flex-shrink-0',
       )}
     >
-      <div className="flex flex-col min-[380px]:flex-row min-[380px]:items-center min-[380px]:justify-between mb-4 px-3 flex-wrap gap-2">
-        <div className="flex items-center gap-2.5">
-          <div className={cn('h-8 w-8 rounded-lg flex items-center justify-center border-2 border-white shadow-sm', config.bg)}>
-            <config.icon className={cn('h-4 w-4', config.color)} />
+      <div className="flex flex-col min-[380px]:flex-row min-[380px]:items-center min-[380px]:justify-between mb-2.5 px-2 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <div className={cn('h-7 w-7 rounded-lg flex items-center justify-center border-2 border-white shadow-sm', config.bg)}>
+            <config.icon className={cn('h-3.5 w-3.5', config.color)} />
           </div>
-          <h2 className="font-display font-bold text-slate-900 tracking-tight">{config.title}</h2>
+          <h2 className="font-display font-bold text-slate-900 tracking-tight text-sm">{config.title}</h2>
         </div>
         <Badge
           variant="outline"
-          className="font-mono text-xs font-bold bg-white border-slate-200 text-slate-400 px-2 h-5 flex items-center justify-center min-w-[24px]"
+          className="font-mono text-xs font-bold bg-white border-slate-200 text-slate-400 px-1.5 h-4.5 flex items-center justify-center min-w-[20px]"
         >
           {plansInColumn.length}
         </Badge>
@@ -94,7 +94,7 @@ export function BoardColumn({
         ref={setNodeRef}
         data-droppable-id={status}
         className={cn(
-          'flex-1 rounded-lg border-2 border-dashed p-3 transition-all duration-300',
+          'flex-1 rounded-lg border-2 border-dashed p-2.5 sm:p-3 transition-all duration-300',
           isOver
             ? 'bg-indigo-50/70 border-indigo-400 ring-2 ring-indigo-300/40'
             : 'bg-slate-50/50 border-slate-200/60 group-hover/column:bg-slate-50/80 group-hover/column:border-slate-300',
@@ -102,7 +102,7 @@ export function BoardColumn({
         )}
       >
         <SortableContext id={status} items={plansInColumn.map((ap) => ap.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {plansInColumn.map((ap) => {
               const deficiency = deficiencies.find((d) => d.id === ap.deficiencyId);
               if (!deficiency) return null;
