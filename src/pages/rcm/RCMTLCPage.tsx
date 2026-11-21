@@ -337,7 +337,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
         onClose={() => setIsImportModalOpen(false)}
         workingYear={workingYear}
         onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ['rcm-matrix-tlc'] });
+          refresh();
         }}
       />
     </div>

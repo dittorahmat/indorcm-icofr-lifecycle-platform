@@ -209,7 +209,7 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
         workingYear={workingYear}
         initialFlavor="ELC"
         onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ['controls-elc'] });
+          refresh();
         }}
       />
     </div>

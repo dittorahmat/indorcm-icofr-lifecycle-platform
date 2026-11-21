@@ -208,7 +208,7 @@ export function RCMITGCPage({ embedded = false, filterBpmId, workingYearOverride
         workingYear={workingYear}
         initialFlavor="ITGC"
         onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ['rcm-matrix-itgc'] });
+          refresh();
         }}
       />
     </div>
