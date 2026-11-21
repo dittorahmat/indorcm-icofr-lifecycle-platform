@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 import { 
   filterEmptyRows,
   getWorkbookSheetsMeta,
-} from '@/lib/compliance-utils';
+} from '@shared/ingestion';
 import { z } from 'zod';
 
 export type RCMType = 'ELC' | 'TLC' | 'ITGC';

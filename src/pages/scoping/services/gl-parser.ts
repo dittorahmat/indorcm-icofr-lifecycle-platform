@@ -7,7 +7,7 @@ import {
   validateGLMapping,
   getWorkbookSheetsMeta,
   SheetMeta
-} from '@/lib/compliance-utils';
+} from '@shared/ingestion';
 import { GLRow } from '@shared/types';
 
 export interface SheetCandidate {

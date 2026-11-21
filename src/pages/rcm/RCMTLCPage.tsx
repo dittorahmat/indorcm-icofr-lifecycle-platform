@@ -1,18 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { api } from '@/lib/api-client';
 import { RCMControlMapping } from '@shared/types';
-import { Search, RefreshCw, Edit3, AlertTriangle, Check, Shield, ExternalLink, FileUp } from 'lucide-react';
+import { Edit3, ExternalLink, FileUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { RCMPageHeader } from '@/components/rcm/RCMPageHeader';
 import { RCMTable, RCMColumnGroup } from '@/components/rcm/RCMTable';
-import { RCMGroupRow } from '@/components/rcm/RCMGroupRow';
 import { RCMEditDialog } from '@/components/rcm/RCMEditDialog';
 import { RCMImportWizardModal } from '@/components/rcm/import/RCMImportWizardModal';
 import { RCM_NARRATIVE_WIDTHS } from '@/components/rcm/rcm-column-widths';
@@ -30,6 +24,7 @@ import {
   IPO_TIP,
 } from '@shared/assertion-fields';
 import { BooleanIndicator } from '@/components/rcm/BooleanIndicator';
+import { useRcmMatrixLifecycle } from './hooks/useRcmMatrixLifecycle';
 
 interface RCMMatrixItem extends RCMControlMapping {
   mappingId: string;
@@ -62,67 +57,28 @@ interface RCMTLCPageProps {
 
 export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride, noGLFilter }: RCMTLCPageProps) {
   const { t } = useTranslation(['rcm', 'common', 'bpm']);
-  const queryClient = useQueryClient();
   const { workingYear: globalWorkingYear } = useFiscalYearStore();
   const workingYear = workingYearOverride || globalWorkingYear;
   
-  const [searchTerm, setSearchTerm] = React.useState('');
-  const [editingItem, setEditingItem] = React.useState<RCMMatrixItem | null>(null);
-  const [isRolloverOpen, setIsRolloverOpen] = React.useState(false);
-  const [isImportModalOpen, setIsImportModalOpen] = React.useState(false);
-
-  const rolloverMutation = useMutation({
-    mutationFn: (data: { sourceYear: string, targetYear: string, force?: boolean }) => 
-      api('/api/migration/rollover', { method: 'POST', body: JSON.stringify(data) }),
-    onSuccess: () => {
-      queryClient.invalidateQueries();
-      toast.success(t('scoping:rollover.success'));
-      setIsRolloverOpen(false);
-    },
-    onError: (err: any) => {
-      toast.error(t('scoping:rollover.error', { error: err.message }));
-    }
-  });
-
-  const { data: matrixData, isLoading } = useQuery({
-    queryKey: ['rcm-matrix-tlc', filterBpmId, workingYear, noGLFilter],
-    queryFn: async () => {
-      let url = `/api/rcm-matrix/tlc?year=${workingYear}`;
-      if (filterBpmId) url += `&bpmProcessId=${filterBpmId}`;
-      if (noGLFilter) url += `&noGL=${noGLFilter}`;
-      const res = await api<{ items: RCMMatrixItem[] }>(url);
-      return res;
-    },
-  });
-
-  const saveMutation = useMutation({
-    mutationFn: (values: any) => {
-      // 1. Reverse mapping: standardized UI names -> backend DB names
-      const dbValues: any = {
-        ...values,
-        controlName: values.mappedControlName,
-        controlDescription: values.mappedControlDescription,
-      };
-
-      // 2. Boolean normalization for IPO & Assertions (text columns in DB)
-      const booleanFields = [...IPO_FIELDS, ...ASSERTION_FIELDS];
-
-      booleanFields.forEach(field => {
-        if (typeof values[field] === 'boolean') {
-          dbValues[field] = values[field] ? 'Y' : 'N';
-        }
-      });
-
-      return api('/api/rcm-matrix/tlc/batch-update', { 
-        method: 'POST', 
-        body: JSON.stringify({ items: [dbValues] }) 
-      });
-    },
-    onSuccess: () => {
-      toast.success(t('rcm:matrix.save_success'));
-      queryClient.invalidateQueries({ queryKey: ['rcm-matrix-tlc'] });
-      setEditingItem(null);
-    }
+  const {
+    searchTerm,
+    setSearchTerm,
+    editingItem,
+    setEditingItem,
+    isRolloverOpen,
+    setIsRolloverOpen,
+    isImportModalOpen,
+    setIsImportModalOpen,
+    data: matrixData,
+    isLoading,
+    refresh,
+    saveMutation,
+    rolloverMutation,
+  } = useRcmMatrixLifecycle<RCMMatrixItem>({
+    tier: 'TLC',
+    workingYear,
+    filterBpmId,
+    noGLFilter,
   });
 
   const items = matrixData?.items || [];
@@ -310,7 +266,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
           subtitle={t('rcm:matrix.subtitle_tlc')}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
-          onRefresh={() => queryClient.invalidateQueries({ queryKey: ['rcm-matrix-tlc'] })}
+          onRefresh={refresh}
           onExport={() => exportRCMToExcel(filteredItems, {
             matrixType: 'TLC',
             filename: `RCM_TLC_Matrix_${workingYear}_${new Date().toISOString().split('T')[0]}.xlsx`,
@@ -381,7 +337,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
         onClose={() => setIsImportModalOpen(false)}
         workingYear={workingYear}
         onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ['rcm-matrix-tlc'] });
+          refresh();
         }}
       />
     </div>
