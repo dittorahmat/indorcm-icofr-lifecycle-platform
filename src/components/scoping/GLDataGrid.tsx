@@ -30,6 +30,7 @@ import { GLDataGridToolbar } from './GLDataGridToolbar';
 import { buildGlExportRows } from './gl-data-grid-export';
 import { isAccountInScope } from '@shared/scoping-materiality';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
+import { DataTablePagination } from '@/components/common/DataTablePagination';
 
 interface GLDataGridProps {
   data: GLRow[];
@@ -67,6 +68,8 @@ export const GLDataGrid = React.memo(function GLDataGrid({
 }: GLDataGridProps) {
   const { t } = useTranslation(['scoping', 'common']);
   const [showFullTable, setShowFullTable] = React.useState(false);
+  const [page, setPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(10);
   const { exportNow: exportGridNow } = useExcelExport<Record<string, unknown>>();
   
   const { data: currentUser } = useQuery({
@@ -193,6 +196,12 @@ export const GLDataGrid = React.memo(function GLDataGrid({
     }
   };
 
+  const tableRows = table.getRowModel().rows;
+  const pagedRows = React.useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return tableRows.slice(start, start + pageSize);
+  }, [tableRows, page, pageSize]);
+
   return (
     <div className="flex flex-col flex-1 min-h-0 min-w-0 space-y-4">
       <GLDataGridToolbar
@@ -283,7 +292,7 @@ export const GLDataGrid = React.memo(function GLDataGrid({
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows.map(row => {
+              {pagedRows.map(row => {
                 const classification = !row.getIsGrouped() && row.original?.scopeClassification;
                 const rowBgClass = classification === 'above-pm'
                   ? "bg-emerald-50/70 text-emerald-950 dark:bg-emerald-950/20 hover:bg-emerald-100/50"
@@ -330,6 +339,21 @@ export const GLDataGrid = React.memo(function GLDataGrid({
             </TableBody>
           </Table>
         </div>
+
+        {tableRows.length > 0 && (
+          <div data-testid="gl-grid-pagination">
+            <DataTablePagination
+              page={page}
+              pageSize={pageSize}
+              totalItems={tableRows.length}
+              onPageChange={setPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1);
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
