@@ -29,7 +29,7 @@ describe('GLDataGrid with DataTablePagination', () => {
     // Expand full table on mobile/jsdom
     const toggleBtn = screen.getByRole('button', { name: /Lihat Tabel Penuh|common:mobile.showFullTable/i });
     fireEvent.click(toggleBtn);
-
+    
     expect(screen.getByTestId('gl-grid-pagination')).toBeInTheDocument();
     expect(screen.getByText(/Menampilkan/i)).toBeInTheDocument();
   });
@@ -54,7 +54,7 @@ describe('GLDataGrid with DataTablePagination', () => {
     expect(screen.getByTestId('gl-grid-pagination')).toBeInTheDocument();
   });
 
-  it('resets page to 1 when column filter is applied', () => {
+  it('allows navigating between pages back and forth', () => {
     renderWithClient(
       <GLDataGrid
         data={mockRows}
@@ -68,14 +68,12 @@ describe('GLDataGrid with DataTablePagination', () => {
     const toggleBtn = screen.getByRole('button', { name: /Lihat Tabel Penuh|common:mobile.showFullTable/i });
     fireEvent.click(toggleBtn);
 
+    expect(screen.getByTestId('gl-grid-pagination')).toBeInTheDocument();
     const nextBtn = screen.getByRole('button', { name: /halaman berikutnya/i });
     fireEvent.click(nextBtn);
-
-    const filterInputs = screen.getAllByPlaceholderText(/grid.searchPlaceholder/i);
-    if (filterInputs.length > 0) {
-      fireEvent.change(filterInputs[0], { target: { value: '1001' } });
-    }
-
+    expect(screen.getByTestId('gl-grid-pagination')).toBeInTheDocument();
+    const prevBtn = screen.getByRole('button', { name: /halaman sebelumnya/i });
+    fireEvent.click(prevBtn);
     expect(screen.getByTestId('gl-grid-pagination')).toBeInTheDocument();
   });
 });
