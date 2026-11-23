@@ -3,31 +3,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { GLDataGrid } from '../GLDataGrid';
 import { GLRow } from '@shared/types';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { makeMockGLRow } from '@/test/mock-factories';
 
-const glRowFactory = (i: number): GLRow => ({
-  id: `gl-${i + 1}`,
-  organizationId: 'org-test',
-  snapshotId: 'snap-test',
-  ymd: '2026-11-23',
-  entityCode: 'BUMN01',
-  parentEntityCode: null,
-  entityId: null,
-  noGL: `100${String(i + 1).padStart(2, '0')}`,
-  glDesc: `Account Description ${i + 1}`,
-  currency: 'IDR',
-  balance: (i + 1) * 1_000_000_000,
-  fsliBalance: null,
-  fsliCode: `F-${(i % 3) + 1}`,
-  fsliName: `FSLI Category ${(i % 3) + 1}`,
-  category: 'Asset',
-  subKategori: 'Current',
-  noUrut: i + 1,
-  assignedDepartmentIds: [],
-  ownerAcceptance: null,
-  mappingConfidence: 1,
-});
-
-const mockRows: GLRow[] = Array.from({ length: 25 }, (_, i) => glRowFactory(i));
+const mockRows: GLRow[] = Array.from({ length: 25 }, (_, i) => makeMockGLRow({}, i + 1));
 
 function renderWithClient(ui: React.ReactElement) {
   const queryClient = new QueryClient({

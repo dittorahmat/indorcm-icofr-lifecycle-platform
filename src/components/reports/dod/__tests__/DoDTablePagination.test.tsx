@@ -2,37 +2,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { DoDTable } from '../DoDTable';
 import type { FormattedDoDRow } from '../dod-types';
+import { makeMockDoDRow } from '@/test/mock-factories';
 
-const mockRows: FormattedDoDRow[] = Array.from({ length: 25 }, (_, i) => ({
-  ref: `DEF-${i + 1}`,
-  description: `Deficiency Description ${i + 1}`,
-  isRemediated: false,
-  ineffectivePeriod: 'Q4 2026',
-  exposureValue: 50_000_000,
-  severity: 'ICD',
-  impactedAccount: '100100',
-  cosoComponent: 'Control Activities',
-  businessProcess: 'Procurement',
-  businessUnit: 'Head Office',
-  assertions: {
-    c: false,
-    a: false,
-    eo: false,
-    co: false,
-    ro: false,
-    va: false,
-    pd: false,
-  },
-  boxes: {
-    box1: false,
-    box2: false,
-    box3: false,
-    box4: false,
-    box5: false,
-    box6: false,
-    box7: false,
-  },
-}));
+const mockRows: FormattedDoDRow[] = Array.from({ length: 25 }, (_, i) => makeMockDoDRow({}, i + 1));
 
 describe('DoDTable with DataTablePagination', () => {
   it('renders rows with pagination controls and slices to 10 items by default', () => {

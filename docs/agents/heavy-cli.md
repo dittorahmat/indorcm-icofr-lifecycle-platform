@@ -35,6 +35,11 @@ killed the host, while the same `tsc` redirected to a file exited 0).
 - No custom vitest reporters (`--reporter=basic` does not exist; observed
   2026-10-17 startup error). Bare `npx vitest run <files>` only; redirect to
   a file first, then `Get-Content -Tail`.
+- Gunakan flag `--silent` pada Vitest (`npm test -- <files> --silent` atau `npx vitest run <files> --silent`)
+  saat menguji komponen yang meng-embed form controls atau Radix UI Select untuk membungkam ribuan baris
+  warning `act(...)` console stdout yang memicu truncating dan perlambatan buffer.
+- Tangani penolakan commit root (`[WORKTREE ISOLATION FAILED]`) dengan transfer patch cepat:
+  `git diff > temp.patch && git checkout . && git -C ..\icofr1 apply ..\indorcm-icofr-lifecycle-platform\temp.patch && del temp.patch`.
 - Run `type-check` per tsconfig (`tsconfig.app.json`, then
   `tsconfig.worker.json`) instead of the combined script when memory is
   constrained.

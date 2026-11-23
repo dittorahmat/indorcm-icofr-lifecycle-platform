@@ -166,6 +166,9 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
     *   **Pencegahan Empty-State Dead Zone (Search-Synchronized Reset):** Setiap perubahan pada parameter pencarian (keyword input), filter kategori/proses, atau dataset rows WAJIB mereset nomor halaman aktif kembali ke halaman 1 (`page = 1`) secara otomatis via `resetDeps` pada `useClientPagination`.
     *   **Densitas Kompak Institusional & Aksesibilitas:** Komponen paginasi wajib mempertahankan tipografi minimal `text-xs`, tinggi kontrol `h-8`, selektor baris per halaman (10/25/50), dan target sentuh interaktif mobile minimal 44px (`min-h-[44px]`).
     *   **Lokalisasi Penuh Kontrol Paginasi:** Seluruh teks status rentang data, label selektor, dan `aria-label` navigasi (pertama, sebelumnya, berikutnya, terakhir) WAJIB bersumber dari kamus `common.pagination.*` tanpa hardcoded string.
+18. **Test Factories & Mock Integrity (Wajib):**
+    *   **Mock Factories Terpusat:** Pengujian unit untuk entitas bervolume besar (seperti `GLRow`, `FormattedDoDRow`, `Control`) WAJIB menggunakan factory helper terstandar di `src/test/mock-factories.ts` (`makeMockGLRow`, `makeMockDoDRow`) atau `shared/mock-data.ts`. Dilarang menduplikasi objek tiruan 20-field secara manual di dalam file test yang memicu drift tipe saat skema berubah.
+    *   **Vitest Noise Suppression (`--silent`):** Saat menguji komponen yang meng-embed form control atau komponen Radix UI Select yang memicu ribuan baris warning `act(...)`, jalankan Vitest dengan flag `--silent` (`npx vitest run <file> --silent`) untuk mencegah buffer overflow dan pemotongan log CLI.
 
 ## Development Conventions
 
