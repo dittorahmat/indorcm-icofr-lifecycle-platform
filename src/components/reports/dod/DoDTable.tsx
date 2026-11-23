@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { DataTablePagination } from '@/components/common/DataTablePagination';
+import { useClientPagination } from '@/hooks/useClientPagination';
 import {
   Table,
   TableBody,
@@ -159,13 +160,18 @@ function DoDTableRow({ row, index }: { row: FormattedDoDRow; index: number }) {
 
 export function DoDTable({ rows, showFullTable }: { rows: FormattedDoDRow[]; showFullTable: boolean }) {
   const { t } = useTranslation(['reports', 'common']);
-  const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(10);
 
-  const pagedRows = React.useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return rows.slice(start, start + pageSize);
-  }, [rows, page, pageSize]);
+  const {
+    page,
+    pageSize,
+    totalItems,
+    pagedItems: pagedRows,
+    setPage,
+    setPageSize,
+  } = useClientPagination(rows, {
+    initialPageSize: 10,
+    resetDeps: [rows.length],
+  });
 
   return (
     <div className={`rounded-lg border border-border overflow-hidden bg-background max-w-full ${showFullTable ? 'block' : 'hidden'} md:block`}>
@@ -231,17 +237,14 @@ export function DoDTable({ rows, showFullTable }: { rows: FormattedDoDRow[]; sho
         </Table>
       </div>
 
-      {rows.length > 0 && (
+      {totalItems > 0 && (
         <div data-testid="dod-table-pagination">
           <DataTablePagination
             page={page}
             pageSize={pageSize}
-            totalItems={rows.length}
+            totalItems={totalItems}
             onPageChange={setPage}
-            onPageSizeChange={(newSize) => {
-              setPageSize(newSize);
-              setPage(1);
-            }}
+            onPageSizeChange={setPageSize}
           />
         </div>
       )}

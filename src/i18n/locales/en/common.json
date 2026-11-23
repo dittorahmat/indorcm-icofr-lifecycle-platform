@@ -170,7 +170,7 @@
     "title": "Webhook & Multi-Channel Integrations",
     "description": "Connect team channels (Slack, Microsoft Teams, Discord, n8n) for automated instant compliance notifications.",
     "slackTitle": "Slack Incoming Webhook",
-    "slackDesc": "Send formatted alerts directly to your team Slack channel.",
+    "slackDesc": "Get notified in the organization's Slack workspace.",
     "slackPlaceholder": "https://hooks.slack.com/services/...",
     "teamsTitle": "Microsoft Teams Webhook",
     "teamsDesc": "Post Adaptive Cards to Microsoft Teams channel connectors.",
@@ -190,12 +190,20 @@
     "email": "Email Delivery",
     "emailDesc": "Receive summaries and urgent notifications directly in your inbox.",
     "slack": "Slack Channel",
-    "slackDesc": "Get notified in the organization's Slack workspace.",
     "msTeams": "Microsoft Teams",
     "msTeamsDesc": "Get notified in the organization's Teams channel.",
     "genericWebhook": "Custom / Generic Webhook",
     "genericWebhookDesc": "Forward notification events to your custom endpoint.",
     "savePreferences": "Save Preferences",
     "preferencesSaved": "Notification channel preferences updated successfully!"
+  },
+  "pagination": {
+    "showing": "Showing {{start}}-{{end}} of {{total}} items",
+    "rows": "Rows:",
+    "rowsPerPage": "Rows per page",
+    "firstPage": "First page",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "lastPage": "Last page"
   }
 }

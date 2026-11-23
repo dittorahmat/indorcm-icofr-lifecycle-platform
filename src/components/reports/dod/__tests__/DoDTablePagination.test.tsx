@@ -55,4 +55,16 @@ describe('DoDTable with DataTablePagination', () => {
     expect(screen.queryByText('DEF-1')).not.toBeInTheDocument();
     expect(screen.getByText(/Menampilkan 11-20 dari 25 data/i)).toBeInTheDocument();
   });
+
+  it('resets page to 1 when rows dataset changes', () => {
+    const { rerender } = render(<DoDTable rows={mockRows} showFullTable={true} />);
+
+    const nextBtn = screen.getByRole('button', { name: /halaman berikutnya/i });
+    fireEvent.click(nextBtn);
+    expect(screen.getByText(/Menampilkan 11-20 dari 25 data/i)).toBeInTheDocument();
+
+    // Rerender with filtered/smaller dataset
+    rerender(<DoDTable rows={mockRows.slice(0, 5)} showFullTable={true} />);
+    expect(screen.getByText(/Menampilkan 1-5 dari 5 data/i)).toBeInTheDocument();
+  });
 });

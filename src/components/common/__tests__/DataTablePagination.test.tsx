@@ -29,7 +29,7 @@ describe('DataTablePagination', () => {
     expect(screen.getByText(/Menampilkan 41-45 dari 45 data/i)).toBeInTheDocument();
   });
 
-  it('disables previous button on first page and enables next button', () => {
+  it('disables previous and first button on first page and enables next/last button', () => {
     const onPageChange = vi.fn();
     render(
       <DataTablePagination
@@ -40,17 +40,24 @@ describe('DataTablePagination', () => {
       />
     );
 
+    const firstBtn = screen.getByRole('button', { name: /halaman pertama/i });
     const prevBtn = screen.getByRole('button', { name: /halaman sebelumnya/i });
     const nextBtn = screen.getByRole('button', { name: /halaman berikutnya/i });
+    const lastBtn = screen.getByRole('button', { name: /halaman terakhir/i });
 
+    expect(firstBtn).toBeDisabled();
     expect(prevBtn).toBeDisabled();
     expect(nextBtn).toBeEnabled();
+    expect(lastBtn).toBeEnabled();
 
     fireEvent.click(nextBtn);
     expect(onPageChange).toHaveBeenCalledWith(2);
+
+    fireEvent.click(lastBtn);
+    expect(onPageChange).toHaveBeenCalledWith(5);
   });
 
-  it('disables next button on last page and enables previous button', () => {
+  it('disables next and last button on last page and enables first/previous button', () => {
     const onPageChange = vi.fn();
     render(
       <DataTablePagination
@@ -61,14 +68,21 @@ describe('DataTablePagination', () => {
       />
     );
 
+    const firstBtn = screen.getByRole('button', { name: /halaman pertama/i });
     const prevBtn = screen.getByRole('button', { name: /halaman sebelumnya/i });
     const nextBtn = screen.getByRole('button', { name: /halaman berikutnya/i });
+    const lastBtn = screen.getByRole('button', { name: /halaman terakhir/i });
 
+    expect(firstBtn).toBeEnabled();
     expect(prevBtn).toBeEnabled();
     expect(nextBtn).toBeDisabled();
+    expect(lastBtn).toBeDisabled();
 
     fireEvent.click(prevBtn);
     expect(onPageChange).toHaveBeenCalledWith(4);
+
+    fireEvent.click(firstBtn);
+    expect(onPageChange).toHaveBeenCalledWith(1);
   });
 
   it('calls onPageSizeChange when rows per page is changed', () => {

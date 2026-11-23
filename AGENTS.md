@@ -161,6 +161,11 @@ Setiap kali melakukan penambahan komponen, modifikasi antarmuka frontend, menyel
     *   **Pengecualian Pengujian Terbatas:** Pengecualian SoD hanya diberikan kepada Super Admin melalui kapabilitas resmi `can(role, 'workflow:bypass-sod')` di `shared/entity-authority.ts` untuk keperluan pemeliharaan atau skenario testing.
     *   **Enforcement Mekanis Bebas Literal Peran:** Pemeriksaan peran di komponen UI (`WorkflowPanel`, `ApprovalPage`) dilarang membandingkan string literal (seperti `role !== 'Admin'`). Wajib menggunakan helper terpusat `isProhibitedSelfApproval` dari `shared/workflow-transitions.ts` dan evaluasi kapabilitas `can(role, 'workflow:bypass-sod')`. Gate otomatis `npm run check:authority-literals` mengunci aturan ini pada setiap commit.
     *   **UI Disabled State & Tooltip:** Tombol aksi persetujuan pada draf buatan pengguna yang sedang login wajib dinonaktifkan (`disabled`) dengan atribut `title` yang memuat teks i18n penjelas (`workflow:sodViolationTooltip` / `approval.sodSelfApprovalBlocked`).
+17. **Standardisasi Paginasi & Pencarian Tabel (Mandat ADR 0011):**
+    *   **Komponen Bersumber Tunggal:** Seluruh tabel data operasional dan rekap regulatori yang menampilkan kumpulan data berpotensi besar WAJIB menggunakan komponen terstandar `DataTablePagination` dari `@/components/common/DataTablePagination` dan hook `useClientPagination` dari `@/hooks/useClientPagination`.
+    *   **Pencegahan Empty-State Dead Zone (Search-Synchronized Reset):** Setiap perubahan pada parameter pencarian (keyword input), filter kategori/proses, atau dataset rows WAJIB mereset nomor halaman aktif kembali ke halaman 1 (`page = 1`) secara otomatis via `resetDeps` pada `useClientPagination`.
+    *   **Densitas Kompak Institusional & Aksesibilitas:** Komponen paginasi wajib mempertahankan tipografi minimal `text-xs`, tinggi kontrol `h-8`, selektor baris per halaman (10/25/50), dan target sentuh interaktif mobile minimal 44px (`min-h-[44px]`).
+    *   **Lokalisasi Penuh Kontrol Paginasi:** Seluruh teks status rentang data, label selektor, dan `aria-label` navigasi (pertama, sebelumnya, berikutnya, terakhir) WAJIB bersumber dari kamus `common.pagination.*` tanpa hardcoded string.
 
 ## Development Conventions
 

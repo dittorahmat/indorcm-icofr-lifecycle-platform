@@ -31,6 +31,7 @@ import { buildGlExportRows } from './gl-data-grid-export';
 import { isAccountInScope } from '@shared/scoping-materiality';
 import { MobileDesktopBanner } from '@/components/layout/MobileDesktopBanner';
 import { DataTablePagination } from '@/components/common/DataTablePagination';
+import { useClientPagination } from '@/hooks/useClientPagination';
 
 interface GLDataGridProps {
   data: GLRow[];
@@ -68,8 +69,6 @@ export const GLDataGrid = React.memo(function GLDataGrid({
 }: GLDataGridProps) {
   const { t } = useTranslation(['scoping', 'common']);
   const [showFullTable, setShowFullTable] = React.useState(false);
-  const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(10);
   const { exportNow: exportGridNow } = useExcelExport<Record<string, unknown>>();
   
   const { data: currentUser } = useQuery({
@@ -197,10 +196,17 @@ export const GLDataGrid = React.memo(function GLDataGrid({
   };
 
   const tableRows = table.getRowModel().rows;
-  const pagedRows = React.useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return tableRows.slice(start, start + pageSize);
-  }, [tableRows, page, pageSize]);
+  const {
+    page,
+    pageSize,
+    totalItems,
+    pagedItems: pagedRows,
+    setPage,
+    setPageSize,
+  } = useClientPagination(tableRows, {
+    initialPageSize: 10,
+    resetDeps: [table.getState().columnFilters, table.getState().globalFilter],
+  });
 
   return (
     <div className="flex flex-col flex-1 min-h-0 min-w-0 space-y-4">
@@ -340,17 +346,14 @@ export const GLDataGrid = React.memo(function GLDataGrid({
           </Table>
         </div>
 
-        {tableRows.length > 0 && (
+        {totalItems > 0 && (
           <div data-testid="gl-grid-pagination">
             <DataTablePagination
               page={page}
               pageSize={pageSize}
-              totalItems={tableRows.length}
+              totalItems={totalItems}
               onPageChange={setPage}
-              onPageSizeChange={(newSize) => {
-                setPageSize(newSize);
-                setPage(1);
-              }}
+              onPageSizeChange={setPageSize}
             />
           </div>
         )}

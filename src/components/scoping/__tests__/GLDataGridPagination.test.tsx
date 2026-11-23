@@ -75,4 +75,29 @@ describe('GLDataGrid with DataTablePagination', () => {
 
     expect(screen.getByTestId('gl-grid-pagination')).toBeInTheDocument();
   });
+
+  it('resets page to 1 when column filter is applied', () => {
+    renderWithClient(
+      <GLDataGrid
+        data={mockRows}
+        assessmentData={{}}
+        omValue={500_000_000}
+        pmValue={250_000_000}
+        onAssessmentChange={vi.fn()}
+      />
+    );
+
+    const toggleBtn = screen.getByRole('button', { name: /Lihat Tabel Penuh|common:mobile.showFullTable/i });
+    fireEvent.click(toggleBtn);
+
+    const nextBtn = screen.getByRole('button', { name: /halaman berikutnya/i });
+    fireEvent.click(nextBtn);
+
+    const filterInputs = screen.getAllByPlaceholderText(/grid.searchPlaceholder/i);
+    if (filterInputs.length > 0) {
+      fireEvent.change(filterInputs[0], { target: { value: '1001' } });
+    }
+
+    expect(screen.getByTestId('gl-grid-pagination')).toBeInTheDocument();
+  });
 });

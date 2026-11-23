@@ -170,7 +170,7 @@
     "title": "Integrasi Webhook & Multi-Kanal",
     "description": "Hubungkan kanal komunikasi tim (Slack, Microsoft Teams, Discord, n8n) untuk notifikasi kepatuhan instan secara otomatis.",
     "slackTitle": "Slack Incoming Webhook",
-    "slackDesc": "Kirim notifikasi terformat langsung ke kanal Slack tim Anda.",
+    "slackDesc": "Dapatkan pemberitahuan di ruang kerja Slack organisasi.",
     "slackPlaceholder": "https://hooks.slack.com/services/...",
     "teamsTitle": "Microsoft Teams Webhook",
     "teamsDesc": "Kirimkan Adaptive Cards ke konektor kanal Microsoft Teams.",
@@ -190,12 +190,20 @@
     "email": "Pengiriman Email",
     "emailDesc": "Terima ringkasan dan tugas mendesak langsung di kotak masuk email Anda.",
     "slack": "Kanal Slack",
-    "slackDesc": "Dapatkan pemberitahuan di ruang kerja Slack organisasi.",
     "msTeams": "Microsoft Teams",
     "msTeamsDesc": "Dapatkan pemberitahuan di kanal Microsoft Teams organisasi.",
     "genericWebhook": "Webhook Kustom / Generik",
     "genericWebhookDesc": "Teruskan event notifikasi ke endpoint otomatisasi Anda.",
     "savePreferences": "Simpan Preferensi",
     "preferencesSaved": "Preferensi kanal notifikasi berhasil diperbarui!"
+  },
+  "pagination": {
+    "showing": "Menampilkan {{start}}-{{end}} dari {{total}} data",
+    "rows": "Baris:",
+    "rowsPerPage": "Baris per halaman",
+    "firstPage": "Halaman pertama",
+    "prevPage": "Halaman sebelumnya",
+    "nextPage": "Halaman berikutnya",
+    "lastPage": "Halaman terakhir"
   }
 }

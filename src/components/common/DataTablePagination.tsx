@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
 
 export interface DataTablePaginationProps {
   page: number;
@@ -21,6 +22,7 @@ export function DataTablePagination({
   onPageSizeChange,
   className = '',
 }: DataTablePaginationProps) {
+  const { t } = useTranslation('common');
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const safePage = Math.min(Math.max(1, page), totalPages);
 
@@ -34,16 +36,23 @@ export function DataTablePagination({
     >
       <div className="flex items-center gap-2">
         <span>
-          Menampilkan {startItem}-{endItem} dari {totalItems} data
+          {t('pagination.showing', {
+            start: startItem,
+            end: endItem,
+            total: totalItems,
+            defaultValue: `Menampilkan ${startItem}-${endItem} dari ${totalItems} data`,
+          })}
         </span>
       </div>
 
       <div className="flex items-center gap-4">
         {onPageSizeChange && (
           <div className="flex items-center gap-1.5">
-            <span className="hidden sm:inline">Baris:</span>
+            <span className="hidden sm:inline">
+              {t('pagination.rows', { defaultValue: 'Baris:' })}
+            </span>
             <select
-              aria-label="Baris per halaman"
+              aria-label={t('pagination.rowsPerPage', { defaultValue: 'Baris per halaman' })}
               value={pageSize}
               onChange={(e) => onPageSizeChange(Number(e.target.value))}
               className="h-8 min-h-[44px] sm:min-h-0 rounded border border-input bg-background px-2 text-xs text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -65,7 +74,7 @@ export function DataTablePagination({
             className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
             onClick={() => onPageChange(1)}
             disabled={safePage <= 1}
-            aria-label="Halaman pertama"
+            aria-label={t('pagination.firstPage', { defaultValue: 'Halaman pertama' })}
           >
             <ChevronsLeft className="h-4 w-4" />
           </Button>
@@ -76,7 +85,7 @@ export function DataTablePagination({
             className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
             onClick={() => onPageChange(safePage - 1)}
             disabled={safePage <= 1}
-            aria-label="Halaman sebelumnya"
+            aria-label={t('pagination.prevPage', { defaultValue: 'Halaman sebelumnya' })}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -92,7 +101,7 @@ export function DataTablePagination({
             className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
             onClick={() => onPageChange(safePage + 1)}
             disabled={safePage >= totalPages}
-            aria-label="Halaman berikutnya"
+            aria-label={t('pagination.nextPage', { defaultValue: 'Halaman berikutnya' })}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -103,7 +112,7 @@ export function DataTablePagination({
             className="h-8 w-8 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
             onClick={() => onPageChange(totalPages)}
             disabled={safePage >= totalPages}
-            aria-label="Halaman terakhir"
+            aria-label={t('pagination.lastPage', { defaultValue: 'Halaman terakhir' })}
           >
             <ChevronsRight className="h-4 w-4" />
           </Button>

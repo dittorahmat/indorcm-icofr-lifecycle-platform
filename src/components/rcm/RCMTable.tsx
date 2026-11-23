@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Edit2, Layers } from 'lucide-react';
 import { RISK_RATING_TONE_CLASS, riskRatingTone } from '@/lib/badge-tone';
+import { DataTablePagination } from '@/components/common/DataTablePagination';
+import { useClientPagination } from '@/hooks/useClientPagination';
 
 export interface RCMColumn {
   id: string;
@@ -45,6 +47,18 @@ export function RCMTable({
   minWidth = "2000px" 
 }: RCMTableProps) {
   const { t } = useTranslation(['rcm', 'common']);
+
+  const {
+    page,
+    pageSize,
+    totalItems,
+    pagedItems: pagedData,
+    setPage,
+    setPageSize,
+  } = useClientPagination(data, {
+    initialPageSize: 10,
+    resetDeps: [data.length],
+  });
 
   const allColumns = groups.flatMap(g => g.columns);
 
@@ -167,8 +181,8 @@ export function RCMTable({
                 <tr><td colSpan={allColumns.length} className="h-64 text-center font-semibold uppercase text-xs text-slate-400 tracking-wider">Loading matrix data...</td></tr>
               ) : data.length === 0 ? (
                 <tr><td colSpan={allColumns.length} className="h-64 text-center text-xs text-slate-500">No RCM data found.</td></tr>
-              ) : data.map((row, idx) => {
-                const groupRow = renderGroupRow?.(row, idx, data[idx - 1]);
+              ) : pagedData.map((row, idx) => {
+                const groupRow = renderGroupRow?.(row, idx, pagedData[idx - 1]);
                 const isEven = idx % 2 === 1;
                 const rowBg = isEven ? "bg-slate-50/80" : "bg-white";
 
@@ -208,6 +222,18 @@ export function RCMTable({
           </table>
         </div>
 
+        {totalItems > 0 && (
+          <div data-testid="rcm-table-pagination" className="border-t border-slate-200">
+            <DataTablePagination
+              page={page}
+              pageSize={pageSize}
+              totalItems={totalItems}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
+          </div>
+        )}
+
         {/* Mobile View: Vertical Card Feed (hidden on md and up) */}
         <div className="md:hidden p-3.5 space-y-3 pb-24">
           {isLoading ? (
@@ -219,7 +245,7 @@ export function RCMTable({
               {t('common:status.noData', { defaultValue: 'Tidak ada data RCM.' })}
             </div>
           ) : (
-            data.map((row, idx) => {
+            pagedData.map((row, idx) => {
               const controlCode = row.controlCode || row.code || '-';
               const controlName = row.mappedControlName || row.baseControlName || row.name || '-';
               const processName = row.subProcessName || row.processName || row.businessProcess || '-';
@@ -303,6 +329,18 @@ export function RCMTable({
             })
           )}
         </div>
+
+        {totalItems > 0 && (
+          <div className="md:hidden border-t border-slate-200">
+            <DataTablePagination
+              page={page}
+              pageSize={pageSize}
+              totalItems={totalItems}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+            />
+          </div>
+        )}
       </div>
     </TooltipProvider>
   );

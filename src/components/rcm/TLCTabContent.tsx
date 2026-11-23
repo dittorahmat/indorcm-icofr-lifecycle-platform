@@ -10,6 +10,7 @@ import { RISK_RATING_TONE_CLASS, riskRatingTone } from '@/lib/badge-tone';
 import { Control } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
 import { DataTablePagination } from '@/components/common/DataTablePagination';
+import { useClientPagination } from '@/hooks/useClientPagination';
 
 import { useTranslation } from 'react-i18next';
 
@@ -30,17 +31,18 @@ export function TLCTabContent({
 }: TLCTabContentProps) {
   const navigate = useNavigate();
   const { t } = useTranslation(['rcm', 'common']);
-  const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(10);
 
-  React.useEffect(() => {
-    setPage(1);
-  }, [searchTerm]);
-
-  const pagedTlc = React.useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filteredTlc.slice(start, start + pageSize);
-  }, [filteredTlc, page, pageSize]);
+  const {
+    page,
+    pageSize,
+    totalItems,
+    pagedItems: pagedTlc,
+    setPage,
+    setPageSize,
+  } = useClientPagination(filteredTlc, {
+    initialPageSize: 10,
+    resetDeps: [searchTerm],
+  });
 
   return (
     <motion.div 
@@ -133,12 +135,9 @@ export function TLCTabContent({
           <DataTablePagination
             page={page}
             pageSize={pageSize}
-            totalItems={filteredTlc.length}
+            totalItems={totalItems}
             onPageChange={setPage}
-            onPageSizeChange={(newSize) => {
-              setPageSize(newSize);
-              setPage(1);
-            }}
+            onPageSizeChange={setPageSize}
           />
         )}
       </div>
@@ -212,12 +211,9 @@ export function TLCTabContent({
             <DataTablePagination
               page={page}
               pageSize={pageSize}
-              totalItems={filteredTlc.length}
+              totalItems={totalItems}
               onPageChange={setPage}
-              onPageSizeChange={(newSize) => {
-                setPageSize(newSize);
-                setPage(1);
-              }}
+              onPageSizeChange={setPageSize}
             />
           </div>
         )}
