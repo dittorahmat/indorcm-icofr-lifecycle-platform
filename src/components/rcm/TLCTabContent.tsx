@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { RISK_RATING_TONE_CLASS, riskRatingTone } from '@/lib/badge-tone';
 import { Control } from '@shared/types';
 import { useNavigate } from 'react-router-dom';
+import { DataTablePagination } from '@/components/common/DataTablePagination';
 
 import { useTranslation } from 'react-i18next';
 
@@ -29,6 +30,17 @@ export function TLCTabContent({
 }: TLCTabContentProps) {
   const navigate = useNavigate();
   const { t } = useTranslation(['rcm', 'common']);
+  const [page, setPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(10);
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [searchTerm]);
+
+  const pagedTlc = React.useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredTlc.slice(start, start + pageSize);
+  }, [filteredTlc, page, pageSize]);
 
   return (
     <motion.div 
@@ -70,7 +82,7 @@ export function TLCTabContent({
               <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400 font-medium">{t('common:status.pending')}...</TableCell></TableRow>
             ) : filteredTlc.length === 0 ? (
               <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400">{t('common:status.noData', { defaultValue: 'Tidak ada rekaman TLC ditemukan.' })}</TableCell></TableRow>
-            ) : filteredTlc.map((ctrl, i) => (
+            ) : pagedTlc.map((ctrl, i) => (
               <TableRow key={ctrl.id} className={cn("group hover:bg-slate-50 transition-colors", i % 2 === 1 && "bg-slate-50/40")}>
                 <TableCell className="font-mono text-xs font-semibold text-slate-700 px-3 py-2">{ctrl.code}</TableCell>
                 <TableCell className="py-2">
@@ -116,6 +128,19 @@ export function TLCTabContent({
             ))}
           </TableBody>
         </Table>
+
+        {filteredTlc.length > 0 && (
+          <DataTablePagination
+            page={page}
+            pageSize={pageSize}
+            totalItems={filteredTlc.length}
+            onPageChange={setPage}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setPage(1);
+            }}
+          />
+        )}
       </div>
 
       {/* Mobile Card Feed View */}
@@ -129,7 +154,7 @@ export function TLCTabContent({
             {t('common:status.noData', { defaultValue: 'Tidak ada rekaman TLC ditemukan.' })}
           </div>
         ) : (
-          filteredTlc.map((ctrl) => (
+          pagedTlc.map((ctrl) => (
             <div key={ctrl.id} className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 space-y-3">
               <div className="flex items-start justify-between gap-2 border-b border-slate-100 pb-2 flex-wrap">
                 <div className="space-y-1">
@@ -180,6 +205,21 @@ export function TLCTabContent({
               </div>
             </div>
           ))
+        )}
+
+        {filteredTlc.length > 0 && (
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <DataTablePagination
+              page={page}
+              pageSize={pageSize}
+              totalItems={filteredTlc.length}
+              onPageChange={setPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setPage(1);
+              }}
+            />
+          </div>
         )}
       </div>
     </motion.div>
