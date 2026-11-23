@@ -3,19 +3,22 @@ import { describe, it, expect, vi } from 'vitest';
 import { TLCTabContent } from '../TLCTabContent';
 import { Control } from '@shared/types';
 import { MemoryRouter } from 'react-router-dom';
+import { MOCK_CONTROLS } from '@shared/mock-data';
+
+const baseControl = MOCK_CONTROLS[0] || ({} as Control);
 
 const mockControls: Control[] = Array.from({ length: 25 }, (_, i) => ({
+  ...baseControl,
   id: `ctrl-${i + 1}`,
   code: `TLC-${String(i + 1).padStart(3, '0')}`,
   name: `Control Name ${i + 1}`,
   description: `Description for control ${i + 1}`,
   level: 'TLC',
-  nature: 'Preventive',
+  nature: 'Manual',
   riskRating: 'Medium',
-  type: 'Manual',
+  type: 'Preventive',
   frequency: 'Monthly',
-  classification: 'Key',
-  financialStatementAssertions: ['Existence'],
+  isKeyControl: true,
   status: 'Draft',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
