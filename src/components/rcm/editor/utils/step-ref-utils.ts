@@ -33,3 +33,25 @@ export function matchesStepRef(
   }
   return false;
 }
+
+/**
+ * Format standard composite BPM node label: "[stepRef] stepName" or fallback to default label.
+ */
+export function formatBpmNodeLabel(
+  stepRef?: string,
+  stepName?: string,
+  fallbackLabel: string = 'Aktivitas Baru'
+): string {
+  const cleanRef = stepRef?.trim();
+  const cleanName = stepName?.trim();
+  if (cleanRef && cleanName) {
+    return `${cleanRef} ${cleanName}`;
+  }
+  if (cleanName) {
+    return cleanName;
+  }
+  if (cleanRef) {
+    return `${cleanRef} ${fallbackLabel}`;
+  }
+  return fallbackLabel;
+}

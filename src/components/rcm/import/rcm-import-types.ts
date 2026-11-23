@@ -5,6 +5,7 @@ export interface RCMImportParsedRow {
   processName: string;
   subProcessName: string;
   bpmNodeRef?: string;
+  bpmNodeName?: string;
   riskDescription: string;
   isFraudRelated?: boolean;
   riskRating?: string;

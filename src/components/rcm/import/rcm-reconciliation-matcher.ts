@@ -31,6 +31,34 @@ export function reconcileRcmWithBpmNodes(
       );
 
       if (exactMatch) {
+        // If user explicitly provided bpmNodeName, verify semantic concordance with node label
+        if (row.bpmNodeName) {
+          const nodeTokens = exactMatch.label
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .split(/\s+/)
+            .filter((w) => w.length > 2);
+          const providedTokens = row.bpmNodeName
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .split(/\s+/)
+            .filter((w) => w.length > 2);
+
+          const sharedTokens = providedTokens.filter((t) => nodeTokens.includes(t));
+          // Contradiction happens when provided name has meaningful tokens but 0 match with node label
+          const hasSemanticConflict = providedTokens.length > 0 && sharedTokens.length === 0;
+
+          // If there is an evident semantic mismatch between provided step name and node label,
+          // demote to suggested so auditor can visually confirm in Step 3
+          if (hasSemanticConflict) {
+            return {
+              ...row,
+              matchStatus: 'suggested',
+              targetBpmNodeId: exactMatch.id,
+            };
+          }
+        }
+
         return {
           ...row,
           matchStatus: 'matched',
@@ -39,8 +67,9 @@ export function reconcileRcmWithBpmNodes(
       }
     }
 
-    // 2. Fuzzy / Semantic token matching between control name and node labels
-    const rowTokens = `${row.controlName} ${row.controlDescription || ''}`
+    // 2. Fuzzy / Semantic token matching between control/step name and node labels
+    const textCorpus = `${row.bpmNodeName || ''} ${row.controlName} ${row.controlDescription || ''}`;
+    const rowTokens = textCorpus
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, ' ')
       .split(/\s+/)

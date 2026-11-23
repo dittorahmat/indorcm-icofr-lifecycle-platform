@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
 import { buildRcmImportPayload, importRcmFileText, linkRowToNode } from './rcm-ingestion';
 import type { BPMNodeOption, RCMFlavor, RCMImportParsedRow } from './rcm-import-types';
+import { formatBpmNodeLabel } from '../editor/utils/step-ref-utils';
 
 interface UseRCMImportWizardParams {
   diagramId?: string;
@@ -84,9 +85,14 @@ export function useRCMImportWizard({
       if (!targetRow) return;
 
       if (onAddBpmNode) {
-        const newNodeId = onAddBpmNode(targetRow.controlName, targetRow.controlName);
+        const stepLabel = formatBpmNodeLabel(
+          targetRow.bpmNodeRef,
+          targetRow.bpmNodeName,
+          targetRow.controlName
+        );
+        const newNodeId = onAddBpmNode(stepLabel, targetRow.controlName);
         handleUpdateRowNodeLink(rowId, newNodeId);
-        toast.success(`Simpul baru dibuat di canvas: ${targetRow.controlName}`);
+        toast.success(`Simpul baru dibuat di canvas: ${stepLabel}`);
       } else {
         toast.info('Simpul akan dibuat otomatis saat penyimpanan diagram.');
       }

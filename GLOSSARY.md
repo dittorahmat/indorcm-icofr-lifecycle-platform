@@ -14,6 +14,12 @@ Diagram visual pemetaan alur proses bisnis sesuai standar simbol Lampiran 3 SK-5
 ### Control Linkage (Tautan Pengendalian)
 Relasi eksplisit antara entitas kontrol (`controls`), risiko (`rcms`), dan simpul visual pada diagram proses bisnis (`bpm_node_rcms` dan `node.data.regulatoryPairs`). Memungkinkan auditor atau penguji melihat di langkah alur kerja mana suatu kontrol kunci dijalankan.
 
+### Composite Scoping Hierarchy
+Prinsip pengisolasian data kontrol dan langkah alur kerja menggunakan gabungan `(Informasi_Proses_Bisnis, Informasi_Sub_proses_Bisnis, Ref_Langkah_BPM)` guna mencegah tabrakan referensi langkah yang bernomor urut identik (misal `1.1`, `1.2`) antar sub-proses yang berbeda (ADR 0012).
+
+### Nama Langkah BPM (Simpul Alur Diagram)
+Teks deskriptif atau label aktivitas pada simpul grafis BPM tempat risiko dan kontrol audit menempel. Didukung sebagai atribut pengayaan pada spreadsheet impor RCM (`Nama_Langkah_BPM`) untuk mempercepat rekonsiliasi dan verifikasi keselarasan semantik terhadap kotak aktivitas di kanvas (ADR 0012).
+
 ### Unmapped Controls
 Daftar aktivitas pengendalian yang telah dicatat dalam RCM namun belum ditautkan ke simpul alur spesifik pada diagram BPM. Disediakan dalam panel shape palette kanvas BPM untuk penautan interaktif.
 

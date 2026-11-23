@@ -39,11 +39,13 @@ export function parseRCMSpreadsheet(
     let processName = getCol(rawCells, ['proses_bisnis', 'proses', 'process']);
     let subProcessName = getCol(rawCells, ['sub_proses', 'sub_process', 'subprocess']);
     const bpmNodeRef = getCol(rawCells, ['ref_langkah_bpm', 'langkah_alur', 'noderef', 'step']);
+    const bpmNodeName = getCol(rawCells, ['nama_langkah_bpm', 'aktivitas_bpm', 'nama_langkah_alur', 'nama_aktivitas_alur', 'step_name']);
     const riskDesc = getCol(rawCells, ['risiko', 'risk_description', 'deskripsi_risiko']);
     const controlName = getCol(rawCells, ['nama_aktivitas_pengendalian', 'nama_pengendalian', 'control_name', 'aktivitas_pengendalian']);
     const controlCode = getCol(rawCells, ['referensi_pengendalian', 'kode_pengendalian', 'control_code', 'kode_kontrol']);
     const controlDesc = getCol(rawCells, ['deskripsi_aktivitas_pengendalian', 'deskripsi_pengendalian', 'control_description']);
 
+    const hasExplicitSubProcess = Boolean(subProcessName && subProcessName.trim());
     if (!processName) processName = 'General Process';
     if (!subProcessName) subProcessName = processName;
 
@@ -54,12 +56,16 @@ export function parseRCMSpreadsheet(
     if (!controlName) {
       rowErrors.push('Nama aktivitas pengendalian wajib diisi');
     }
+    if (bpmNodeRef && !hasExplicitSubProcess) {
+      rowErrors.push('Informasi sub-proses bisnis wajib diisi jika referensi langkah BPM dicantumkan');
+    }
 
     const row: RCMImportParsedRow = {
       id: rowId,
       processName,
       subProcessName,
       bpmNodeRef: bpmNodeRef || undefined,
+      bpmNodeName: bpmNodeName || undefined,
       riskDescription: riskDesc || `Pengendalian ${controlName}`,
       isFraudRelated: ['ya', 'y', 'true', '1'].includes(getCol(rawCells, ['fraud']).toLowerCase()),
       riskRating: getCol(rawCells, ['penilaian_risiko', 'risk_rating']) || 'Medium',

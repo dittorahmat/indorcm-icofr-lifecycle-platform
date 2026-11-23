@@ -6,6 +6,7 @@ import {
   linkRowToNode,
   RCM_MATCH_AUTO_THRESHOLD,
   RCM_MATCH_SUGGEST_THRESHOLD,
+  RCM_TEMPLATES,
   requiresBpmReconciliation,
   summarizeRcmRows,
 } from '../rcm-ingestion';
@@ -58,6 +59,31 @@ describe('rcm-ingestion seam (parse + reconcile behind one interface)', () => {
     expect(rows).toHaveLength(1);
     expect(rows[0].isValid).toBe(false);
     expect(rows[0].validationErrors).toContain('Deskripsi risiko wajib diisi');
+  });
+
+  it('rejects row when Ref_Langkah_BPM is present but sub_proses is omitted (ADR 0012)', () => {
+    const csv = [
+      'proses_bisnis,ref_langkah_bpm,risiko,nama_aktivitas_pengendalian',
+      'Pengadaan,1.2,Risiko vendor,Verifikasi Vendor',
+    ].join('\n');
+    const { rows } = importRcmFileText(csv, 'TLC', NODES);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].isValid).toBe(false);
+    expect(rows[0].validationErrors).toContain(
+      'Informasi sub-proses bisnis wajib diisi jika referensi langkah BPM dicantumkan'
+    );
+  });
+
+  it('parses Nama_Langkah_BPM column and enriches parsed row (ADR 0012)', () => {
+    const csv = [
+      'proses_bisnis,sub_proses,ref_langkah_bpm,nama_langkah_bpm,risiko,nama_aktivitas_pengendalian',
+      'Pengadaan,Pengadaan Barang,1.2,Verifikasi Vendor Baru,Risiko vendor,Uji Tuntas',
+    ].join('\n');
+    const { rows } = importRcmFileText(csv, 'TLC', NODES);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].bpmNodeRef).toBe('1.2');
+    expect(rows[0].bpmNodeName).toBe('Verifikasi Vendor Baru');
+    expect(rows[0].isValid).toBe(true);
   });
 
   it('reports empty files without rows', () => {
@@ -152,6 +178,14 @@ describe('rcm-ingestion CONTRACT (template → parse → reconcile through the s
   it('exports the documented token-overlap threshold values', () => {
     expect(RCM_MATCH_SUGGEST_THRESHOLD).toBe(0.25);
     expect(RCM_MATCH_AUTO_THRESHOLD).toBe(0.6);
+  });
+
+  it('enforces that TLC template contract includes mandatory composite scoping headers (ADR 0012)', () => {
+    const tlcHeaders = RCM_TEMPLATES.TLC.headers;
+    expect(tlcHeaders).toContain('Informasi_Proses_Bisnis');
+    expect(tlcHeaders).toContain('Informasi_Sub_proses_Bisnis');
+    expect(tlcHeaders).toContain('Ref_Langkah_BPM');
+    expect(tlcHeaders).toContain('Nama_Langkah_BPM');
   });
 
   const csvWithControls = (controlNames: string[]): string =>
