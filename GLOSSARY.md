@@ -49,6 +49,14 @@ _Avoid_: tooltip, AI tooltip
 Triple konteks pembentuk saran AI: GL (`bpmProcess.noGL`/`currentGL`) + Proses BPM (`bpmProcess.name`/`subProcess`) + Label Node (`node.data.label`).
 _Avoid_: GL/BPM/Node (generik)
 
+### Client Paging Slice
+Mekanisme pemotongan data array di sisi browser (`items.slice((page - 1) * pageSize, page * pageSize)`) untuk tabel yang telah memuat seluruh dataset via React Query, dilengkapi pengaturan ukuran halaman (10/25/50) dan reset otomatis ke halaman 1 saat kueri pencarian atau filter berubah.
+_Avoid_: client pagination ad-hoc
+
+### Density-Preserving Pager
+Komponen kontrol paginasi dan selektor baris per halaman yang mematuhi standar desain institusional BUMN: tipografi minimal `text-xs`, tinggi kontrol kompak (`h-8`), namun tetap mempertahankan target sentuh aksesibel minimal 44px pada layar sentuh.
+_Avoid_: bulky pagination, oversized pager
+
 ### Risk Suggestion
 Kandidat deskripsi risiko (`riskDescription`) berbahasa Indonesia yang dihasilkan LLM dari Suggestion Context.
 _Avoid_: AI risk, saran risiko (generik)
