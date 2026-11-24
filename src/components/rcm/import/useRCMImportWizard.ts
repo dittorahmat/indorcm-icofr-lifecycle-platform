@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
-import { buildRcmImportPayload, importRcmFileText, linkRowToNode } from './rcm-ingestion';
+import { buildRcmImportPayload, convertRcmSpreadsheetToCsvText, importRcmFileText, linkRowToNode } from './rcm-ingestion';
 import type { BPMNodeOption, RCMFlavor, RCMImportParsedRow } from './rcm-import-types';
 import { formatBpmNodeLabel } from '../editor/utils/step-ref-utils';
 
@@ -52,7 +52,10 @@ export function useRCMImportWizard({
     async (file: File) => {
       setSelectedFile(file);
       try {
-        const text = await file.text();
+        const isXlsx = /\.(xlsx?)$/i.test(file.name);
+        const text = isXlsx
+          ? await convertRcmSpreadsheetToCsvText(await file.arrayBuffer())
+          : await file.text();
         const staged = importRcmFileText(text, flavor, bpmNodes);
 
         if (!staged.canProceed) {
