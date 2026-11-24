@@ -1,0 +1,40 @@
+flowchart TD
+    subgraph VENDOR["REKANAN / VENDOR"]
+        A1(["Mulai: Pengajuan Rekanan Baru"]) --> A2["1.1 Mengisi Formulir Registrasi & Upload Dokumen Legal"]
+        A2 --> A3[/"Dokumen Legal: NIB, SIUP, NPWP, Rekening"/]
+    end
+
+    subgraph PROCUREMENT["TIM PENGADAAN / PROCUREMENT"]
+        A3 --> B1["1.2 Verifikasi Uji Tuntas Rekanan Baru"]
+        B1 --> B2{"1.3 Apakah Dokumen Lengkap & Terverifikasi?"}
+        B2 -- "Tidak" --> B3["1.4 Mengirimkan Surat Permintaan Kelengkapan Dokumen"]
+        B3 --> A2
+        B2 -- "Ya" --> B4["1.5 Melakukan Pemeriksaan Terhadap Daftar Hitam / Blacklist Vendor"]
+        B4 --> B5[/"Berita Acara Hasil Uji Tuntas Rekanan"/]
+    end
+
+    subgraph LEGAL["BAGIAN HUKUM / LEGAL & COMPLIANCE"]
+        B5 --> C1["1.6 Validasi Integritas & Pakta Anti Korupsi Rekanan"]
+        C1 --> C2{"1.7 Apakah Rekanan Bebas Konflik Kepentingan?"}
+        C2 -- "Tidak" --> C3["1.8 Penolakan Pendaftaran Rekanan"]
+        C3 --> E1(["Selesai: Registrasi Ditolak"])
+        C2 -- "Ya" --> C4["1.9 Penerbitan Rekomendasi Legalitas Rekanan"]
+    end
+
+    subgraph MANAGER["VP PROCUREMENT / PENGAMBIL KEPUTUSAN"]
+        C4 --> D1["1.10 Persetujuan Pendaftaran Master Data Vendor"]
+        D1 --> D2[("Sistem ERP SAP: Pembuatan Master Vendor ID")]
+        D2 --> E2(["Selesai: Rekanan Terdaftar Aktif"])
+    end
+
+    classDef activity fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0f172a;
+    classDef decision fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#0f172a;
+    classDef doc fill:#f1f5f9,stroke:#64748b,stroke-width:1px,stroke-dasharray: 5 5,color:#334155;
+    classDef endpoint fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#0f172a;
+    classDef storage fill:#ede9fe,stroke:#7c3aed,stroke-width:2px,color:#0f172a;
+
+    class A2,B1,B3,B4,C1,C4,D1 activity;
+    class B2,C2 decision;
+    class A3,B5 doc;
+    class A1,E1,E2 endpoint;
+    class D2 storage;
