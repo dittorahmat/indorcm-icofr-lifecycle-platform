@@ -102,7 +102,7 @@ export function MaterialityKpiCards({
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-              {t('materialityKpi.pmSub', { hc: haircutPercentage })}
+              {t('materialityKpi.pmSub', { ratio: pmRatio })}
             </p>
           </div>
           <div className="p-2.5 rounded-lg bg-secondary-container text-on-secondary-container shrink-0">

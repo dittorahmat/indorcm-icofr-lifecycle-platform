@@ -35,6 +35,7 @@
   "status": {
     "draft": "Draft",
     "pending": "Pending",
+    "loading": "Loading...",
     "approved": "Approved",
     "rejected": "Rejected",
     "active": "Active",

@@ -112,7 +112,7 @@ export function ApprovalPage() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3">
           <div className="min-w-0">
             <h1 className="text-3xl font-bold tracking-tight truncate">{t('approval.title')}</h1>
-            <p className="text-muted-foreground">{t('approval.description', { role: userRole })}</p>
+            <p className="text-muted-foreground">{t('approval.description', { role: userRole || t('approval.defaultRole') })}</p>
           </div>
           <Badge variant="outline" className="h-6 px-3 bg-amber-50 text-amber-700 border-amber-200 gap-1.5 self-start sm:self-auto shrink-0">
             <Loader2 className="h-3 w-3 animate-spin" /> {pendingSims.length} Pending Actions

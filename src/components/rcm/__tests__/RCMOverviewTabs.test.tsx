@@ -133,6 +133,38 @@ describe('RCM Overview Tab Contents Table Layout & Responsiveness', () => {
       expect(mobileContainer).not.toBeNull();
       expect(screen.getAllByText('TLC-REV-01').length).toBeGreaterThanOrEqual(1);
     });
+
+    it('renders semantic primary tokens on Open TLC Matrix button and handles loading state without pending text', () => {
+      const { rerender } = render(
+        <BrowserRouter>
+          <TLCTabContent
+            filteredTlc={mockTlcControls}
+            controlsLoading={false}
+            searchTerm=""
+            onSearchChange={vi.fn()}
+            onEditControl={vi.fn()}
+          />
+        </BrowserRouter>
+      );
+
+      const openButton = screen.getByRole('button', { name: /matrix\.open_matrix_tlc/i });
+      expect(openButton).toHaveClass('bg-primary', 'text-primary-foreground');
+
+      rerender(
+        <BrowserRouter>
+          <TLCTabContent
+            filteredTlc={[]}
+            controlsLoading={true}
+            searchTerm=""
+            onSearchChange={vi.fn()}
+            onEditControl={vi.fn()}
+          />
+        </BrowserRouter>
+      );
+
+      expect(screen.queryByText(/pending/i)).toBeNull();
+      expect(screen.getAllByText('common:status.loading').length).toBeGreaterThanOrEqual(1);
+    });
   });
 
   describe('ELCTabContent', () => {
@@ -222,6 +254,23 @@ describe('RCM Overview Tab Contents Table Layout & Responsiveness', () => {
       const mobileContainer = container.querySelector('.md\\:hidden');
       expect(mobileContainer).not.toBeNull();
       expect(screen.getAllByText('ITGC-AC-01').length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('renders loading state without ambiguous pending text in ITGCTabContent', () => {
+      render(
+        <BrowserRouter>
+          <ITGCTabContent
+            filteredItgc={[]}
+            controlsLoading={true}
+            searchTerm=""
+            onSearchChange={vi.fn()}
+            onEditControl={vi.fn()}
+          />
+        </BrowserRouter>
+      );
+
+      expect(screen.queryByText(/pending/i)).toBeNull();
+      expect(screen.getAllByText('common:status.loading').length).toBeGreaterThanOrEqual(1);
     });
   });
 });

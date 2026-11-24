@@ -4,6 +4,7 @@ import React from 'react';
 import { Select, SelectContent, SelectItem } from '@/components/ui/select';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Popover, PopoverContent } from '@/components/ui/popover';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 describe('UI Layering Integrity', () => {
   it('SelectContent SHALL have z-[1100] to appear above Dialog (z-1000)', async () => {
@@ -43,5 +44,19 @@ describe('UI Layering Integrity', () => {
     
     const content = screen.getByTestId('dialog-content');
     expect(content.className).toContain('z-[1000]');
+  });
+
+  it('SheetContent close button SHALL have z-50 to prevent header occlusion', () => {
+    render(
+      <Sheet open={true}>
+        <SheetContent data-testid="sheet-content">
+          <div>Sheet body</div>
+        </SheetContent>
+      </Sheet>
+    );
+
+    const closeBtn = document.body.querySelector('button');
+    expect(closeBtn).not.toBeNull();
+    expect(closeBtn?.className).toContain('z-50');
   });
 });

@@ -216,9 +216,9 @@ export function ChangeLogPage() {
                 <CardTitle className="text-sm">Why is this important?</CardTitle>
               </CardHeader>
               <CardContent className="text-xs text-muted-foreground leading-relaxed">
-                As per **Bab IV Poin 1**, business processes and controls must be reviewed periodically. 
-                Any changes caused by external factors (new regulations), personnel turnover, or system updates 
-                MUST be identified and documented here to ensure the ICOFR design remains relevant.
+                As per <strong className="font-semibold text-foreground">Bab IV Poin 1</strong>, business processes and controls must be reviewed periodically. 
+                Any changes caused by external factors (new regulations), personnel turnover, or system updates{" "}
+                <strong className="font-semibold text-foreground">MUST</strong> be identified and documented here to ensure the ICOFR design remains relevant.
               </CardContent>
            </Card>
            <Card className="bg-secondary/5 border-secondary/10">
@@ -226,7 +226,7 @@ export function ChangeLogPage() {
                 <CardTitle className="text-sm">Link to CSA</CardTitle>
               </CardHeader>
               <CardContent className="text-xs text-muted-foreground leading-relaxed">
-                These changes are automatically fed into the **Control Self-Assessment (CSA)** for the current quarter. 
+                These changes are automatically fed into the <strong className="font-semibold text-foreground">Control Self-Assessment (CSA)</strong> for the current quarter. 
                 Line 1 owners will be notified if their controls have been updated to ensure they perform the 
                 correct procedures.
               </CardContent>
