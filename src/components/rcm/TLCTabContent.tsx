@@ -61,7 +61,7 @@ export function TLCTabContent({
             onChange={(e) => onSearchChange(e.target.value)} 
           />
         </div>
-        <Button onClick={() => navigate('/rcm/tlc')} className="h-9 sm:h-8 min-h-[44px] sm:min-h-0 gap-2 bg-mancity-pattern hover:opacity-90 shadow-sm transition-all font-bold text-xs uppercase tracking-wider px-3.5 rounded-lg text-primary-foreground shrink-0">
+        <Button onClick={() => navigate('/rcm/tlc')} className="h-9 sm:h-8 min-h-[44px] sm:min-h-0 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all font-bold text-xs uppercase tracking-wider px-3.5 rounded-lg shrink-0">
           <LayoutDashboard className="h-4 w-4" /> {t('matrix.open_matrix_tlc')}
         </Button>
       </div>
@@ -81,7 +81,7 @@ export function TLCTabContent({
           </TableHeader>
           <TableBody>
             {controlsLoading ? (
-              <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400 font-medium">{t('common:status.pending')}...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400 font-medium">{t('common:status.loading')}</TableCell></TableRow>
             ) : filteredTlc.length === 0 ? (
               <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400">{t('common:status.noData', { defaultValue: 'Tidak ada rekaman TLC ditemukan.' })}</TableCell></TableRow>
             ) : pagedTlc.map((ctrl, i) => (
@@ -146,7 +146,7 @@ export function TLCTabContent({
       <div className="md:hidden space-y-3">
         {controlsLoading ? (
           <div className="p-8 text-center bg-white rounded-lg border border-slate-200 text-xs font-semibold text-slate-400">
-            {t('common:status.pending')}...
+            {t('common:status.loading')}
           </div>
         ) : filteredTlc.length === 0 ? (
           <div className="p-8 text-center bg-white rounded-lg border border-slate-200 text-xs text-slate-500">

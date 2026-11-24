@@ -96,38 +96,50 @@ function baseContent(path, base) {
   }
 }
 
-function flatten(obj, prefix, out) {
+function flatten(obj, prefix, out, varMap) {
   for (const [k, v] of Object.entries(obj)) {
     const path = prefix ? prefix + '.' + k : k;
     if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
-      flatten(v, path, out);
+      flatten(v, path, out, varMap);
     } else {
       out.add(path);
+      if (typeof v === 'string' && varMap) {
+        const matches = [...v.matchAll(/\{\{([^}]+)\}\}/g)].map((m) => m[1].trim());
+        if (matches.length > 0) {
+          varMap.set(path, matches);
+        }
+      }
     }
   }
   return out;
 }
 
 let enBundles = null;
+let enTemplateVars = null;
 function loadEnBundles() {
-  if (enBundles) return enBundles;
+  if (enBundles) return { bundles: enBundles, templateVars: enTemplateVars };
   enBundles = new Map();
+  enTemplateVars = new Map();
   let files = [];
   try {
     files = readdirSync(EN_DIR).filter((f) => f.endsWith('.json'));
   } catch {
-    return enBundles;
+    return { bundles: enBundles, templateVars: enTemplateVars };
   }
   for (const f of files) {
     const ns = f.slice(0, -'.json'.length);
     try {
       const json = JSON.parse(readFileSync(join(EN_DIR, f), 'utf-8'));
-      enBundles.set(ns, flatten(json, '', new Set()));
+      const set = new Set();
+      const varMap = new Map();
+      flatten(json, '', set, varMap);
+      enBundles.set(ns, set);
+      enTemplateVars.set(ns, varMap);
     } catch {
       // boundary: unreadable locale file — skip instead of failing every consumer
     }
   }
-  return enBundles;
+  return { bundles: enBundles, templateVars: enTemplateVars };
 }
 
 function fileNamespaces(text) {
@@ -144,7 +156,7 @@ function fileNamespaces(text) {
 }
 
 function missingKeysIn(text) {
-  const bundles = loadEnBundles();
+  const { bundles } = loadEnBundles();
   if (bundles.size === 0) return [];
   const namespaces = fileNamespaces(text);
   const missing = new Set();
@@ -173,6 +185,45 @@ function missingKeysIn(text) {
     }
   }
   return [...missing];
+}
+
+/**
+ * Gate 3: missing template variables.
+ * When a static key maps to a translation string with {{varName}}, but the
+ * t('key', { ... }) call does NOT supply varName, the user sees raw '{{varName}}'.
+ */
+function missingTemplateVarsIn(text) {
+  const { bundles, templateVars } = loadEnBundles();
+  if (bundles.size === 0 || templateVars.size === 0) return [];
+  const namespaces = fileNamespaces(text);
+  const missing = [];
+
+  for (const { key: raw, call } of extractTCalls(text)) {
+    if (!raw || !STATIC_KEY_PATTERN.test(raw)) continue;
+    let targetNs = null;
+    let path = raw;
+    if (raw.includes(':')) {
+      const idx = raw.indexOf(':');
+      targetNs = raw.slice(0, idx);
+      path = raw.slice(idx + 1);
+    } else {
+      const candidates = namespaces.length > 0 ? namespaces : ['common'];
+      targetNs = candidates.find((ns) => bundles.get(ns)?.has(raw)) || null;
+    }
+    if (!targetNs) continue;
+
+    const expectedVars = templateVars.get(targetNs)?.get(path);
+    if (!expectedVars || expectedVars.length === 0) continue;
+
+    for (const v of expectedVars) {
+      // Look for variable property passed in second argument options object
+      const varRegex = new RegExp(`\\b${v}\\s*:`, 'm');
+      if (!varRegex.test(call)) {
+        missing.push(`${targetNs}:${path} (missing {{${v}}})`);
+      }
+    }
+  }
+  return missing;
 }
 
 let explicitBase = null;
@@ -224,15 +275,29 @@ for (const f of files) {
   const nowMissing = missingKeysIn(now);
   if (nowMissing.length === 0) {
     console.log('OK    ' + f + ' — t() keys resolve in en bundle');
-    continue;
-  }
-  const baseMissing = baseText === null ? [] : missingKeysIn(baseText);
-  const fresh = nowMissing.filter((k) => !baseMissing.includes(k));
-  if (fresh.length > 0) {
-    console.log('FAIL  ' + f + ' — missing en locale keys: ' + fresh.join(', '));
-    errors += 1;
   } else {
-    console.log('OK    ' + f + ' — no new missing keys (' + nowMissing.length + ' pre-existing)');
+    const baseMissing = baseText === null ? [] : missingKeysIn(baseText);
+    const fresh = nowMissing.filter((k) => !baseMissing.includes(k));
+    if (fresh.length > 0) {
+      console.log('FAIL  ' + f + ' — missing en locale keys: ' + fresh.join(', '));
+      errors += 1;
+    } else {
+      console.log('OK    ' + f + ' — no new missing keys (' + nowMissing.length + ' pre-existing)');
+    }
+  }
+
+  const nowMissingVars = missingTemplateVarsIn(now);
+  if (nowMissingVars.length === 0) {
+    console.log('OK    ' + f + ' — all template variables supplied');
+  } else {
+    const baseMissingVars = baseText === null ? [] : missingTemplateVarsIn(baseText);
+    const freshVars = nowMissingVars.filter((v) => !baseMissingVars.includes(v));
+    if (freshVars.length > 0) {
+      console.log('FAIL  ' + f + ' — unsupplied template variables: ' + freshVars.join(', '));
+      errors += 1;
+    } else {
+      console.log('OK    ' + f + ' — no new unsupplied template variables (' + nowMissingVars.length + ' pre-existing)');
+    }
   }
 }
 

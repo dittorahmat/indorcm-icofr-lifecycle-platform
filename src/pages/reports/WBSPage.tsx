@@ -231,8 +231,8 @@ export function WBSPage() {
           <div className="space-y-1">
             <h4 className="font-bold text-sm">Regulatory Compliance Note</h4>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              As per **SK-5/DKU.MBU/11/2024 Table 9**, Management must consider fraud indicators in their ICOFR assessment. 
-              Confirmed cases with financial impact MUST be mapped to deficiencies if the underlying control failed to prevent or detect the incident.
+              As per <strong className="font-semibold text-foreground">SK-5/DKU.MBU/11/2024 Table 9</strong>, Management must consider fraud indicators in their ICOFR assessment. 
+              Confirmed cases with financial impact <strong className="font-semibold text-foreground">MUST</strong> be mapped to deficiencies if the underlying control failed to prevent or detect the incident.
             </p>
           </div>
         </div>

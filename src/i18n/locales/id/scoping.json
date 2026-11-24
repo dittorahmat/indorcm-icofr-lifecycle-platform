@@ -48,6 +48,7 @@
   "approval": {
     "title": "Persetujuan Materialitas",
     "description": "Tinjau dan setujui basis materialitas sebagai {{role}}.",
+    "defaultRole": "Peninjau",
     "queueTitle": "Antrian Persetujuan",
     "queueDesc": "Simulasi yang menunggu tinjauan Anda.",
     "dialogTitle": "Tinjau Basis Materialitas: {{name}}",

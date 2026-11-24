@@ -48,6 +48,7 @@
   "approval": {
     "title": "Materiality Approval",
     "description": "Review and approve materiality baselines as {{role}}.",
+    "defaultRole": "Reviewer",
     "queueTitle": "Approval Queue",
     "queueDesc": "Simulations waiting for your review.",
     "dialogTitle": "Review Materiality Baseline: {{name}}",

@@ -75,11 +75,11 @@ export function ScopingEditorContent({
       <Tabs defaultValue="worksheet" className="flex flex-col flex-1 min-h-0 w-full">
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center mb-4 shrink-0 min-w-0">
           <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1 min-w-0">
-          <TabsList className="flex sm:grid w-max min-w-full sm:w-full sm:max-w-[700px] sm:grid-cols-3 lg:grid-cols-5 bg-slate-100/50 p-1 border border-slate-200 rounded-lg min-h-[44px] gap-1">
-            <TabsTrigger value="worksheet" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-3 min-h-[44px] flex items-center justify-center flex-1 sm:flex-none whitespace-nowrap min-w-[130px] sm:min-w-0"> {t('approval.tabWorksheet')}</TabsTrigger>
-            <TabsTrigger value="subsidiaries" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-3 min-h-[44px] flex items-center justify-center flex-1 sm:flex-none whitespace-nowrap min-w-[130px] sm:min-w-0"> {t('tabs.subsidiaries')}</TabsTrigger>
-            <TabsTrigger value="justification" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-3 min-h-[44px] flex items-center justify-center flex-1 sm:flex-none whitespace-nowrap min-w-[130px] sm:min-w-0"> {t('tabs.justification')}</TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center justify-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-3 min-h-[44px] flex-1 sm:flex-none whitespace-nowrap min-w-[120px] sm:min-w-0">
+          <TabsList className="flex flex-nowrap w-max min-w-full sm:w-auto bg-slate-100/50 p-1 border border-slate-200 rounded-lg min-h-[44px] gap-1">
+            <TabsTrigger value="worksheet" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-3 min-h-[44px] flex items-center justify-center shrink-0 whitespace-nowrap min-w-[130px]"> {t('approval.tabWorksheet')}</TabsTrigger>
+            <TabsTrigger value="subsidiaries" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-3 min-h-[44px] flex items-center justify-center shrink-0 whitespace-nowrap min-w-[130px]"> {t('tabs.subsidiaries')}</TabsTrigger>
+            <TabsTrigger value="justification" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-3 min-h-[44px] flex items-center justify-center shrink-0 whitespace-nowrap min-w-[130px]"> {t('tabs.justification')}</TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center justify-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-3 min-h-[44px] shrink-0 whitespace-nowrap min-w-[120px]">
               <History className="h-3 w-3 shrink-0" /> <span className="truncate">{t('approval.tabHistory')}</span>
               {timeline.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1 text-xs font-black shrink-0">
@@ -87,7 +87,7 @@ export function ScopingEditorContent({
                 </Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="integrity" className="flex items-center justify-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-3 min-h-[44px] flex-1 sm:flex-none whitespace-nowrap min-w-[120px] sm:min-w-0">
+            <TabsTrigger value="integrity" className="flex items-center justify-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest px-3 min-h-[44px] shrink-0 whitespace-nowrap min-w-[120px]">
               <ShieldCheck className="h-3 w-3 shrink-0" /> <span className="truncate">{t('approval.tabIntegrity')}</span>
             </TabsTrigger>
           </TabsList>

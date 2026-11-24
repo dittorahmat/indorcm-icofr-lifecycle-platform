@@ -87,6 +87,9 @@ describe('ScopingComponents', () => {
       // Verify Threshold / Clearly Trivial card content (Posting Threshold (SUD))
       expect(screen.getByText(/Posting Threshold \(SUD\)/i)).toBeInTheDocument();
       expect(screen.getByText('5% OM')).toBeInTheDocument();
+      // Verify PM ratio interpolation (75% of OM without raw {{ratio}} placeholder)
+      expect(screen.getByText(/75% of OM/i)).toBeInTheDocument();
+      expect(screen.queryByText(/\{\{ratio\}\}/i)).toBeNull();
     });
   });
 

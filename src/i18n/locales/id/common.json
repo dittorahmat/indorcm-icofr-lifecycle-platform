@@ -35,6 +35,7 @@
   "status": {
     "draft": "Draft",
     "pending": "Menunggu",
+    "loading": "Memuat...",
     "approved": "Disetujui",
     "rejected": "Ditolak",
     "active": "Aktif",

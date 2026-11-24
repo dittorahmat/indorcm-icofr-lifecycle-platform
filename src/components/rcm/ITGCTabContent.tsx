@@ -65,7 +65,7 @@ export function ITGCTabContent({
           </TableHeader>
           <TableBody>
             {controlsLoading ? (
-              <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400 font-medium">{t('common:status.pending')}...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400 font-medium">{t('common:status.loading')}</TableCell></TableRow>
             ) : filteredItgc.length === 0 ? (
               <TableRow><TableCell colSpan={6} className="h-40 text-center text-slate-400">{t('common:status.noData', { defaultValue: 'Tidak ada rekaman ITGC ditemukan.' })}</TableCell></TableRow>
             ) : filteredItgc.map((ctrl, i) => (
@@ -108,7 +108,7 @@ export function ITGCTabContent({
       <div className="md:hidden space-y-3">
         {controlsLoading ? (
           <div className="p-8 text-center bg-white rounded-lg border border-slate-200 text-xs font-semibold text-slate-400">
-            {t('common:status.pending')}...
+            {t('common:status.loading')}
           </div>
         ) : filteredItgc.length === 0 ? (
           <div className="p-8 text-center bg-white rounded-lg border border-slate-200 text-xs text-slate-500">
