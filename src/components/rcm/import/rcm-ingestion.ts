@@ -249,7 +249,8 @@ export function importRcmFileText(
 
 /**
  * Parses binary spreadsheet file (.xlsx / .xls) into CSV text format
- * compatible with importRcmFileText. Takes the first visible sheet.
+ * compatible with importRcmFileText. Takes the first visible sheet and
+ * outputs semicolon-delimited text to safely handle commas within cells.
  */
 export async function convertRcmSpreadsheetToCsvText(buffer: ArrayBuffer): Promise<string> {
   const XLSX = await import('xlsx');
@@ -258,7 +259,7 @@ export async function convertRcmSpreadsheetToCsvText(buffer: ArrayBuffer): Promi
   if (!sheetName) return '';
   const worksheet = workbook.Sheets[sheetName];
   if (!worksheet) return '';
-  return XLSX.utils.sheet_to_csv(worksheet);
+  return XLSX.utils.sheet_to_csv(worksheet, { FS: ';' });
 }
 
 /** Step-3 gate: only TLC rows reconcile against BPM nodes. */
