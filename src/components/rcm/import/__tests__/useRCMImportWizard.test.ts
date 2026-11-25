@@ -3,10 +3,30 @@ import { act, renderHook } from '@testing-library/react';
 import { strictT } from '@/test/mock-i18n';
 import { useRCMImportWizard } from '../useRCMImportWizard';
 
+const mockInvalidateQueries = vi.fn().mockResolvedValue(undefined);
+const mockApi = vi.fn();
+
+vi.mock('@/lib/api-client', () => ({
+  api: (...args: unknown[]) => mockApi(...args),
+}));
+
+vi.mock('@tanstack/react-query', () => ({
+  useQueryClient: () => ({
+    invalidateQueries: mockInvalidateQueries,
+  }),
+}));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: strictT,
   }),
+}));
+
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
 }));
 
 const baseParams = {
@@ -69,5 +89,44 @@ describe('useRCMImportWizard initialFlavor preset', () => {
     rerender({ open: false });
     rerender({ open: true });
     expect(result.current.flavor).toBe('ELC');
+  });
+
+  it('invalidates bpm and rcm query keys on successful import submission', async () => {
+    mockApi.mockResolvedValueOnce({
+      success: true,
+      summary: { createdControls: 4, createdNodeLinks: 2 },
+    });
+
+    const onClose = vi.fn();
+    const onSuccess = vi.fn();
+    const { result } = renderHook(() =>
+      useRCMImportWizard({ ...baseParams, onClose, onSuccess })
+    );
+
+    const testFile = new File(
+      [
+        'No;Informasi_Proses_Bisnis;Informasi_Sub_proses_Bisnis;Risiko_Aktivitas_Pengendalian;Referensi_Pengendalian;Nama_Aktivitas_Pengendalian;Deskripsi_Aktivitas_Pengendalian;Frekuensi_Pengendalian;Dokumen_Pendukung;Fungsi_Pelaksana;Pelaku_Pengendalian;Periode_Efektif\n' +
+        '1;Procurement;Vendor;Risk 1;CTRL-001;Control 1;Desc 1;Harian;Doc 1;Proc;Staff;2025'
+      ],
+      'test_rcm.csv',
+      { type: 'text/csv' }
+    );
+
+    await act(async () => {
+      await result.current.handleFileSelect(testFile);
+    });
+
+    expect(result.current.parsedRows.length).toBe(1);
+
+    await act(async () => {
+      await result.current.handleCommit();
+    });
+
+    expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ['bpm-processes'] });
+    expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ['bpm-diagrams'] });
+    expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ['rcm'] });
+    expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ['controls'] });
+    expect(onSuccess).toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalled();
   });
 });

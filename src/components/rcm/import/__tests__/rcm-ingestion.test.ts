@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import * as XLSX from 'xlsx';
 import {
   buildRcmImportPayload,
   buildRcmTemplateCsv,
+  convertRcmSpreadsheetToCsvText,
   importRcmFileText,
   linkRowToNode,
   RCM_MATCH_AUTO_THRESHOLD,
@@ -251,5 +253,26 @@ describe('rcm-ingestion CONTRACT (template → parse → reconcile through the s
       invalidRowCount: 0,
       canProceed: false,
     });
+  });
+
+  it('convertRcmSpreadsheetToCsvText converts binary workbook buffer to valid CSV', async () => {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([
+      ['Ref_Langkah_BPM', 'Nama_Langkah_BPM', 'Risiko_Aktivitas_Pengendalian', 'Nama_Aktivitas_Pengendalian'],
+      ['1.2', 'Verifikasi Uji Tuntas Rekanan Baru', 'Risiko rekanan fiktif', 'Verifikasi KTP dan NPWP'],
+    ]);
+    XLSX.utils.book_append_sheet(wb, ws, 'RCM_TLC');
+    const arrayBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' }) as ArrayBuffer;
+
+    const csvText = await convertRcmSpreadsheetToCsvText(arrayBuffer);
+    expect(csvText).toContain('1.2');
+    expect(csvText).toContain('Verifikasi Uji Tuntas Rekanan Baru');
+
+    const result = importRcmFileText(csvText, 'TLC', [
+      { id: 'node-2', label: '1.2 Verifikasi Uji Tuntas Rekanan Baru', type: 'activity' },
+    ]);
+    expect(result.canProceed).toBe(true);
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0].matchStatus).toBe('matched');
   });
 });

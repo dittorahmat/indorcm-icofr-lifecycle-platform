@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
+  loadProcessHierarchy,
   planReorganize,
   rollupChildCounts,
   type ProcessCountRow,
@@ -99,5 +100,72 @@ describe('planReorganize (reorganize decision seam)', () => {
   it('accepts promote', () => {
     const plan = planReorganize({ action: 'promote', processIds: ['a'], targetExists: false });
     expect(plan).toEqual({ ok: true, action: 'promote' });
+  });
+});
+
+describe('loadProcessHierarchy database query seam', () => {
+  it('executes select query with Drizzle schema and aggregates child counts', async () => {
+    const mockRows = [
+      {
+        id: 'proc_parent',
+        organizationId: 'org1',
+        noGL: '100',
+        fsliName: 'Cash',
+        name: 'Treasury',
+        year: 2027,
+        createdAt: new Date(),
+        createdBy: 'user1',
+        controlCount: 0,
+        riskCount: 0,
+        bpmCode: 'TR-01',
+        standardTestProcedure: null,
+        workflowStatus: 'Draft',
+        workflowHistory: null,
+        parentId: null,
+        level: 1,
+      },
+      {
+        id: 'proc_child',
+        organizationId: 'org1',
+        noGL: '100',
+        fsliName: 'Cash',
+        name: 'Disbursements',
+        year: 2027,
+        createdAt: new Date(),
+        createdBy: 'user1',
+        controlCount: 3,
+        riskCount: 2,
+        bpmCode: 'TR-01-01',
+        standardTestProcedure: null,
+        workflowStatus: 'Draft',
+        workflowHistory: null,
+        parentId: 'proc_parent',
+        level: 2,
+      },
+    ];
+
+    const mockDb = {
+      select: () => ({
+        from: () => ({
+          where: async () => mockRows,
+        }),
+      }),
+    };
+
+    // @ts-expect-error minimal select-from-where test stub
+    const results = await loadProcessHierarchy(mockDb, {
+      orgId: 'org1',
+      year: 2027,
+    });
+
+    expect(results).toHaveLength(2);
+    // Parent should rollup child counts (3 controls, 2 risks)
+    const parent = results.find((r) => r.id === 'proc_parent');
+    expect(parent?.controlCount).toBe(3);
+    expect(parent?.riskCount).toBe(2);
+
+    const child = results.find((r) => r.id === 'proc_child');
+    expect(child?.controlCount).toBe(3);
+    expect(child?.riskCount).toBe(2);
   });
 });

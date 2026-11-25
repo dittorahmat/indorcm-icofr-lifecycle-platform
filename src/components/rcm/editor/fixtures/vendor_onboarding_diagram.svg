@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1200" width="1600" height="1200" style="background:#ffffff; font-family:'Segoe UI', Inter, sans-serif;">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <!-- TITLE HEADER -->
+  <rect x="0" y="0" width="1600" height="70" fill="#0f172a"/>
+  <text x="30" y="44" fill="#ffffff" font-size="22" font-weight="bold">STANDAR OPERASIONAL PROSEDUR (SOP) &amp; BPM: PENDAFTARAN &amp; UJI TUNTAS REKANAN (VENDOR ONBOARDING)</text>
+  <text x="1350" y="44" fill="#94a3b8" font-size="14">LAMPIRAN 3 SK-5 BUMN</text>
+
+  <!-- SWIMLANES -->
+  <!-- Lane 1: VENDOR -->
+  <rect x="50" y="90" width="350" height="1060" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <rect x="50" y="90" width="350" height="50" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="225" y="122" text-anchor="middle" font-weight="bold" font-size="16" fill="#1e293b">REKANAN / VENDOR</text>
+
+  <!-- Lane 2: PROCUREMENT -->
+  <rect x="420" y="90" width="380" height="1060" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <rect x="420" y="90" width="380" height="50" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="610" y="122" text-anchor="middle" font-weight="bold" font-size="16" fill="#1e293b">TIM PROCUREMENT / PENGADAAN</text>
+
+  <!-- Lane 3: LEGAL & COMPLIANCE -->
+  <rect x="820" y="90" width="360" height="1060" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <rect x="820" y="90" width="360" height="50" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="1000" y="122" text-anchor="middle" font-weight="bold" font-size="16" fill="#1e293b">BAGIAN HUKUM / LEGAL &amp; COMPLIANCE</text>
+
+  <!-- Lane 4: APPROVER / VP PROCUREMENT -->
+  <rect x="1200" y="90" width="350" height="1060" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <rect x="1200" y="90" width="350" height="50" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2"/>
+  <text x="1375" y="122" text-anchor="middle" font-weight="bold" font-size="16" fill="#1e293b">VP PROCUREMENT / PENGAMBIL KEPUTUSAN</text>
+
+  <!-- NODES -->
+  <!-- Lane 1 Items -->
+  <!-- Start Node -->
+  <rect x="145" y="170" width="160" height="46" rx="23" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="225" y="198" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">Mulai: Registrasi Rekanan</text>
+
+  <!-- 1.1 -->
+  <rect x="80" y="260" width="290" height="70" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="225" y="288" text-anchor="middle" font-size="13" font-weight="bold" fill="#0369a1">1.1 Registrasi Rekanan &amp; Upload Legalitas</text>
+  <text x="225" y="312" text-anchor="middle" font-size="12" fill="#475569">Mengisi formulir portal &amp; upload berkas</text>
+
+  <!-- Document 1.1 -->
+  <polygon points="90,370 330,370 360,420 120,420" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+  <text x="225" y="400" text-anchor="middle" font-size="12" font-weight="bold" fill="#334155">Dokumen Legalitas: NIB, SIUP, NPWP, Rekening</text>
+
+  <!-- Lane 2 Items -->
+  <!-- 1.2 -->
+  <rect x="450" y="360" width="320" height="70" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="610" y="388" text-anchor="middle" font-size="13" font-weight="bold" fill="#0369a1">1.2 Verifikasi Uji Tuntas Rekanan Baru</text>
+  <text x="610" y="412" text-anchor="middle" font-size="12" fill="#475569">Pemeriksaan keabsahan dokumen vendor</text>
+
+  <!-- Decision 1.3 -->
+  <polygon points="610,470 740,530 610,590 480,530" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="610" y="525" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">1.3 Dokumen Valid</text>
+  <text x="610" y="545" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">&amp; Lengkap?</text>
+
+  <!-- 1.4 Reject/Request Docs -->
+  <rect x="100" y="500" width="250" height="60" rx="8" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+  <text x="225" y="528" text-anchor="middle" font-size="12" font-weight="bold" fill="#b91c1c">1.4 Permintaan Kelengkapan Dokumen</text>
+  <text x="225" y="546" text-anchor="middle" font-size="11" fill="#7f1d1d">Kirim notifikasi revisi ke vendor</text>
+
+  <!-- 1.5 -->
+  <rect x="450" y="650" width="320" height="70" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="610" y="678" text-anchor="middle" font-size="13" font-weight="bold" fill="#0369a1">1.5 Pemeriksaan Blacklist Vendor BUMN</text>
+  <text x="610" y="702" text-anchor="middle" font-size="12" fill="#475569">Cek database sanksi &amp; daftar hitam</text>
+
+  <!-- Lane 3 Items -->
+  <!-- 1.6 -->
+  <rect x="840" y="650" width="320" height="70" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="1000" y="678" text-anchor="middle" font-size="13" font-weight="bold" fill="#0369a1">1.6 Validasi Pakta Integritas Rekanan</text>
+  <text x="1000" y="702" text-anchor="middle" font-size="12" fill="#475569">Verifikasi klausul anti-bribery &amp; WBS</text>
+
+  <!-- Decision 1.7 -->
+  <polygon points="1000,760 1130,820 1000,880 870,820" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+  <text x="1000" y="815" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">1.7 Bebas Benturan</text>
+  <text x="1000" y="835" text-anchor="middle" font-size="12" font-weight="bold" fill="#92400e">Kepentingan (COI)?</text>
+
+  <!-- 1.8 Reject End -->
+  <rect x="880" y="930" width="240" height="50" rx="25" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+  <text x="1000" y="960" text-anchor="middle" font-size="12" font-weight="bold" fill="#b91c1c">Selesai: Registrasi Rekanan Ditolak</text>
+
+  <!-- Lane 4 Items -->
+  <!-- 1.10 -->
+  <rect x="1220" y="785" width="310" height="70" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+  <text x="1375" y="813" text-anchor="middle" font-size="13" font-weight="bold" fill="#0369a1">1.10 Persetujuan Pendaftaran Vendor</text>
+  <text x="1375" y="837" text-anchor="middle" font-size="12" fill="#475569">Approval berjenjang sesuai kewenangan</text>
+
+  <!-- SAP ERP Storage -->
+  <!-- Cylinder -->
+  <path d="M 1245,920 A 130,20 0 0,0 1505,920 L 1505,980 A 130,20 0 0,1 1245,980 Z" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <ellipse cx="1375" cy="920" rx="130" ry="20" fill="#ddd6fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="1375" y="955" text-anchor="middle" font-size="12" font-weight="bold" fill="#5b21b6">Master Data SAP ERP</text>
+
+  <!-- End Node -->
+  <rect x="1275" y="1040" width="200" height="46" rx="23" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="1375" y="1068" text-anchor="middle" font-size="13" font-weight="bold" fill="#166534">Selesai: Rekanan Terdaftar</text>
+
+  <!-- CONNECTIONS -->
+  <line x1="225" y1="216" x2="225" y2="260" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="225" y1="330" x2="225" y2="370" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="340" y1="395" x2="450" y2="395" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="610" y1="430" x2="610" y2="470" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+  
+  <!-- Decision 1.3 No -> 1.4 -->
+  <line x1="480" y1="530" x2="350" y2="530" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="410" y="520" font-size="11" font-weight="bold" fill="#ef4444">Tidak</text>
+  <line x1="225" y1="500" x2="225" y2="330" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+
+  <!-- Decision 1.3 Yes -> 1.5 -->
+  <line x1="610" y1="590" x2="610" y2="650" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="620" y="625" font-size="11" font-weight="bold" fill="#16a34a">Ya</text>
+
+  <!-- 1.5 -> 1.6 -->
+  <line x1="770" y1="685" x2="840" y2="685" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 1.6 -> Decision 1.7 -->
+  <line x1="1000" y1="720" x2="1000" y2="760" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Decision 1.7 No -> 1.8 -->
+  <line x1="1000" y1="880" x2="1000" y2="930" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="1010" y="905" font-size="11" font-weight="bold" fill="#ef4444">Tidak</text>
+
+  <!-- Decision 1.7 Yes -> 1.10 -->
+  <line x1="1130" y1="820" x2="1220" y2="820" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="1165" y="810" font-size="11" font-weight="bold" fill="#16a34a">Ya</text>
+
+  <!-- 1.10 -> SAP ERP -->
+  <line x1="1375" y1="855" x2="1375" y2="900" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- SAP ERP -> End -->
+  <line x1="1375" y1="995" x2="1375" y2="1040" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+
+</svg>

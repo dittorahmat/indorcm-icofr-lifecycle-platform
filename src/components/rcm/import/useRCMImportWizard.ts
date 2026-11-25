@@ -1,8 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
-import { buildRcmImportPayload, importRcmFileText, linkRowToNode } from './rcm-ingestion';
+import { buildRcmImportPayload, convertRcmSpreadsheetToCsvText, importRcmFileText, linkRowToNode } from './rcm-ingestion';
 import type { BPMNodeOption, RCMFlavor, RCMImportParsedRow } from './rcm-import-types';
 import { formatBpmNodeLabel } from '../editor/utils/step-ref-utils';
 
@@ -32,6 +33,7 @@ export function useRCMImportWizard({
   onAddBpmNode,
 }: UseRCMImportWizardParams) {
   const { t } = useTranslation(['rcm', 'common']);
+  const queryClient = useQueryClient();
   const [step, setStep] = React.useState<1 | 2 | 3>(1);
   const [flavor, setFlavor] = React.useState<RCMFlavor>(initialFlavor ?? 'TLC');
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
@@ -52,7 +54,10 @@ export function useRCMImportWizard({
     async (file: File) => {
       setSelectedFile(file);
       try {
-        const text = await file.text();
+        const isXlsx = /\.(xlsx?)$/i.test(file.name);
+        const text = isXlsx
+          ? await convertRcmSpreadsheetToCsvText(await file.arrayBuffer())
+          : await file.text();
         const staged = importRcmFileText(text, flavor, bpmNodes);
 
         if (!staged.canProceed) {
@@ -65,7 +70,7 @@ export function useRCMImportWizard({
 
         setParsedRows(staged.rows);
         setStep(2);
-      } catch (err: unknown) {
+      } catch {
         toast.error('Gagal membaca file spreadsheet RCM.');
       }
     },
@@ -130,6 +135,10 @@ export function useRCMImportWizard({
         toast.success(
           `Impor RCM Berhasil: ${summary.createdControls} kontrol & ${summary.createdNodeLinks} tautan BPM dibuat.`
         );
+        queryClient.invalidateQueries({ queryKey: ['bpm-processes'] });
+        queryClient.invalidateQueries({ queryKey: ['bpm-diagrams'] });
+        queryClient.invalidateQueries({ queryKey: ['rcm'] });
+        queryClient.invalidateQueries({ queryKey: ['controls'] });
         if (onSuccess) onSuccess();
         onClose();
       }
@@ -139,7 +148,7 @@ export function useRCMImportWizard({
     } finally {
       setIsSubmitting(false);
     }
-  }, [parsedRows, flavor, workingYear, bpmProcessId, diagramId, onSuccess, onClose]);
+  }, [parsedRows, flavor, workingYear, bpmProcessId, diagramId, onSuccess, onClose, queryClient]);
 
   return {
     step,

@@ -4,7 +4,7 @@ import { ok, bad } from '../../lib/utils';
 import { getDb } from '../../db';
 import { rbac } from "../../lib/guard";
 import * as schema from "../../db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 const generateId = () => crypto.randomUUID();
 
@@ -77,6 +77,11 @@ rcmImportRoute.post('/rcm/import', rbac(['Line 1', 'Line 2', 'Admin']), async (c
     let createdNodeLinks = 0;
 
     await db.transaction(async (tx) => {
+      const affectedProcessIds = new Set<string>();
+      if (bpmProcessId) {
+        affectedProcessIds.add(bpmProcessId);
+      }
+
       // Group rows by process + subProcess
       const processMap = new Map<string, ImportRowPayload[]>();
       for (const row of rows) {
@@ -122,6 +127,10 @@ rcmImportRoute.post('/rcm/import', rbac(['Line 1', 'Line 2', 'Admin']), async (c
             });
             createdProcesses++;
           }
+        }
+
+        if (activeProcessId) {
+          affectedProcessIds.add(activeProcessId);
         }
 
         // Group rows by risk description
@@ -236,6 +245,58 @@ rcmImportRoute.post('/rcm/import', rbac(['Line 1', 'Line 2', 'Admin']), async (c
             }
           }
         }
+      }
+
+      // Recalculate summary counts for all affected processes in this import batch
+      for (const procId of affectedProcessIds) {
+        const [procRecord] = await tx
+          .select({ name: schema.bpmProcesses.name })
+          .from(schema.bpmProcesses)
+          .where(
+            and(
+              eq(schema.bpmProcesses.organizationId, orgId),
+              eq(schema.bpmProcesses.id, procId)
+            )
+          )
+          .limit(1);
+
+        const procName = procRecord?.name || '';
+
+        const [ctrlResult] = await tx
+          .select({ count: sql<number>`count(distinct ${schema.controls.id})` })
+          .from(schema.controls)
+          .where(
+            and(
+              eq(schema.controls.organizationId, orgId),
+              eq(schema.controls.bpmProcessId, procId)
+            )
+          );
+
+        const [riskResult] = await tx
+          .select({ count: sql<number>`count(distinct ${schema.rcms.id})` })
+          .from(schema.rcms)
+          .where(
+            and(
+              eq(schema.rcms.organizationId, orgId),
+              sql`(${schema.rcms.process} = ${procName} OR ${schema.rcms.subProcess} = ${procName})`
+            )
+          );
+
+        const liveControls = Number(ctrlResult?.count || 0);
+        const liveRisks = Number(riskResult?.count || 0);
+
+        await tx
+          .update(schema.bpmProcesses)
+          .set({
+            controlCount: liveControls,
+            riskCount: liveRisks,
+          })
+          .where(
+            and(
+              eq(schema.bpmProcesses.organizationId, orgId),
+              eq(schema.bpmProcesses.id, procId)
+            )
+          );
       }
     });
 

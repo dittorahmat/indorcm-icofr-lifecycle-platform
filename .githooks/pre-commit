@@ -50,4 +50,5 @@ node scripts/check-authority-literals.mjs || exit 1
 node scripts/check-route-links.mjs || exit 1
 node scripts/check-worktree-isolation.mjs || exit 1
 node scripts/check-period-queries.mjs || exit 1
+node scripts/check-drizzle-sql.mjs || exit 1
 node scripts/check-api-contract.mjs || exit 1
