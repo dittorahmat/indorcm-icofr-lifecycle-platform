@@ -51,6 +51,7 @@
     "check:worktree": "node scripts/check-worktree-isolation.mjs",
     "sync:skills": "node scripts/sync-skills.mjs",
     "check:period-queries": "node scripts/check-period-queries.mjs",
+    "check:drizzle-sql": "node scripts/check-drizzle-sql.mjs",
     "ocr:probe": "tsx scripts/ocr-probe.ts",
     "preview": "bun run build && vite preview --host 0.0.0.0 --port 4173",
     "deploy": "bun run build && wrangler deploy",

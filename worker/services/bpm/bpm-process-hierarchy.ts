@@ -1,6 +1,6 @@
 import { and, eq, inArray, or, sql, type SQL } from 'drizzle-orm';
 import type { DrizzleDb } from '../../db';
-import { bpmProcesses, bpmProcessGlCodes } from '../../db/schema';
+import { bpmProcesses, bpmProcessGlCodes, controls, rcms } from '../../db/schema';
 
 /**
  * Process-hierarchy seam: the child-count rollup and the reorganize decision
@@ -138,8 +138,26 @@ export async function loadProcessHierarchy(db: DrizzleDb, filter: ProcessHierarc
     year: bpmProcesses.year,
     createdAt: bpmProcesses.createdAt,
     createdBy: bpmProcesses.createdBy,
-    controlCount: bpmProcesses.controlCount,
-    riskCount: bpmProcesses.riskCount,
+    controlCount: sql<number>`COALESCE(
+      (
+        SELECT count(distinct ${controls.id})
+        FROM ${controls}
+        WHERE ${controls.organizationId} = ${orgId}
+          AND ${controls.bpmProcessId} = ${bpmProcesses.id}
+      ),
+      ${bpmProcesses.controlCount},
+      0
+    )::int`,
+    riskCount: sql<number>`COALESCE(
+      (
+        SELECT count(distinct ${rcms.id})
+        FROM ${rcms}
+        WHERE ${rcms.organizationId} = ${orgId}
+          AND (${rcms.process} = ${bpmProcesses.name} OR ${rcms.subProcess} = ${bpmProcesses.name})
+      ),
+      ${bpmProcesses.riskCount},
+      0
+    )::int`,
     bpmCode: bpmProcesses.bpmCode,
     standardTestProcedure: bpmProcesses.standardTestProcedure,
     workflowStatus: bpmProcesses.workflowStatus,

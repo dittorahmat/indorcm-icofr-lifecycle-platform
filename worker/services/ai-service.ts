@@ -361,14 +361,14 @@ export class AIService {
     const result = await db.execute(sql`
       WITH vector_search AS (
         SELECT id, ROW_NUMBER() OVER (ORDER BY embedding <=> ${sql.raw(`'${JSON.stringify(queryVector)}'::vector`)}) as rank
-        FROM icofr.document_chunks
+        FROM ${documentChunks}
         WHERE organization_id = ${orgId}
         ORDER BY embedding <=> ${sql.raw(`'${JSON.stringify(queryVector)}'::vector`)}
         LIMIT 50
       ),
       text_search AS (
         SELECT id, ROW_NUMBER() OVER (ORDER BY ${corpusRank(sql.raw('fts_tokens'), query)} DESC) as rank
-        FROM icofr.document_chunks
+        FROM ${documentChunks}
         WHERE organization_id = ${orgId}
         AND ${corpusMatch(sql.raw('fts_tokens'), query)}
         ORDER BY rank
@@ -376,8 +376,8 @@ export class AIService {
       ),
       title_search AS (
         SELECT c.id, 1 as rank
-        FROM icofr.document_chunks c
-        JOIN icofr.documents d ON c.document_id = d.id
+        FROM ${documentChunks} c
+        JOIN ${documents} d ON c.document_id = d.id
         WHERE c.organization_id = ${orgId}
         AND d.title ILIKE ${substringPattern(query)}
         LIMIT 50
@@ -390,8 +390,8 @@ export class AIService {
         COALESCE(1.0 / (60 + v.rank), 0.0) + 
         COALESCE(1.0 / (60 + t.rank), 0.0) +
         COALESCE(1.0 / (30 + ts.rank), 0.0) AS score
-      FROM icofr.document_chunks c
-      JOIN icofr.documents d ON c.document_id = d.id
+      FROM ${documentChunks} c
+      JOIN ${documents} d ON c.document_id = d.id
       LEFT JOIN vector_search v ON c.id = v.id
       LEFT JOIN text_search t ON c.id = t.id
       LEFT JOIN title_search ts ON c.id = ts.id
