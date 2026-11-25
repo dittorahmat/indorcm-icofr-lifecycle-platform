@@ -26,6 +26,15 @@ Daftar aktivitas pengendalian yang telah dicatat dalam RCM namun belum ditautkan
 ### Auto-Reconciliation / Auto-Link
 Mekanisme pencocokan baris kontrol dalam berkas impor RCM terhadap simpul diagram BPM yang ada menggunakan referensi kode simpul (`Ref_Langkah_BPM`) dan kemiripan semantik label teks alur, dilengkapi dialog pratinjau konfirmasi sebelum komit ke basis data.
 
+### Global Multi-Process Ingestion
+Pola impor master data RCM dari satu berkas spreadsheet terpusat yang memuat berbagai proses bisnis, sub-proses, risiko, dan kontrol sekaligus (misal gabungan P2P, O2C, H2R, dan R2R). Diinisiasi dari menu Pusat Impor (`/import`) atau tabel matriks tingkat kontrol (`/rcm/tlc`, `/rcm/elc`, `/rcm/itgc`). Sistem secara otomatis mendistribusikan data, membuat entitas proses di database bila belum ada, dan menerapkan *Late Reconciliation* untuk pemetaan simpul diagram.
+
+### Diagram-Scoped Ingestion
+Pola impor data RCM yang dijalankan langsung dari kanvas kerja diagram alur proses spesifik (melalui toolbar BPM Workflow Editor). Ditujukan untuk rekonsiliasi instan (Step 3 Matcher) antara kontrol dalam berkas dengan simpul aktif pada kanvas diagram tunggal tersebut.
+
+### Late Reconciliation (Rekonsiliasi Tertunda)
+Pola kerja di mana risiko dan kontrol dari Global Multi-Process Ingestion disimpan terlebih dahulu ke dalam database tanpa dipaksakan terhubung ke diagram BPM saat itu juga. Penautan ke simpul alur visual dilakukan kemudian saat penyusun atau auditor membuka diagram BPM terkait melalui unmapped control palette atau properti simpul.
+
 ### YAGNI-Violation (Pelanggaran YAGNI)
 Abstraksi yang ditambahkan untuk kebutuhan hipotetis ("nanti mungkin butuh") tanpa pemakai nyata hari ini: hook generik, wrapper, util, opsi config, file/komponen baru yang hanya dipakai sekali, atau prop/callback tanpa pemakai. Dilarang kecuali memenuhi salah satu pengecualian: (a) dipakai ≥2 tempat, (b) butuh unit test tersendiri, atau (c) memecah god-file `>400 LOC`. Keputusan enforcement: `docs/adr/0002-yagni-one-liner-enforcement.md`.
 

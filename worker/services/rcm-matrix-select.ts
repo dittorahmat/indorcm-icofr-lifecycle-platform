@@ -65,7 +65,7 @@ export const MATRIX_KIND_SPECS: Record<MatrixKind, MatrixKindSpec> = {
     level: 'ITGC',
     filters: ['level', 'year', 'bpmProcessId'],
     columns: ['itgc'],
-    joins: ['parentProcess'],
+    joins: ['process', 'parentProcess'],
   },
 };
 

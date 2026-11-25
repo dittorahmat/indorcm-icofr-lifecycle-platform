@@ -143,32 +143,89 @@ rcmImportRoute.post('/rcm/import', rbac(['Line 1', 'Line 2', 'Admin']), async (c
         }
 
         for (const [riskDesc, riskRows] of riskMap.entries()) {
-          const riskId = `risk_${generateId()}`;
-          await tx.insert(schema.rcms).values({
-            id: riskId,
-            organizationId: orgId,
-            process: procName,
-            subProcess: subProcName,
-            year: numericYear,
-            riskDescription: riskDesc,
-            isFraudRelated: riskRows[0].isFraudRelated ?? false,
-            riskRating: riskRows[0].riskRating || 'Medium',
-            status: 'Active',
-            diagramId: diagramId || null,
-            workflowStatus: 'Draft',
-          });
-          createdRisks++;
+          // Check if an RCM risk already exists for this (orgId, year, procName, subProcName, riskDesc)
+          let riskId: string;
+          const existingRisk = await tx
+            .select({ id: schema.rcms.id })
+            .from(schema.rcms)
+            .where(
+              and(
+                eq(schema.rcms.organizationId, orgId),
+                eq(schema.rcms.year, numericYear),
+                eq(schema.rcms.process, procName),
+                eq(schema.rcms.subProcess, subProcName),
+                eq(schema.rcms.riskDescription, riskDesc)
+              )
+            )
+            .limit(1);
+
+          if (existingRisk.length > 0) {
+            riskId = existingRisk[0].id;
+            await tx
+              .update(schema.rcms)
+              .set({
+                isFraudRelated: riskRows[0].isFraudRelated ?? false,
+                riskRating: riskRows[0].riskRating || 'Medium',
+                diagramId: diagramId || undefined,
+              })
+              .where(eq(schema.rcms.id, riskId));
+          } else {
+            riskId = `risk_${generateId()}`;
+            await tx.insert(schema.rcms).values({
+              id: riskId,
+              organizationId: orgId,
+              process: procName,
+              subProcess: subProcName,
+              year: numericYear,
+              riskDescription: riskDesc,
+              isFraudRelated: riskRows[0].isFraudRelated ?? false,
+              riskRating: riskRows[0].riskRating || 'Medium',
+              status: 'Active',
+              diagramId: diagramId || null,
+              workflowStatus: 'Draft',
+            });
+            createdRisks++;
+          }
 
           for (const row of riskRows) {
-            const controlId = `ctrl_${generateId()}`;
-            const generatedCode = row.controlCode?.trim() || `CTRL-${generateId().substring(0, 8).toUpperCase()}`;
+            const rawCode = row.controlCode?.trim();
+            const controlName = row.controlName?.trim() || 'Control Activity';
+            const generatedCode = rawCode || `CTRL-${generateId().substring(0, 8).toUpperCase()}`;
 
-            await tx.insert(schema.controls).values({
-              id: controlId,
-              organizationId: orgId,
+            // Check if control already exists:
+            // 1) By code (if provided)
+            // 2) By (organizationId, year, bpmProcessId, name) as secondary fallback if no code was given
+            let controlId: string;
+            let existingControl: { id: string }[] = [];
+            if (rawCode) {
+              existingControl = await tx
+                .select({ id: schema.controls.id })
+                .from(schema.controls)
+                .where(
+                  and(
+                    eq(schema.controls.organizationId, orgId),
+                    eq(schema.controls.year, numericYear),
+                    eq(schema.controls.code, rawCode)
+                  )
+                )
+                .limit(1);
+            } else if (activeProcessId) {
+              existingControl = await tx
+                .select({ id: schema.controls.id })
+                .from(schema.controls)
+                .where(
+                  and(
+                    eq(schema.controls.organizationId, orgId),
+                    eq(schema.controls.year, numericYear),
+                    eq(schema.controls.bpmProcessId, activeProcessId),
+                    eq(schema.controls.name, controlName)
+                  )
+                )
+                .limit(1);
+            }
+
+            const controlPayload = {
               bpmProcessId: rcmType === 'ELC' ? null : activeProcessId,
-              year: numericYear,
-              code: generatedCode,
               name: row.controlName || 'Control Activity',
               description: row.controlDescription || '',
               nature: row.controlNature || 'Manual',
@@ -197,14 +254,40 @@ rcmImportRoute.post('/rcm/import', rbac(['Line 1', 'Line 2', 'Admin']), async (c
                 { type: 'VA', value: row.assertionVa === 'Y' || row.assertionVa === '1' || row.assertionVa === 'true' },
                 { type: 'PD', value: row.assertionPd === 'Y' || row.assertionPd === '1' || row.assertionPd === 'true' }
               ] : [],
-            });
-            createdControls++;
+            };
 
-            await tx.insert(schema.rcmControls).values({
-              id: generateId(),
-              organizationId: orgId,
-              rcmId: riskId,
-              controlId: controlId,
+            if (existingControl.length > 0) {
+              controlId = existingControl[0].id;
+              await tx
+                .update(schema.controls)
+                .set(controlPayload)
+                .where(eq(schema.controls.id, controlId));
+            } else {
+              controlId = `ctrl_${generateId()}`;
+              await tx.insert(schema.controls).values({
+                id: controlId,
+                organizationId: orgId,
+                year: numericYear,
+                code: generatedCode,
+                ...controlPayload,
+              });
+              createdControls++;
+            }
+
+            // Upsert rcm_controls mapping (orgId, rcmId, controlId)
+            const existingMapping = await tx
+              .select({ id: schema.rcmControls.id })
+              .from(schema.rcmControls)
+              .where(
+                and(
+                  eq(schema.rcmControls.organizationId, orgId),
+                  eq(schema.rcmControls.rcmId, riskId),
+                  eq(schema.rcmControls.controlId, controlId)
+                )
+              )
+              .limit(1);
+
+            const rcmControlPayload = {
               year: numericYear,
               controlName: row.controlName,
               controlDescription: row.controlDescription,
@@ -230,18 +313,48 @@ rcmImportRoute.post('/rcm/import', rbac(['Line 1', 'Line 2', 'Admin']), async (c
               effectivePeriod: row.effectivePeriod,
               cosoPrinciples: row.cosoPrinciples || [],
               itgcDomain: row.itgcDomain || null,
-            });
+            };
 
-            // If a target diagram and node ID are provided, link to BPM
-            if (diagramId && row.targetBpmNodeId) {
-              await tx.insert(schema.bpmNodeRcms).values({
+            if (existingMapping.length > 0) {
+              await tx
+                .update(schema.rcmControls)
+                .set(rcmControlPayload)
+                .where(eq(schema.rcmControls.id, existingMapping[0].id));
+            } else {
+              await tx.insert(schema.rcmControls).values({
                 id: generateId(),
                 organizationId: orgId,
-                diagramId: diagramId,
-                nodeId: row.targetBpmNodeId,
                 rcmId: riskId,
+                controlId: controlId,
+                ...rcmControlPayload,
               });
-              createdNodeLinks++;
+            }
+
+            // If a target diagram and node ID are provided, link to BPM if not already linked
+            if (diagramId && row.targetBpmNodeId) {
+              const existingNodeLink = await tx
+                .select({ id: schema.bpmNodeRcms.id })
+                .from(schema.bpmNodeRcms)
+                .where(
+                  and(
+                    eq(schema.bpmNodeRcms.organizationId, orgId),
+                    eq(schema.bpmNodeRcms.diagramId, diagramId),
+                    eq(schema.bpmNodeRcms.nodeId, row.targetBpmNodeId),
+                    eq(schema.bpmNodeRcms.rcmId, riskId)
+                  )
+                )
+                .limit(1);
+
+              if (existingNodeLink.length === 0) {
+                await tx.insert(schema.bpmNodeRcms).values({
+                  id: generateId(),
+                  organizationId: orgId,
+                  diagramId: diagramId,
+                  nodeId: row.targetBpmNodeId,
+                  rcmId: riskId,
+                });
+                createdNodeLinks++;
+              }
             }
           }
         }

@@ -36,3 +36,12 @@ Arsitektur modul BPM Editor terbagi secara tegas antara mesin tata letak determi
 - **`src/components/rcm/editor/BPMOcrModal.tsx`**: Modal dialog upload dan penelaahan OCR.
 - **`src/components/rcm/editor/ocr/OcrReviewView.tsx`**: Tampilan penelaahan berdampingan (*split-view*) yang menyandingkan gambar/PDF sumber asli dengan kanvas staging React Flow sebelum pengguna melakukan *Save & Apply*.
 - **`src/components/rcm/editor/ocr/useOcrStaging.ts`**: Pengendali siklus staging OCR (parsing, deduplikasi, validasi peringatan).
+
+## 4. Alur Data Unmapped Controls & Migration Backlog
+Alur data kontrol belum terpetakan (*Unmapped Controls*) dari database hingga tampil sebagai kartu yang dapat di-*drag & drop* di panel kiri kanvas:
+1. **URL & Parameters:** Editor dibuka dengan `diagramId`, `workingYear`, dan `bpmProcessId` (opsional: `currentGL`).
+2. **Matrix Query:** Hook `useBPMEditorState.ts` memanggil:
+   `GET /api/rcm-matrix/tlc?year={workingYear}&bpmProcessId={bpmProcess.id}&noGL={currentGL}`.
+3. **Penyaringan Simpul:** Fungsi murni `unmappedControlsFrom(matrixData.items, nodes)` dari `shared/control-linkage.ts` membandingkan kontrol terhadap seluruh `regulatoryPairs` yang ada pada simpul kanvas.
+4. **Rendering Palet:** Kontrol yang belum terhubung dirender di dalam `BPMShapePalette.tsx` bagian **MIGRATION BACKLOG** (`draggable="true"`), siap ditarik ke swimlane kanvas.
+

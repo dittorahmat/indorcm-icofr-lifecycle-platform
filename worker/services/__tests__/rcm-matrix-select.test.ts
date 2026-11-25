@@ -48,7 +48,7 @@ describe('rcm-matrix-select: one builder for TLC / ELC / ITGC', () => {
         level: 'ITGC',
         filters: ['level', 'year', 'bpmProcessId'],
         columns: ['itgc'],
-        joins: ['parentProcess'],
+        joins: ['process', 'parentProcess'],
       },
     });
   });
@@ -89,10 +89,10 @@ describe('rcm-matrix-select: one builder for TLC / ELC / ITGC', () => {
       expect(joinOn(kind)).toContain('"bpm_processes"."parent_id" = "parent_process"."id"');
     }
 
-    // The process link (control OR BPM sub-process name) is TLC/ELC only.
+    // The process link (control OR BPM sub-process name) is TLC/ELC/ITGC.
     expect(joinOn('TLC')).toContain('"controls"."bpm_process_id" = "icofr"."bpm_processes"."id" or "icofr"."bpm_diagrams"."sub_process" = "icofr"."bpm_processes"."name"');
     expect(joinOn('ELC')).toContain('"icofr"."bpm_diagrams"."sub_process" = "icofr"."bpm_processes"."name"');
-    expect(joinOn('ITGC')).not.toContain('"bpm_diagrams"."sub_process"');
+    expect(joinOn('ITGC')).toContain('"controls"."bpm_process_id" = "icofr"."bpm_processes"."id"');
     expect(joinOn('ITGC')).toContain('"bpm_processes"."parent_id" = "parent_process"."id"');
 
     for (const kind of ['ELC', 'ITGC'] as const) expect(joinOn(kind)).not.toContain('account_assertions');
@@ -149,13 +149,10 @@ describe('rcm-matrix-select: one builder for TLC / ELC / ITGC', () => {
     expect(paramsOf(sentinel)).toEqual(['org-1', 'TLC']);
   });
 
-  it('keeps the pre-existing ITGC asymmetry: no bpmProcesses join to render', () => {
-    // Transcribed behaviour, NOT a choice: the pre-builder getItgcMatrix
-    // selected bpmProcesses columns without joining the table, so rendering
-    // the ITGC read throws in drizzle (live bug on GET /rcm-matrix/itgc).
-    // Fixing it (joining bpmProcesses, or dropping its columns) is a
-    // behaviour change that needs sign-off — asserted here so the refactor
-    // cannot silently "fix" or compound it.
-    expect(() => render('ITGC')).toThrow(/not part of the query/);
+  it('joins bpmProcesses and parentProcess for ITGC read', () => {
+    const text = flat(render('ITGC').sql);
+    expect(text).toContain('"bpm_processes"');
+    expect(text).toContain('"parent_process"');
+    expect(() => render('ITGC')).not.toThrow();
   });
 });
