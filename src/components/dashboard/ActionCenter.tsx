@@ -42,7 +42,7 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
             <h4 className="font-bold text-slate-900 text-sm leading-tight truncate">{t('actionCenter.csa.title')}</h4>
             <p className="text-xs text-slate-500 font-medium mt-1 line-clamp-2 sm:line-clamp-1">{t('actionCenter.csa.description')}</p>
           </div>
-          <div className="text-right shrink-0 min-w-[56px]">
+          <div className="text-right shrink-0 min-w-[52px]">
             <div className="text-xs font-bold text-slate-900">{csaCompletion}%</div>
             <div className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">{t('actionCenter.status.complete', { defaultValue: 'Complete' })}</div>
           </div>
@@ -62,7 +62,7 @@ export function ActionCenter({ csaCompletion, openDeficienciesCount }: ActionCen
               <h4 className="font-bold text-slate-900 text-sm leading-tight truncate">{t('actionCenter.deficiency.title')}</h4>
               <p className="text-xs text-destructive font-medium mt-1 line-clamp-2 sm:line-clamp-1">{t('actionCenter.deficiency.description')}</p>
             </div>
-            <div className="text-right shrink-0 min-w-[40px] flex justify-end">
+            <div className="text-right shrink-0 min-w-[52px] flex justify-end">
               <Badge className="bg-destructive text-destructive-foreground border-none font-bold text-xs h-5 px-1.5 flex items-center justify-center rounded-md shrink-0">{openDeficienciesCount}</Badge>
             </div>
           </button>

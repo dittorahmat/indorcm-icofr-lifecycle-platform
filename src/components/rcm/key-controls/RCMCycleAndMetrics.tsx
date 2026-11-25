@@ -80,7 +80,7 @@ export function RCMCycleAndMetrics({
                 </div>
                 <span
                   className={`font-display text-sm font-bold mt-1 leading-tight ${
-                    isSelected ? 'text-on-primary' : 'text-primary'
+                    isSelected ? 'text-primary-foreground' : 'text-primary'
                   }`}
                 >
                   {cycle.name}

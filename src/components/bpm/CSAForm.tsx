@@ -7,7 +7,8 @@ import { CSAFormHeader } from './csa/CSAFormHeader';
 import { SampleMatrixTable } from './csa/SampleMatrixTable';
 import { SampleStepper } from './csa/SampleStepper';
 import { VerificationTable } from './csa/VerificationTable';
-import type { ControlResultEntry, CSAFormProps } from './csa/csa-form-types';
+import type { CSAFormProps } from './csa/csa-form-types';
+import { createDefaultSampleControlResults } from '@/hooks/csa/csa-sample-init';
 
 export type { CSAFormProps };
 
@@ -45,17 +46,10 @@ export function CSAForm({
   const { mobileStep: safeStep, setMobileStep } = useSampleStepper(stepCount);
 
   const handleAddSample = () => {
-    const controlResults: Record<string, ControlResultEntry> = {};
-    activeControls.forEach((ctrl) => {
-      const pair = bpmRiskControlPairs.find((p) => p.controlId === ctrl.id);
-      controlResults[ctrl.id] = {
-        implemented: false,
-        riskId: pair?.riskId || '',
-        riskName: pair?.riskName || ctrl.description || 'N/A',
-        controlName: pair?.controlName || ctrl.name || 'N/A',
-        evidenceUrl: '',
-        comment: '',
-      };
+    const controlResults = createDefaultSampleControlResults({
+      activeControls,
+      bpmRiskControlPairs,
+      defaultImplemented: true,
     });
     append({ sampleRef: '', controlResults });
     setMobileStep(stepCount);

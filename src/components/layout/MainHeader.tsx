@@ -116,7 +116,7 @@ export function MainHeader() {
                 </Avatar>
                 <span
                    className={cn(
-                    "absolute -bottom-0.5 -right-1 text-xs px-1 min-w-[18px] h-[18px] rounded-full flex items-center justify-center border font-bold shadow-sm select-none",
+                    "absolute -bottom-1 -right-1 text-xs px-1 min-w-[18px] h-[18px] rounded-full flex items-center justify-center border font-bold shadow-sm select-none",
                     isDark
                       ? "bg-slate-900 border-slate-700 text-slate-200"
                       : "bg-white border-slate-300 text-slate-900"

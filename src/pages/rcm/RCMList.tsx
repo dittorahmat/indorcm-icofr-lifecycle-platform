@@ -1,12 +1,12 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { api } from '@/lib/api-client';
 import { Control } from '@shared/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileDown, ShieldAlert, Compass, Table as TableIcon } from 'lucide-react';
+import { ShieldAlert, Compass } from 'lucide-react';
 import { ControlEditor } from '@/components/rcm/ControlEditor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
@@ -44,7 +44,6 @@ const itemVariants: Variants = {
 
 export function RCMList() {
   const { t } = useTranslation(['rcm', 'common']);
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = React.useState('');
   const { workingYear } = useFiscalYearStore();
@@ -99,8 +98,8 @@ export function RCMList() {
         className="flex flex-col space-y-6 pb-10"
       >
         <Tabs defaultValue="explorer" className="w-full">
-          <motion.div variants={itemVariants} className="bg-slate-100/50 p-1 border border-slate-200 rounded-lg max-w-full overflow-x-auto touch-pan-x overscroll-x-contain mb-4 no-scrollbar">
-            <TabsList className="bg-transparent h-auto p-0 flex gap-1 w-max min-w-full">
+          <motion.div variants={itemVariants} className="bg-slate-100/50 p-1 border border-slate-200 rounded-lg max-w-full overflow-x-auto touch-pan-x overscroll-x-contain mb-4 scrollbar-none">
+            <TabsList className="bg-transparent h-auto p-0 flex gap-1 w-max min-w-full flex-nowrap">
               {[
                 { value: 'explorer', label: t('explorer.tabs.keyControlsExplorer', { defaultValue: 'Key Control Explorer' }), count: tlcControls.filter(c => c.isKeyControl).length, icon: Compass },
                 { value: 'tlc', label: `TLC (${t('common:icofr.tlc')})`, count: tlcControls.length },

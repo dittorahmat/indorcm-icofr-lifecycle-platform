@@ -133,8 +133,13 @@ export function SubsidiaryMonitoringTable({
         </div>
       </div>
 
-      {/* Responsive Table Wrapper */}
-      <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0 border border-border/30 rounded-lg">
+      {/* Responsive Table Wrapper with Accessible Keyboard Region */}
+      <div 
+        role="region"
+        tabIndex={0}
+        aria-label={t('subsidiaryTable.title', { defaultValue: 'Subsidiary & BUMN Compliance Monitoring' })}
+        className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0 border border-border/30 rounded-lg no-scrollbar focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none @container"
+      >
         <table className="w-full text-left border-collapse min-w-[720px]">
           <thead className="bg-surface-container-low text-muted-foreground text-xs font-semibold">
             <tr>

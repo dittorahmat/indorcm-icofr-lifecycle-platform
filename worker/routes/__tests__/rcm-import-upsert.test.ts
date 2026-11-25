@@ -30,6 +30,7 @@ describe('POST /rcm/import idempotency and upsert locking tests', () => {
         DATABASE_URL: 'postgres://mock',
         BETTER_AUTH_SECRET: 'mock-secret',
         BETTER_AUTH_URL: 'http://localhost:3000',
+        GEMINI_API_KEY: 'mock-gemini-key',
         DOCUMENTS_BUCKET: {} as R2Bucket,
       };
       await next();

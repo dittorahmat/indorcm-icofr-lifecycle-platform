@@ -58,7 +58,7 @@ export function TestingControlRow({
           <div className={cn(
             "h-9 w-9 sm:h-9.5 sm:w-9.5 rounded-lg flex items-center justify-center shrink-0 border transition-all duration-200 mt-0.5 sm:mt-0",
             isExpanded 
-              ? "bg-primary border-primary text-on-primary" 
+              ? "bg-primary border-primary text-primary-foreground" 
               : "bg-surface-container border-outline-variant/30 text-primary group-hover:bg-surface-container-high",
             isCsaIneffective && !isExpanded && "bg-amber-50 border-amber-200 text-amber-600"
           )}>

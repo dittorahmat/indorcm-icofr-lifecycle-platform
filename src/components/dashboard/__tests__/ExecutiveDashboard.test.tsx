@@ -97,6 +97,8 @@ describe('Executive Dashboard Sovereign Governance Components', () => {
     const scrollContainer = container.querySelector('.overflow-x-auto');
     expect(scrollContainer).not.toBeNull();
     expect(scrollContainer?.className).toContain('touch-pan-x');
+    const matrixGrid = scrollContainer?.querySelector('.grid');
+    expect(matrixGrid?.className).toContain('min-w-[480px]');
 
     // Matrix rows and columns
     expect(screen.getByText('riskHeatmap.l5')).toBeInTheDocument();
@@ -141,5 +143,10 @@ describe('Executive Dashboard Sovereign Governance Components', () => {
     const tableWrapper = container.querySelector('.overflow-x-auto');
     expect(tableWrapper).not.toBeNull();
     expect(tableWrapper?.className).toContain('touch-pan-x');
+    expect(tableWrapper?.getAttribute('role')).toBe('region');
+    expect(tableWrapper?.getAttribute('tabIndex')).toBe('0');
+    expect(tableWrapper?.getAttribute('aria-label')).toBe('Subsidiary & BUMN Compliance Monitoring');
+    const table = tableWrapper?.querySelector('table');
+    expect(table?.className).toContain('min-w-[720px]');
   });
 });

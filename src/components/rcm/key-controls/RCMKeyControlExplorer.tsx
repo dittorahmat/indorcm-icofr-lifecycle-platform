@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle, Upload, CheckSquare, Printer, Layers } from 'lucide-react';
+import { Printer, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RCMExplorerHeaderBanner } from './RCMExplorerHeaderBanner';
 import { RCMCycleAndMetrics } from './RCMCycleAndMetrics';
@@ -80,7 +80,7 @@ export function RCMKeyControlExplorer({ workingYear }: RCMKeyControlExplorerProp
           <Button
             type="button"
             onClick={() => navigate('/rcm/tlc')}
-            className="h-9 px-3 gap-1.5 bg-primary text-on-primary hover:bg-primary-container text-xs font-bold shadow-xs"
+            className="h-9 px-3 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold shadow-xs"
           >
             <Layers className="h-4 w-4" />
             <span>{t('matrix.open_matrix_tlc', { defaultValue: 'Buka Matriks TLC Lengkap' })}</span>

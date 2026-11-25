@@ -16,6 +16,7 @@ import { resolvePostSaveView, shouldEnterForm, shouldFetchList } from './csa/csa
 import { buildEvidenceFormData, compressEvidenceImage } from './csa/use-evidence-upload';
 import { csaKeysForYear, invalidateCsaYear } from './csa/csa-keys';
 import { INITIAL_CSA_SESSION, csaSessionReducer } from './csa/csa-session';
+import { createDefaultSampleControlResults } from './csa/csa-sample-init';
 import type { CSAEvidenceMeta } from '@shared/types';
 
 /** One row the workspace can open with; the BPM worksheet and GL grid both emit it. */
@@ -110,23 +111,11 @@ export function useCSA({ bpmProcessId, scheduleId, initialSamples = [], controls
 
   const initializeFromSamples = useCallback((samples: readonly CsaInitialSample[]) => {
     const newSamples = samples.map(s => {
-      const controlResults: Record<string, any> = {};
-      if (bpmRiskControlPairs.length > 0) {
-        bpmRiskControlPairs.forEach(pair => {
-          controlResults[pair.controlId] = {
-            implemented: false,
-            riskId: pair.riskId,
-            riskName: pair.riskName,
-            controlName: pair.controlName,
-            evidenceUrl: '',
-            comment: ''
-          };
-        });
-      } else {
-        activeControls.forEach(ctrl => {
-          controlResults[ctrl.id] = { implemented: false };
-        });
-      }
+      const controlResults = createDefaultSampleControlResults({
+        activeControls,
+        bpmRiskControlPairs,
+        defaultImplemented: true,
+      });
 
       return {
         sampleRef: s.glDesc ?? s.description ?? 'N/A',

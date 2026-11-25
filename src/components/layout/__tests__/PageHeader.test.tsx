@@ -34,4 +34,11 @@ describe('PageHeader desktop squeeze guard', () => {
     expect(actions?.className).not.toMatch(/\[&>*\]:shrink-0/);
     expect(container.firstChild).toBeInTheDocument();
   });
+
+  it('hides SidebarTrigger on mobile to prevent duplicate trigger alongside MainHeader', () => {
+    renderHeader();
+    const sidebarTrigger = screen.getByRole('button', { name: /toggle sidebar/i });
+    expect(sidebarTrigger).toHaveClass('hidden');
+    expect(sidebarTrigger).toHaveClass('md:flex');
+  });
 });

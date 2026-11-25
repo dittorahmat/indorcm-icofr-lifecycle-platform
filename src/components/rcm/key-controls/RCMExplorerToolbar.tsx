@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, RotateCcw, Filter, Star, Shield } from 'lucide-react';
+import { Search, RotateCcw, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MITIGATION_PILLARS, type MitigationPillar } from './rcm-explorer-types';
@@ -122,7 +122,7 @@ export function RCMExplorerToolbar({
           <Filter className="h-3.5 w-3.5 text-secondary shrink-0" />
           <span>{t('explorer.pillars.filterLabel', { defaultValue: 'Filter 6 Pilar Mitigasi (TOD):' })}</span>
         </div>
-        <div className="flex items-center gap-1.5 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain py-1 no-scrollbar">
+        <div className="flex items-center gap-1.5 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain py-1 scrollbar-none">
           {MITIGATION_PILLARS.map((pilar) => {
             const isSelected = selectedPillar === pilar.id;
             return (
@@ -132,7 +132,7 @@ export function RCMExplorerToolbar({
                 onClick={() => onSelectPillar(pilar.id)}
                 className={`px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors shrink-0 ${
                   isSelected
-                    ? 'bg-primary text-on-primary font-bold shadow-xs'
+                    ? 'bg-primary text-primary-foreground font-bold shadow-xs'
                     : 'bg-surface-container hover:bg-surface-container-high text-on-surface'
                 }`}
               >

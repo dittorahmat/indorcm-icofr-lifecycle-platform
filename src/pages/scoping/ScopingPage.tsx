@@ -139,7 +139,7 @@ export function ScopingPage() {
           )}
         >
           <div className="flex flex-col items-stretch sm:items-end gap-2 w-full sm:w-auto">
-            <div className="flex flex-col min-[380px]:flex-row gap-2 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Button 
                 variant="outline" 
                 className="h-11 sm:h-10 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center gap-2 border-slate-200 bg-white hover:bg-slate-50 transition-all font-bold text-xs uppercase tracking-wider shadow-sm"
@@ -199,7 +199,7 @@ export function ScopingPage() {
         )}
 
         <Tabs defaultValue="simulations" className="w-full">
-          <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain no-scrollbar -mx-1 px-1 mb-8">
+          <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain scrollbar-none mb-8">
           <TabsList className="flex flex-nowrap w-max min-w-full sm:w-auto bg-slate-100/50 p-1 border border-slate-200 rounded-lg shadow-inner min-h-[44px] gap-1">
             <TabsTrigger value="simulations" className="gap-2 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest py-2 px-4 min-h-[44px] flex items-center justify-center shrink-0 whitespace-nowrap min-w-[160px]">
               <LayoutGrid className="h-4 w-4" /> {t('scoping:simulation.title')}

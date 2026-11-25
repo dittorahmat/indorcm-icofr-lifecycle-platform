@@ -81,8 +81,8 @@ export function RiskHeatmap5x5() {
       </div>
 
       {/* Heatmap Grid in scrollable container */}
-      <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0 pb-1">
-        <div className="min-w-[560px] grid grid-cols-6 gap-1.5 text-center text-xs select-none">
+      <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain min-w-0 pb-1 scrollbar-none">
+        <div className="min-w-[480px] sm:min-w-[560px] grid grid-cols-6 gap-1.5 text-center text-xs select-none">
           {/* Header Row */}
           <div className="text-muted-foreground p-1 self-center font-bold text-left text-xs">
             {t('riskHeatmap.axisLabel')}

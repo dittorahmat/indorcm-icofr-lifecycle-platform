@@ -162,8 +162,8 @@ describe('CSA workspace (CSAModal) control scope', () => {
     );
   });
 
-  it('renders RCM Matrix sub-tabs (5.B, 5.A, 5.C) and switches active sub-tab', async () => {
-    const { getByText, queryByText } = renderWithProviders(React.createElement(BPMModal, {
+  it('renders RCM Matrix sub-tabs (5.B, 5.A, 5.C) with scroll-safe container and switches active sub-tab', async () => {
+    const { getByText } = renderWithProviders(React.createElement(BPMModal, {
       isOpen: true,
       onOpenChange: () => {},
       noGL: '1101',
@@ -176,8 +176,27 @@ describe('CSA workspace (CSAModal) control scope', () => {
     }));
 
     // Check all 3 sub-tabs are rendered
-    expect(getByText('modal.rcmSubtabs.tlc')).toBeInTheDocument();
-    expect(getByText('modal.rcmSubtabs.elc')).toBeInTheDocument();
-    expect(getByText('modal.rcmSubtabs.itgc')).toBeInTheDocument();
+    const tlcBtn = getByText('modal.rcmSubtabs.tlc');
+    const elcBtn = getByText('modal.rcmSubtabs.elc');
+    const itgcBtn = getByText('modal.rcmSubtabs.itgc');
+    expect(tlcBtn).toBeInTheDocument();
+    expect(elcBtn).toBeInTheDocument();
+    expect(itgcBtn).toBeInTheDocument();
+
+    // Verify sub-tab bar container has horizontal scroll safety classes
+    const pillContainer = tlcBtn.closest('div');
+    expect(pillContainer).toHaveClass('overflow-x-auto');
+    expect(pillContainer).toHaveClass('max-w-full');
+    expect(pillContainer).toHaveClass('touch-pan-x');
+
+    // Verify buttons have shrink-0 whitespace-nowrap
+    expect(tlcBtn.closest('button')).toHaveClass('shrink-0');
+    expect(tlcBtn.closest('button')).toHaveClass('whitespace-nowrap');
+
+    // Verify sub-tab click switches view without throwing
+    itgcBtn.click();
+    await waitFor(() => {
+      expect(itgcBtn.closest('button')).toHaveClass('bg-indigo-600');
+    });
   });
 });

@@ -42,6 +42,7 @@
     "check:number-inputs": "node scripts/check-number-inputs.mjs",
     "check:font-slop": "node scripts/check-font-slop.mjs",
     "check:dialog-padding": "node scripts/check-dialog-padding.mjs",
+    "check:modal-layout": "node scripts/check-modal-layout.mjs",
     "check:density": "node scripts/check-density-conformance.mjs",
     "check:contrast": "node scripts/check-contrast-slop.mjs",
     "check:theme-tokens": "node scripts/check-theme-tokens.mjs",

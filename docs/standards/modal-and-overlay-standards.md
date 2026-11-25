@@ -54,6 +54,20 @@ Action footers inside dialogs and sheets must stack reverse-flex on mobile:
 
 ---
 
-## 4. Verification & Locking Tests
+## 4. Modal Tabs Visibility & Flex Containment
 
-Every change touching overlay components (`src/components/ui/sheet.tsx`, `dialog.tsx`, or drawers) must be locked by unit test assertions in `src/components/ui/__tests__/layering.test.tsx`.
+1. **Tabs Visibility Invariant**:
+   - `TabsContent` (`src/components/ui/tabs.tsx`) **MUST** enforce `data-[state=inactive]:hidden`.
+   - *Rationale*: CSS utility classes on children (such as `.flex` or `.h-full`) override HTML `hidden` attribute due to CSS specificity, displacing active tab content down the layout tree.
+2. **Embedded Wide Matrix Containment**:
+   - Every ancestor flex container inside a modal hosting wide tables (RCM TLC, ELC, ITGC) **MUST** declare `min-w-0 max-w-full w-full overflow-hidden`.
+   - Missing `min-w-0` triggers CSS Flexbox default `min-width: auto`, causing the entire modal to expand to the width of the wide table (up to 5300px) and hiding the horizontal scrollbar.
+3. **Internal Pill / Sub-Tab Rails**:
+   - Internal tab rails (e.g. Lampiran 5.B/5.A/5.C subtabs) **MUST** declare `overflow-x-auto max-w-full touch-pan-x overscroll-x-contain scrollbar-none` on the rail container and `shrink-0 whitespace-nowrap` on individual buttons.
+   - Enforced mechanically by `npm run check:modal-layout`.
+
+---
+
+## 5. Verification & Locking Tests
+
+Every change touching overlay components (`src/components/ui/sheet.tsx`, `dialog.tsx`, or drawers) must be locked by unit test assertions in `src/components/ui/__tests__/layering.test.tsx` and `src/components/bpm/__tests__/BPMModalScoping.test.ts`.

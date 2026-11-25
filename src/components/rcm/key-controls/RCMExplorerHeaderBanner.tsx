@@ -91,7 +91,7 @@ export function RCMExplorerHeaderBanner({
             <Layers className="h-3.5 w-3.5 text-secondary shrink-0" aria-hidden="true" />
             <span>{t('explorer.banner.clustersLabel', { defaultValue: '11 Klaster BUMN (Lampiran 2 SK-5):' })}</span>
           </div>
-          <div className="flex items-center gap-1.5 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain py-1 no-scrollbar">
+          <div className="flex items-center gap-1.5 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain py-1 scrollbar-none">
             <button
               type="button"
               onClick={() => onSelectCluster?.('ALL')}

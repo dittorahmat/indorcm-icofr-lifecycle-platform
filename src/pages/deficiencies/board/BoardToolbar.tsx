@@ -138,7 +138,7 @@ export function BoardToolbar({
               </Button>
               <Button
                 onClick={onEvaluateGroup}
-                className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center gap-2 bg-primary hover:bg-primary-container text-on-primary shadow-sm transition-all font-bold text-xs uppercase tracking-wider px-4 rounded-lg"
+                className="h-11 sm:h-9 min-h-[44px] sm:min-h-0 w-full sm:w-auto justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all font-bold text-xs uppercase tracking-wider px-4 rounded-lg"
               >
                 <CheckCircle2 className="h-4 w-4 text-secondary-fixed" />{' '}
                 {t('board.evaluateGroup', { defaultValue: 'Evaluasi Grup ({{count}})', count: selectedCount })}

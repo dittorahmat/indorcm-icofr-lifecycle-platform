@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
+import type { ControlResultEntry } from '@/components/bpm/csa/csa-form-types';
 
 export const csaFormSchema = z.object({
   period: z.string().min(1, "Period is required"),
@@ -55,16 +56,18 @@ export function useCSAForm() {
   const watchSamples = useMemo(() => watchSamplesRaw || [], [watchSamplesRaw]);
 
   const anyPointFailed = useMemo(() => 
-    watchSamples.some(s => Object.values(s.controlResults).some((r: any) => !r.implemented)),
+    watchSamples.length > 0 && watchSamples.some(s => Object.values(s.controlResults).some((r: ControlResultEntry) => r.implemented === false)),
     [watchSamples]
   );
 
+  const { isDirty } = form.formState;
+
   useEffect(() => {
-    if (anyPointFailed && form.getValues('result') === 'Effective') {
+    if (anyPointFailed && form.getValues('result') === 'Effective' && isDirty) {
       form.setValue('result', 'Ineffective');
       toast.warning("Zero Tolerance: Status diset ke Ineffective karena ada kontrol yang gagal.");
     }
-  }, [anyPointFailed, form]);
+  }, [anyPointFailed, isDirty, form]);
 
   return {
     form,

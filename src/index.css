@@ -316,12 +316,14 @@
   }
 
   /* Hide scrollbar for horizontal pill/tab rails on mobile (keeps scroll) */
-  .no-scrollbar {
+  .no-scrollbar,
+  .scrollbar-none {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
 
-  .no-scrollbar::-webkit-scrollbar {
+  .no-scrollbar::-webkit-scrollbar,
+  .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
 

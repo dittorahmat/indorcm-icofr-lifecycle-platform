@@ -67,6 +67,13 @@ for (const file of filesToCheck) {
       totalViolations++;
     }
 
+    // 2b. Banned low-contrast text-on-primary on bg-primary buttons/badges on light surfaces
+    if (/\bbg-primary\b/.test(line) && /\btext-on-primary\b/.test(line) && !line.includes('dark:')) {
+      console.error(`❌ [CONTRAST-SLOP] ${file}:${index + 1}: Found 'bg-primary' paired with 'text-on-primary' without dark: prefix.`);
+      console.error(`   -> Solution: Use high-contrast semantic token 'text-primary-foreground' on 'bg-primary' buttons/actions (WCAG AA).`);
+      totalViolations++;
+    }
+
     // 3. Conflicting border utilities on the same line (e.g. border-border AND border-b-*)
     if (/\bborder-border(?:\/\d+)?\b/.test(line) && /\bborder-b-(?:primary|secondary|slate|border)(?:\/\d+)?\b/.test(line)) {
       console.error(`❌ [BORDER-CONFLICT] ${file}:${index + 1}: Found conflicting border utilities ('border-border' and 'border-b-*' on the same element).`);

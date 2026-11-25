@@ -61,6 +61,10 @@ describe('RCMExplorerHeaderBanner', () => {
 
     // Verify cluster selector chips
     expect(screen.getByText('Semua Klaster')).toBeInTheDocument();
+    const clusterScrollContainer = screen.getByText('Semua Klaster').parentElement;
+    expect(clusterScrollContainer?.className).toContain('overflow-x-auto');
+    expect(clusterScrollContainer?.className).toContain('touch-pan-x');
+
     const energiChip = screen.getByTitle('Industri Energi & Migas');
     expect(energiChip).toBeInTheDocument();
 

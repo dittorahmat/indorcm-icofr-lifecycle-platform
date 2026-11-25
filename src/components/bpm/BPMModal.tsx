@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   FileSpreadsheet, Network, History, Printer, XCircle, 
-  Database, ListChecks, ShieldCheck, FileText, Workflow as WorkflowIcon,
-  LayoutDashboard, Activity, ClipboardCheck
+  Database, ListChecks, ShieldCheck, FileText, ClipboardCheck
 } from 'lucide-react';
 import { BPMWorksheet } from './BPMWorksheet';
 import { Lampiran6LogView } from './Lampiran6LogView';
@@ -21,13 +20,12 @@ import { RCMELCPage } from '@/pages/rcm/RCMELCPage';
 import { RCMTLCPage } from '@/pages/rcm/RCMTLCPage';
 import { RCMITGCPage } from '@/pages/rcm/RCMITGCPage';
 import { VerificationDesignPage } from '@/pages/rcm/VerificationDesignPage';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
-import { Control, User, TransactionDetail, BPMProcess } from '@shared/types';
+import { Control, User, TransactionDetail } from '@shared/types';
 import { filterWorksheetControls } from '@shared/worksheet-control-scope';
 import { useTranslation } from 'react-i18next';
 import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
-import { WorkflowPanel } from '../workflow/WorkflowPanel';
 import { useUnsavedChangesContext } from '@/context/UnsavedChangesContext';
 import { isFieldLini1 } from '@/lib/field-lini1';
 import { cn } from '@/lib/utils';
@@ -58,7 +56,6 @@ export function BPMModal({
   initialTab = "worksheet"
 }: BPMModalProps) {
   const { t } = useTranslation(['bpm', 'common']);
-  const queryClient = useQueryClient();
   const { isDirty: globalDirty } = useUnsavedChangesContext();
   const [activeTab, setActiveTab] = React.useState(initialTab);
   const [activeRcmSubTab, setActiveRcmSubTab] = React.useState<'tlc' | 'elc' | 'itgc'>('tlc');
@@ -71,15 +68,6 @@ export function BPMModal({
     }
     onOpenChange(open);
   }, [initialTab, onOpenChange]);
-
-  const { data: processData } = useQuery({
-    queryKey: ['bpm-process', bpmProcessId],
-    queryFn: async () => {
-      const res = await api<{ items: BPMProcess[] }>(`/api/bpm-processes?id=${bpmProcessId}`);
-      return res.items[0];
-    },
-    enabled: !!bpmProcessId && isOpen
-  });
 
   // Maintain tab sync if opened/re-opened with a schedule or initialTab
   React.useEffect(() => {
@@ -119,7 +107,7 @@ export function BPMModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-full sm:max-w-[98vw] h-[95dvh] flex flex-col p-0 overflow-hidden border-none shadow-2xl rounded-lg">
+      <DialogContent className="w-full sm:max-w-[98vw] h-[95dvh] flex flex-col p-0 min-w-0 max-w-full overflow-hidden border-none shadow-2xl rounded-lg">
         <DialogHeader className="p-4 sm:p-5 border-b bg-mancity-pattern text-primary-foreground shrink-0">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between flex-wrap gap-2">
             <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -158,48 +146,48 @@ export function BPMModal({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 flex min-h-0 overflow-hidden bg-slate-50">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex min-h-0 min-w-0 max-w-full w-full overflow-hidden bg-slate-50">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 min-w-0 max-w-full w-full overflow-hidden">
             <div className="px-3 sm:px-6 border-b bg-white shrink-0 shadow-sm z-10 max-w-full">
-              <TabsList className="h-14 bg-transparent gap-4 sm:gap-8 p-0 max-w-full overflow-x-auto no-scrollbar">
+              <TabsList className="h-14 bg-transparent gap-4 sm:gap-8 p-0 max-w-full overflow-x-auto touch-pan-x overscroll-x-contain no-scrollbar">
                 {!fieldMode && (
-                  <TabsTrigger value="worksheet" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
+                  <TabsTrigger value="worksheet" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider shrink-0 whitespace-nowrap">
                     <FileSpreadsheet className="h-4 w-4" /> {t('modal.tabs.worksheet')}
                   </TabsTrigger>
                 )}
                 {!fieldMode && (
-                  <TabsTrigger value="sampling" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
+                  <TabsTrigger value="sampling" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider shrink-0 whitespace-nowrap">
                     <Database className="h-4 w-4" /> {t('modal.tabs.sampling')}
                   </TabsTrigger>
                 )}
                 {!fieldMode && (
-                  <TabsTrigger value="rcm" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
+                  <TabsTrigger value="rcm" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider shrink-0 whitespace-nowrap">
                     <ListChecks className="h-4 w-4" /> {t('modal.tabs.rcm')}
                   </TabsTrigger>
                 )}
-                <TabsTrigger value="csa" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
+                <TabsTrigger value="csa" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider shrink-0 whitespace-nowrap">
                   <ShieldCheck className="h-4 w-4" /> {t('modal.tabs.csa')}
                 </TabsTrigger>
                 {!fieldMode && (
-                  <TabsTrigger value="verification" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
+                  <TabsTrigger value="verification" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider shrink-0 whitespace-nowrap">
                     <ClipboardCheck className="h-4 w-4" /> {t('modal.tabs.verification')}
                   </TabsTrigger>
                 )}
                 {!fieldMode && (
-                  <TabsTrigger value="logs" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider">
+                  <TabsTrigger value="logs" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-indigo-600 rounded-none h-full px-0 gap-2 font-black text-xs uppercase text-slate-500 tracking-wider shrink-0 whitespace-nowrap">
                     <History className="h-4 w-4" /> {t('modal.tabs.logs')}
                   </TabsTrigger>
                 )}
               </TabsList>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 min-h-0 min-w-0 max-w-full w-full overflow-hidden flex flex-col">
               <TabsContent value="worksheet" className="m-0 focus-visible:ring-0 h-full overflow-hidden">
                 <BPMWorksheet 
                   noGL={noGL} 
                   fsliName={fsliName} 
                   bpmProcessId={bpmProcessId || ""} 
-                  subProcessName={subProcessName}
+                  subProcessName={subProcessName} 
                   workingYear={year}
                 />
               </TabsContent>
@@ -216,10 +204,10 @@ export function BPMModal({
                 />
               </TabsContent>
 
-              <TabsContent value="rcm" className="m-0 focus-visible:ring-0 h-full flex flex-col min-h-0 overflow-hidden bg-slate-50">
+              <TabsContent value="rcm" className="m-0 focus-visible:ring-0 h-full flex flex-col min-h-0 min-w-0 max-w-full w-full overflow-hidden bg-slate-50">
                 {/* Sub-tabs header for Lampiran 5.B, 5.A, 5.C */}
-                <div className="px-4 py-2 bg-white border-b flex items-center justify-between gap-3 shrink-0">
-                  <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg border border-slate-200">
+                <div className="px-3 sm:px-4 py-2 bg-white border-b flex items-center justify-between gap-3 shrink-0 max-w-full overflow-hidden">
+                  <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg border border-slate-200 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain scrollbar-none">
                     {([
                       { id: 'tlc', key: 'rcmSubtabs.tlc' },
                       { id: 'elc', key: 'rcmSubtabs.elc' },
@@ -231,13 +219,13 @@ export function BPMModal({
                         size="xs"
                         onClick={() => setActiveRcmSubTab(tab.id)}
                         className={cn(
-                          "h-7 min-h-[32px] px-3 text-xs font-bold gap-1.5 rounded-md transition-all",
+                          "h-8 min-h-[44px] sm:min-h-[32px] px-3 text-xs font-bold gap-1.5 rounded-md transition-all shrink-0 whitespace-nowrap",
                           activeRcmSubTab === tab.id 
                             ? "bg-indigo-600 text-white shadow-xs hover:bg-indigo-700" 
                             : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
                         )}
                       >
-                        <FileText className="h-3.5 w-3.5" />
+                        <FileText className="h-3.5 w-3.5 shrink-0" />
                         {t(`modal.${tab.key}`)}
                       </Button>
                     ))}
@@ -245,19 +233,19 @@ export function BPMModal({
                 </div>
 
                 {/* Sub-tab view panels with dedicated scrollbars */}
-                <div className="flex-1 min-h-0 relative flex flex-col overflow-hidden">
+                <div className="flex-1 min-h-0 min-w-0 max-w-full w-full relative flex flex-col overflow-hidden">
                   {activeRcmSubTab === 'tlc' && (
-                    <div className="flex-1 min-h-0 flex flex-col bg-white">
+                    <div className="flex-1 min-h-0 min-w-0 max-w-full w-full flex flex-col bg-white overflow-hidden">
                       <RCMTLCPage embedded={true} filterBpmId={bpmProcessId} workingYearOverride={year} noGLFilter={noGL} />
                     </div>
                   )}
                   {activeRcmSubTab === 'elc' && (
-                    <div className="flex-1 min-h-0 flex flex-col bg-white">
+                    <div className="flex-1 min-h-0 min-w-0 max-w-full w-full flex flex-col bg-white overflow-hidden">
                       <RCMELCPage embedded={true} workingYearOverride={year} relevantFsli={fsliName} />
                     </div>
                   )}
                   {activeRcmSubTab === 'itgc' && (
-                    <div className="flex-1 min-h-0 flex flex-col bg-white">
+                    <div className="flex-1 min-h-0 min-w-0 max-w-full w-full flex flex-col bg-white overflow-hidden">
                       <RCMITGCPage embedded={true} filterBpmId={bpmProcessId} workingYearOverride={year} />
                     </div>
                   )}
