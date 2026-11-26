@@ -35,7 +35,7 @@ export function MainHeader() {
       "sticky top-0 z-[100] w-full border-b transition-colors duration-300 shadow-sm print:hidden",
       isDark
         ? "bg-slate-950 border-b-2 border-b-slate-800 text-slate-50"
-        : "bg-mancity-pattern border-b-2 border-b-sky-700/30 text-slate-900"
+        : "bg-mancity-pattern border-b-2 border-b-sky-900/30 text-white"
     )}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-2 sm:px-4 gap-2 py-2 sm:py-1 min-w-0 max-w-full flex-wrap">
         <div className="flex items-center gap-1.5 sm:gap-4 md:gap-6 min-w-0 max-w-full w-full sm:w-auto">
@@ -46,7 +46,7 @@ export function MainHeader() {
               "md:hidden h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 rounded-md transition-colors flex items-center justify-center",
               isDark 
                 ? "text-slate-100 hover:bg-slate-800 border border-slate-700" 
-                : "text-slate-900 hover:bg-white/20 active:bg-white/30 border border-slate-900/20 shadow-sm"
+                : "text-white hover:bg-white/20 active:bg-white/30 border border-white/20 shadow-sm"
             )} 
           />
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 max-w-full flex-wrap">
@@ -60,11 +60,11 @@ export function MainHeader() {
               <div className="flex flex-col min-w-0">
                 <span className={cn(
                   "font-display tracking-tight text-xs sm:text-base font-extrabold truncate max-w-[110px] min-[420px]:max-w-[150px] sm:max-w-none",
-                  isDark ? "text-white" : "text-slate-950"
+                  "text-white"
                 )}>{t('appName')}</span>
                 <span className={cn(
                   "hidden lg:inline text-xs font-semibold leading-none",
-                  isDark ? "text-slate-400" : "text-slate-800"
+                  isDark ? "text-slate-400" : "text-sky-100"
                 )}>
                   {t('header.subTitle')}
                 </span>

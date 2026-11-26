@@ -36,10 +36,10 @@ export function ScopingHeaderBanner({
             </span>
           </div>
 
-          <h1 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold text-foreground tracking-tight leading-snug">
+          <h1 className="font-display text-lg sm:text-xl lg:text-2xl font-bold text-foreground tracking-tight leading-snug">
             {t('sovereignBanner.headline')}
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground font-normal leading-relaxed">
+          <p className="text-xs text-muted-foreground font-normal leading-relaxed">
             {t('sovereignBanner.subheadline')}
           </p>
         </div>

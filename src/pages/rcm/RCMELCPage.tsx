@@ -90,24 +90,24 @@ export function RCMELCPage({ embedded = false, workingYearOverride, relevantFsli
             </Button>
           )
         },
-        { id: 'no', header: 'No', accessorKey: 'no', width: '50px', className: 'text-center font-mono text-xs text-slate-500 font-medium' },
-        { id: 'code', header: t('matrix.control_ref'), accessorKey: 'code', width: '110px', className: 'font-mono text-xs font-semibold text-slate-700' },
-        { id: 'name', header: t('matrix.control_name'), accessorKey: 'name', width: RCM_NARRATIVE_WIDTHS.elcName, className: 'text-xs text-slate-900 font-medium leading-snug' },
-        { id: 'description', header: t('matrix.control_description'), accessorKey: 'description', width: RCM_NARRATIVE_WIDTHS.elcDescription, className: 'text-slate-700 text-xs font-normal leading-relaxed line-clamp-2' },
+        { id: 'no', header: 'No', accessorKey: 'no', width: '50px', className: 'text-center font-mono text-sm text-slate-500 font-medium' },
+        { id: 'code', header: t('matrix.control_ref'), accessorKey: 'code', width: '110px', className: 'font-mono text-sm font-semibold text-slate-700' },
+        { id: 'name', header: t('matrix.control_name'), accessorKey: 'name', width: RCM_NARRATIVE_WIDTHS.elcName, className: 'text-sm text-slate-900 font-medium leading-snug' },
+        { id: 'description', header: t('matrix.control_description'), accessorKey: 'description', width: RCM_NARRATIVE_WIDTHS.elcDescription, className: 'text-slate-700 text-sm font-normal leading-relaxed line-clamp-2' },
       ]
     },
     {
       title: t('matrix.groups.control'),
       columns: [
-        { id: 'frequency', header: t('matrix.frequency'), accessorKey: 'frequency', width: '120px', className: 'text-center text-xs text-slate-800 font-medium' },
-        { id: 'supportingDocs', header: t('matrix.supporting_docs'), accessorKey: 'supportingDocs', width: RCM_NARRATIVE_WIDTHS.elcSupportingDocs, className: 'text-xs text-slate-700 font-normal' },
-        { id: 'companyName', header: t('matrix.executing_function'), accessorKey: 'companyName', width: '160px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'executorRole', header: t('matrix.executor_role'), accessorKey: 'executorRole', width: '160px', className: 'text-xs text-slate-800 font-normal' },
+        { id: 'frequency', header: t('matrix.frequency'), accessorKey: 'frequency', width: '120px', className: 'text-center text-sm text-slate-800 font-medium' },
+        { id: 'supportingDocs', header: t('matrix.supporting_docs'), accessorKey: 'supportingDocs', width: RCM_NARRATIVE_WIDTHS.elcSupportingDocs, className: 'text-sm text-slate-700 font-normal' },
+        { id: 'companyName', header: t('matrix.executing_function'), accessorKey: 'companyName', width: '160px', className: 'text-sm text-slate-800 font-normal' },
+        { id: 'executorRole', header: t('matrix.executor_role'), accessorKey: 'executorRole', width: '160px', className: 'text-sm text-slate-800 font-normal' },
         { 
           id: 'effectivePeriod', 
           header: t('matrix.effective_period'), 
           width: '100px', 
-          className: 'text-center text-xs font-semibold text-indigo-700',
+          className: 'text-center text-sm font-semibold text-indigo-700',
           render: (row) => row.effectiveDate ? new Date(row.effectiveDate).getFullYear() : '-'
         },
       ]

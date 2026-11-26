@@ -303,3 +303,9 @@ Belum-Dinilai is derive-from-existence across worklist → row → view-transiti
 ### Architecture rounds
 
 Read `docs/agents/architecture.md` before any architecture/deepening work: it holds the round process, the hot-spot reports (`arch-hotspots-client.md`, `arch-hotspots-worker.md`), the landed-round log, and the open environment backlog. Do not re-discover hot-spots from scratch.
+
+## Local Dev & Browser Verification
+- **Dev Server:** `http://localhost:3000`
+- **Demo Email:** `admin@bumn.go.id`
+- **Demo Password:** `password`
+- **UI & CSS Pattern Guardrails:** Read `docs/standards/ui-pattern-guardrails.md` before modifying shared table containers, table typography, or CSS pattern classes.

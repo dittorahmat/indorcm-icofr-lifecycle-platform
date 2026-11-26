@@ -107,22 +107,22 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
             </Button>
           )
         },
-        { id: 'no', header: 'No', width: '50px', className: 'text-center font-mono text-xs text-slate-500 font-medium', render: (_, idx) => idx + 1 },
+        { id: 'no', header: 'No', width: '50px', className: 'text-center font-mono text-sm text-slate-500 font-medium', render: (_, idx) => idx + 1 },
         { 
           id: 'process_info', 
           header: t('matrix.process_info', 'Proses Bisnis (Parent)'), 
           width: RCM_NARRATIVE_WIDTHS.processInfo, 
-          className: 'text-xs text-slate-900',
+          className: 'text-sm text-slate-900',
           render: (row) => {
             const displayName = row.parentProcessName || row.processName;
             const code = row.parentBpmCode || row.bpmCode;
             return (
               <div className="flex flex-col gap-0.5 leading-snug">
-                <span className="font-semibold text-xs text-slate-900 line-clamp-2">
+                <span className="font-semibold text-sm text-slate-900 line-clamp-2">
                   {displayName}
                 </span>
                 {code && (
-                  <span className="font-mono text-xs font-semibold text-indigo-700">
+                  <span className="font-mono text-sm font-semibold text-indigo-700">
                     [{code}]
                   </span>
                 )}
@@ -134,9 +134,9 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
           id: 'sub_process', 
           header: t('matrix.sub_process', 'Sub-Proses (Child)'), 
           width: RCM_NARRATIVE_WIDTHS.subProcess, 
-          className: 'text-xs text-slate-800 font-medium',
+          className: 'text-sm text-slate-800 font-medium',
           render: (row) => (
-            <span className="line-clamp-2 text-xs text-slate-800 font-medium leading-snug">
+            <span className="line-clamp-2 text-sm text-slate-800 font-medium leading-snug">
               {row.subProcessName || '-'}
             </span>
           )
@@ -145,11 +145,11 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
           id: 'ref_bpm',
           header: t('matrix.ref_bpm', 'Ref Langkah BPM'),
           width: '130px',
-          className: 'text-xs text-slate-800',
+          className: 'text-sm text-slate-800',
           render: (row) => {
             const hasLink = row.diagramId || row.nodeId;
             if (!hasLink) {
-              return <span className="text-slate-400 font-mono text-xs">-</span>;
+              return <span className="text-slate-400 font-mono text-sm">-</span>;
             }
             const displayLabel = formatBpmStepLabel(row.nodeId, 'BPM', 15);
             const targetUrl = buildBpmDeepLinkUrl(row.diagramId, row.nodeId);
@@ -158,7 +158,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
                 to={targetUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 hover:text-indigo-900 px-2 py-0.5 rounded transition-colors"
+                className="inline-flex items-center gap-1 font-mono text-sm font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 hover:text-indigo-900 px-2 py-0.5 rounded transition-colors"
                 title={t('matrix.open_bpm_step', { defaultValue: 'Buka Simpul BPM di Tab Baru' })}
               >
                 <span>{displayLabel}</span>
@@ -172,15 +172,15 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
     {
       title: t('matrix.groups.risk'),
       columns: [
-        { id: 'company', header: t('matrix.company'), accessorKey: 'companyName', width: '180px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'location', header: t('matrix.location'), accessorKey: 'locationCode', width: '110px', className: 'text-xs text-slate-700 font-mono text-center font-medium' },
-        { id: 'risk_desc', header: t('matrix.risk_description'), accessorKey: 'riskDescription', width: RCM_NARRATIVE_WIDTHS.riskDesc, className: 'text-xs text-slate-800 font-normal leading-relaxed' },
+        { id: 'company', header: t('matrix.company'), accessorKey: 'companyName', width: '180px', className: 'text-sm text-slate-800 font-normal' },
+        { id: 'location', header: t('matrix.location'), accessorKey: 'locationCode', width: '110px', className: 'text-sm text-slate-700 font-mono text-center font-medium' },
+        { id: 'risk_desc', header: t('matrix.risk_description'), accessorKey: 'riskDescription', width: RCM_NARRATIVE_WIDTHS.riskDesc, className: 'text-sm text-slate-800 font-normal leading-relaxed' },
         { 
           id: 'fraud', 
           header: 'Fraud', 
           width: '70px', 
           align: 'center',
-          className: 'text-center text-xs font-mono',
+          className: 'text-center text-sm font-mono',
           render: (row) => (
             <BooleanIndicator value={row.isFraudRelated} tone="danger" />
           )
@@ -189,7 +189,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
           id: 'risk_rating', 
           header: t('matrix.risk_rating'), 
           width: '110px', 
-          className: 'text-center text-xs font-medium text-slate-800',
+          className: 'text-center text-sm font-medium text-slate-800',
           accessorKey: 'riskRating'
         },
       ]
@@ -197,16 +197,16 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
     {
       title: t('matrix.groups.control'),
       columns: [
-        { id: 'control_ref', header: t('matrix.control_ref'), accessorKey: 'controlCode', width: '130px', className: 'font-mono text-xs font-semibold text-slate-700' },
-        { id: 'control_name', header: t('matrix.control_name'), accessorKey: 'mappedControlName', width: RCM_NARRATIVE_WIDTHS.controlName, className: 'text-xs text-slate-900 font-medium leading-snug' },
-        { id: 'control_desc', header: t('matrix.control_description'), accessorKey: 'mappedControlDescription', width: RCM_NARRATIVE_WIDTHS.controlDesc, className: 'text-xs text-slate-700 font-normal leading-relaxed' },
-        { id: 'docs', header: t('matrix.supporting_docs'), accessorKey: 'supportingDocs', width: RCM_NARRATIVE_WIDTHS.supportingDocs, className: 'text-xs text-slate-700 font-normal' },
+        { id: 'control_ref', header: t('matrix.control_ref'), accessorKey: 'controlCode', width: '130px', className: 'font-mono text-sm font-semibold text-slate-700' },
+        { id: 'control_name', header: t('matrix.control_name'), accessorKey: 'mappedControlName', width: RCM_NARRATIVE_WIDTHS.controlName, className: 'text-sm text-slate-900 font-medium leading-snug' },
+        { id: 'control_desc', header: t('matrix.control_description'), accessorKey: 'mappedControlDescription', width: RCM_NARRATIVE_WIDTHS.controlDesc, className: 'text-sm text-slate-700 font-normal leading-relaxed' },
+        { id: 'docs', header: t('matrix.supporting_docs'), accessorKey: 'supportingDocs', width: RCM_NARRATIVE_WIDTHS.supportingDocs, className: 'text-sm text-slate-700 font-normal' },
         { 
           id: 'is_key', 
           header: t('matrix.is_key_control'), 
           width: '90px', 
           align: 'center',
-          className: 'text-center text-xs font-mono',
+          className: 'text-center text-sm font-mono',
           render: (row) => (
             <BooleanIndicator value={row.isKeyControl} tone="primary" />
           )
@@ -221,7 +221,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
         tooltip: t(`bpm:ipo.tooltip.${IPO_TIP[field]}.desc`),
         width: '50px',
         align: 'center' as const,
-        className: 'text-center text-xs font-mono text-slate-700',
+        className: 'text-center text-sm font-mono text-slate-700',
         render: (row) => (
           <BooleanIndicator value={row[field]} />
         ),
@@ -235,7 +235,7 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
         tooltip: t(`bpm:assertions.tooltip.${ASSERTION_TIP[field]}.desc`),
         width: '50px',
         align: 'center' as const,
-        className: 'text-center text-xs font-mono text-slate-700',
+        className: 'text-center text-sm font-mono text-slate-700',
         render: (row) => (
           <BooleanIndicator value={row[field]} />
         ),
@@ -244,15 +244,15 @@ export function RCMTLCPage({ embedded = false, filterBpmId, workingYearOverride,
     {
       title: t('matrix.groups.metadata'),
       columns: [
-        { id: 'type', header: t('matrix.type'), accessorKey: 'controlType', width: '160px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'nature', header: t('matrix.nature'), accessorKey: 'controlNature', width: '180px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'auto_type', header: t('matrix.automated_type'), accessorKey: 'automatedSubNature', width: '200px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'frequency', header: t('matrix.frequency'), accessorKey: 'frequency', width: '130px', className: 'text-xs text-slate-800 font-normal text-center' },
-        { id: 'app', header: t('matrix.supporting_app'), accessorKey: 'supportingApp', width: '180px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'function', header: t('matrix.executing_function'), accessorKey: 'executingFunction', width: '180px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'role', header: t('matrix.executor_role'), accessorKey: 'executorRole', width: '180px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'fsli', header: t('matrix.affected_fsli_item'), accessorKey: 'affectedFsliItem', width: '220px', className: 'text-xs text-slate-800 font-normal' },
-        { id: 'period', header: t('matrix.effective_period'), accessorKey: 'effectivePeriod', width: '130px', className: 'text-center text-xs font-semibold text-indigo-700' },
+        { id: 'type', header: t('matrix.type'), accessorKey: 'controlType', width: '160px', className: 'text-sm text-slate-800 font-normal' },
+        { id: 'nature', header: t('matrix.nature'), accessorKey: 'controlNature', width: '180px', className: 'text-sm text-slate-800 font-normal' },
+        { id: 'auto_type', header: t('matrix.automated_type'), accessorKey: 'automatedSubNature', width: '200px', className: 'text-sm text-slate-800 font-normal' },
+        { id: 'frequency', header: t('matrix.frequency'), accessorKey: 'frequency', width: '130px', className: 'text-sm text-slate-800 font-normal text-center' },
+        { id: 'app', header: t('matrix.supporting_app'), accessorKey: 'supportingApp', width: '180px', className: 'text-sm text-slate-800 font-normal' },
+        { id: 'function', header: t('matrix.executing_function'), accessorKey: 'executingFunction', width: '180px', className: 'text-sm text-slate-800 font-normal' },
+        { id: 'role', header: t('matrix.executor_role'), accessorKey: 'executorRole', width: '180px', className: 'text-sm text-slate-800 font-normal' },
+        { id: 'fsli', header: t('matrix.affected_fsli_item'), accessorKey: 'affectedFsliItem', width: '220px', className: 'text-sm text-slate-800 font-normal' },
+        { id: 'period', header: t('matrix.effective_period'), accessorKey: 'effectivePeriod', width: '130px', className: 'text-center text-sm font-semibold text-indigo-700' },
       ]
     }
   ];

@@ -104,7 +104,7 @@ export function RCMTable({
           to enable vertical sticky headers on desktop, and a clean card feed on mobile.
           Uses scrollbar-contrast to provide an always-visible, easily grabbable scrollbar for wide matrices.
       */}
-      <div className="w-full max-w-full border-t border-b bg-slate-50/50 md:bg-white border-slate-300 scrollbar-contrast flex-1 min-h-0 relative overflow-auto touch-pan-x overscroll-x-contain">
+      <div className="mx-3 sm:mx-3.5 min-w-0 max-w-full border bg-slate-50/50 md:bg-white border-slate-300 scrollbar-contrast flex-1 min-h-0 relative overflow-auto touch-pan-x overscroll-x-contain">
         {/* Desktop View: Wide Table with Frozen Sticky Headers (md and up) */}
         <div className="hidden md:block w-full">
           <table 
@@ -199,7 +199,7 @@ export function RCMTable({
                           <td 
                             key={`cell-${col.id}-${cIdx}`}
                             className={cn(
-                              "px-2.5 sm:px-3 border-r border-slate-100 py-1.5 sm:py-2 text-xs transition-colors duration-200",
+                              "px-2.5 sm:px-3 border-r border-slate-100 py-1.5 sm:py-2 text-sm transition-colors duration-200",
                               col.align === 'center' ? "text-center" : col.align === 'right' ? "text-right" : undefined,
                               "group-hover:bg-indigo-50/70 group-hover:border-indigo-100/50",
                               col.className
