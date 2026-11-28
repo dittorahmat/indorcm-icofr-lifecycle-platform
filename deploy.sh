@@ -229,7 +229,12 @@ sleep 5
 LIVE_COMMIT="$(python3 -c "import json;print(json.load(open('$LIVE_DEPLOY_INFO')).get('commit',''))" 2>/dev/null || true)"
 [ "$LIVE_COMMIT" = "$NEW_REV" ] || { log "FATAL: live deploy-info tidak cocok ($LIVE_COMMIT != $NEW_REV)"; exit 1; }
 [ -f "$LIVE_INDEX" ] || { log "FATAL: live index.html tidak ditemukan di $LIVE_INDEX"; exit 1; }
-PM2_NOW="$(pm2 jlist 2>/dev/null | python3 -c "import json,sys;print(next((a['pm2_env']['status'] for a in json.load(sys.stdin) if a['name']=='icofr-backend'),'missing'))" 2>/dev/null || echo unknown)"
+PM2_NOW="unknown"
+for _ in 1 2 3 4 5; do
+  PM2_NOW="$("$PM2_BIN" jlist 2>/dev/null | python3 -c "import json,sys;raw=sys.stdin.read();idx=raw.find('[');data=json.loads(raw[idx:]) if idx!=-1 else [];print(next((a['pm2_env']['status'] for a in data if a['name']=='icofr-backend'),'missing'))" 2>/dev/null || echo unknown)"
+  [ "$PM2_NOW" = "online" ] && break
+  sleep 1
+done
 [ "$PM2_NOW" = "online" ] || { log "FATAL: icofr-backend tidak online (status: $PM2_NOW)"; exit 1; }
 HTTP_CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$BACKEND_URL" || echo 000)"
 case "$HTTP_CODE" in
