@@ -118,13 +118,13 @@ export function RCMTable({
             </colgroup>
             <thead className="z-30">
               {/* Level 1 Header: Groups */}
-              <tr className="h-9 bg-slate-800 text-slate-100 sticky top-0 z-30 border-b border-slate-700">
+              <tr className="h-9 bg-slate-50 dark:bg-card text-slate-900 dark:text-foreground sticky top-0 z-30 border-b border-slate-200 dark:border-border">
                 {groups.map((group, gIdx) => (
                   <th 
                     key={`group-${gIdx}`}
                     colSpan={group.columns.length}
                     className={cn(
-                      "text-center font-semibold uppercase text-xs tracking-wider border-r border-slate-700 py-1.5 px-3",
+                      "text-center font-bold text-xs border-r border-slate-200 dark:border-border py-1.5 px-3",
                       group.className
                     )}
                   >
@@ -134,7 +134,7 @@ export function RCMTable({
               </tr>
 
               {/* Level 2 Header: Columns */}
-              <tr className="h-11 bg-slate-100 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 sticky top-[36px] z-20">
+              <tr className="h-11 bg-slate-50 dark:bg-card border-b-2 border-slate-300 dark:border-border sticky top-[36px] z-20">
                 {allColumns.map((col, cIdx) => {
                   const center = isCenterAligned(col);
                   const small = isSmallColumn(col);
@@ -142,9 +142,9 @@ export function RCMTable({
                     <th 
                       key={`col-${col.id}-${cIdx}`}
                       className={cn(
-                        "font-semibold uppercase text-xs px-3 border-r border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 align-middle bg-slate-100 dark:bg-slate-900",
+                        "font-bold text-xs px-3 border-r border-slate-200 dark:border-border text-slate-900 dark:text-foreground align-middle bg-slate-50 dark:bg-card",
                         center ? "text-center" : "text-left",
-                        small ? "tracking-normal px-1.5" : "tracking-wider",
+                        small && "px-1.5",
                         col.headerClassName
                       )}
                       style={getCellStyle(col)}
