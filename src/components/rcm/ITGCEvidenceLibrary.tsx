@@ -216,7 +216,7 @@ export function ITGCEvidenceLibrary({
         </div>
         <div className="border border-slate-200 rounded-lg overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint shadow-sm">
           <Table>
-            <TableHeader className="bg-slate-50">
+            <TableHeader>
               <TableRow>
                 <TableHead className="text-xs font-bold text-slate-700">{t('rcm:application_detail.file_name')}</TableHead>
                 <TableHead className="w-[100px] text-xs font-bold text-slate-700">{t('rcm:application_detail.file_size')}</TableHead>
