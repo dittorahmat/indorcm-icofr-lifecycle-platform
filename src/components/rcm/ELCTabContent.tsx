@@ -43,9 +43,9 @@ export function ELCTabContent({ elcControls, onEditControl, onCreateControl }: E
         <Table className="min-w-[960px]">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[280px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 px-4 py-2.5">{t('matrix.properties.coso_section')}</TableHead>
-              <TableHead className="min-w-[340px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.risk_description')}</TableHead>
-              <TableHead className="w-[160px] text-center font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-2.5">Audit Status</TableHead>
+              <TableHead className="w-[280px] font-semibold text-xs text-slate-700 dark:text-slate-300 px-4 py-2.5">{t('matrix.properties.coso_section')}</TableHead>
+              <TableHead className="min-w-[340px] font-semibold text-xs text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.risk_description')}</TableHead>
+              <TableHead className="w-[160px] text-center font-semibold text-xs text-slate-700 dark:text-slate-300 py-2.5">Audit Status</TableHead>
               <TableHead className="w-[60px] text-right px-4 py-2.5"></TableHead>
             </TableRow>
           </TableHeader>

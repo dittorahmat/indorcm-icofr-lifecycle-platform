@@ -55,11 +55,11 @@ export function ITGCTabContent({
         <Table className="min-w-[960px]">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[140px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 px-3 py-2.5">Domain</TableHead>
-              <TableHead className="w-[130px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.control_ref')}</TableHead>
-              <TableHead className="min-w-[280px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.control_name')}</TableHead>
-              <TableHead className="w-[150px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 text-center py-2.5">{t('matrix.automated_type')}</TableHead>
-              <TableHead className="w-[160px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.supporting_app')}</TableHead>
+              <TableHead className="w-[140px] font-semibold text-xs text-slate-700 dark:text-slate-300 px-3 py-2.5">Domain</TableHead>
+              <TableHead className="w-[130px] font-semibold text-xs text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.control_ref')}</TableHead>
+              <TableHead className="min-w-[280px] font-semibold text-xs text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.control_name')}</TableHead>
+              <TableHead className="w-[150px] font-semibold text-xs text-slate-700 dark:text-slate-300 text-center py-2.5">{t('matrix.automated_type')}</TableHead>
+              <TableHead className="w-[160px] font-semibold text-xs text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.supporting_app')}</TableHead>
               <TableHead className="w-[60px] text-right px-3 py-2.5"></TableHead>
             </TableRow>
           </TableHeader>
