@@ -157,7 +157,7 @@ export function ChangeLogReport() {
         </div>
         <div className={`rounded-lg border bg-white max-w-full overflow-x-auto touch-pan-x overscroll-x-contain table-scroll-hint ${showFullTable ? 'block' : 'hidden'} md:block print:block`}>
           <Table className="min-w-[1200px] print:min-w-0 print:w-full print:text-xs">
-            <TableHeader className="bg-slate-50 border-b print:bg-transparent">
+            <TableHeader className="print:bg-transparent">
               <TableRow>
                 <TableHead className="w-[50px] text-xs font-semibold uppercase py-2 text-center text-slate-800">No (i)</TableHead>
                 <TableHead className="text-xs font-semibold uppercase py-2 text-slate-800">Perusahaan (ii)</TableHead>

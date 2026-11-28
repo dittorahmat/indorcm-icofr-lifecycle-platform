@@ -187,7 +187,7 @@ export function RegulatorySamplingTable({ control, t, isReadOnly }: RegulatorySa
       {/* DESKTOP VIEW: Table (>= md) with safe horizontal scroll */}
       <div className="hidden md:block border border-slate-200 rounded-xl overflow-x-auto max-w-full touch-pan-x overscroll-x-contain bg-white shadow-xs">
         <Table className="min-w-[920px]">
-          <TableHeader className="bg-slate-50/70 border-b border-slate-200">
+          <TableHeader>
             <TableRow>
               <TableHead className="w-[50px] text-center text-xs uppercase font-bold text-slate-700 py-2 px-2.5">No</TableHead>
               <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[260px] py-2 px-3">

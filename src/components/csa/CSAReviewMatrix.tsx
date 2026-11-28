@@ -180,7 +180,7 @@ export function CSAReviewMatrix({
       <div className="hidden md:block">
         <ScrollArea className="w-full max-w-full overflow-x-auto touch-pan-x overscroll-x-contain">
           <Table className="border-collapse">
-            <TableHeader className="bg-white">
+            <TableHeader>
               <TableRow className="hover:bg-transparent border-b-2">
                 <TableHead className="w-[280px] min-w-[280px] sticky left-0 z-20 bg-white border-r shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-500 py-1">{t('tod.rcmAttributes')}</div>

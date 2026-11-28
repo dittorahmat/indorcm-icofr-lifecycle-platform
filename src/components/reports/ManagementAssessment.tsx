@@ -102,7 +102,7 @@ export function ManagementAssessment({
             </div>
             <div className="rounded-lg border border-slate-200 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white">
               <Table className="text-xs min-w-[560px]">
-                <TableHeader className="bg-slate-50">
+                <TableHeader>
                   <TableRow>
                     <TableHead className="font-bold text-slate-600 uppercase tracking-wider">{t('testing.table.notes')}</TableHead>
                     <TableHead className="w-[150px] font-bold text-slate-600 uppercase tracking-wider">{t('assessment.severity')}</TableHead>

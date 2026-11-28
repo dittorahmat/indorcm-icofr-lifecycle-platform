@@ -111,7 +111,7 @@ export function SimulationListTable({ data, onSelect, onDelete, isLoading }: Sim
       </div>
       <div className={`border rounded-xl shadow-md bg-white max-w-full overflow-x-auto overscroll-x-contain touch-pan-x table-scroll-hint ${showFullTable ? 'block' : 'hidden'} md:block`}>
       <Table>
-        <TableHeader className="bg-slate-50 border-b">
+        <TableHeader>
           <TableRow>
             <TableHead className="font-bold text-slate-700 h-14 px-6">Simulation Name</TableHead>
             <TableHead className="font-bold text-slate-700 h-14">Status</TableHead>

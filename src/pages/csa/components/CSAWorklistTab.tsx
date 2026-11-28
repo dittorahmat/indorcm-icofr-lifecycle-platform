@@ -115,7 +115,7 @@ export function CSAWorklistTab() {
       {/* DESKTOP VIEW: grouped table */}
       <div className="hidden md:block border rounded-lg bg-white shadow-sm overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
         <Table className="min-w-[1080px]">
-          <TableHeader className="bg-slate-50 border-b border-slate-200">
+          <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className={cn("text-xs font-semibold uppercase tracking-wider text-slate-500 py-4 pl-6", CSA_WORKLIST_COLUMNS.code)}>{t('page.worklist.table.code')}</TableHead>
               <TableHead className={cn("text-xs font-semibold uppercase tracking-wider text-slate-500", CSA_WORKLIST_COLUMNS.control)}>{t('page.worklist.table.control')}</TableHead>

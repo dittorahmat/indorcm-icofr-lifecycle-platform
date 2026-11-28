@@ -266,7 +266,7 @@ export function BPMWorksheet({ bpmProcessId, subProcessName, fsliName, noGL, wor
           </div>
         )}
         <Table className="min-w-[2500px] border-separate border-spacing-0">
-          <TableHeader className="bg-slate-100 sticky top-0 z-20">
+          <TableHeader sticky className="z-20">
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent">
                 {headerGroup.headers.map(header => (

@@ -87,7 +87,7 @@ export function BPMAccountAssertion({
       <CardContent className="p-0">
         <TooltipProvider>
           <Table>
-            <TableHeader className="bg-slate-50/30">
+            <TableHeader>
               <TableRow className="divide-x divide-slate-100 border-b border-slate-100">
                 {assertionFields.map((field) => (
                   <TableHead key={field.key} className="text-center w-[120px] py-4">

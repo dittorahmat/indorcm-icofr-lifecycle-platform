@@ -169,7 +169,7 @@ export function Lampiran11Report({ deficiencies = [] }: Lampiran11ReportProps) {
 
         <div className="hidden md:block rounded-lg border overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white">
           <Table className="min-w-[800px]">
-            <TableHeader className="bg-slate-50 border-b">
+            <TableHeader>
               <TableRow>
                 <TableHead className="text-xs font-semibold uppercase py-2 px-3 text-slate-800">{t('findings.columns.no')}</TableHead>
                 <TableHead className="text-xs font-semibold uppercase py-2 px-3 text-slate-800">{t('findings.columns.ref')}</TableHead>

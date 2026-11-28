@@ -313,7 +313,7 @@ export function ReportsPage() {
                 </div>
                 <div className="hidden md:block rounded-lg border border-slate-200 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint shadow-sm bg-white">
                   <Table className="min-w-[880px]">
-                    <TableHeader className="bg-slate-50/80">
+                    <TableHeader>
                       <TableRow>
                         <TableHead className="w-[40px] text-xs uppercase font-bold text-center text-slate-500 tracking-wider py-2 px-3">{t('testing.table.no')}</TableHead>
                         <TableHead className="w-[180px] text-xs uppercase font-bold text-slate-500 tracking-wider py-2 px-3">{t('testing.table.process')}</TableHead>

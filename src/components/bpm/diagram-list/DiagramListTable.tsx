@@ -32,7 +32,7 @@ export function DiagramListTable({ props, callbacks, allSelected, onOpenDiagramF
   return (
     <div className="hidden md:block overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
       <Table>
-        <TableHeader className="bg-slate-50/80 border-b border-slate-200">
+        <TableHeader>
           <TableRow>
             <TableHead className="w-[50px] text-center py-4">
               <Checkbox checked={allSelected} onCheckedChange={onToggleSelectAll} aria-label="Select all" className="rounded" />

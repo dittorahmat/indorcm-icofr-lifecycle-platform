@@ -121,7 +121,7 @@ export function FindingsReport({ deficiencies = [], controls = [] }: FindingsRep
 
         <div className="hidden md:block rounded-lg border overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint bg-white">
           <Table className="min-w-[1100px]">
-            <TableHeader className="bg-slate-50 border-b">
+            <TableHeader>
               <TableRow>
                 {columns.map((c) => (
                   <TableHead key={c.key} className="text-xs font-semibold uppercase py-2 text-slate-800">{c.header}</TableHead>

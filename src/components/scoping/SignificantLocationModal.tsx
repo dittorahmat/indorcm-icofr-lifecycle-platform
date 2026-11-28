@@ -218,7 +218,7 @@ export function SignificantLocationModal({
 
           <div className="rounded-lg border border-slate-200 overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint shadow-sm">
             <Table className="min-w-[560px]">
-              <TableHeader className="bg-slate-50 border-b">
+              <TableHeader>
                 <TableRow>
                   <TableHead className="font-bold text-slate-700">{t('locationModal.colEntityCode')}</TableHead>
                   <TableHead className="text-right font-bold text-slate-700">{t('locationModal.colValue', { basis: simulation.basis })}</TableHead>

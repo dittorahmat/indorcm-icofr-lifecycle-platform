@@ -83,7 +83,7 @@ export function StagingTable({ rows, onUpdateRow }: StagingTableProps) {
         <div className="rounded-lg border border-slate-200 overflow-hidden bg-white shadow-sm max-w-full">
             <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
                 <Table>
-                    <TableHeader className="bg-slate-50/50">
+                    <TableHeader>
                         <TableRow className="hover:bg-transparent border-b-slate-200">
                             <TableHead className="w-12"></TableHead>
                             <TableHead className="font-black text-xs uppercase tracking-[0.2em] text-slate-400 py-4">{t('rcm:matrix.company')}</TableHead>

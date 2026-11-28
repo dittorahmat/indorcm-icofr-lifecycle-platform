@@ -104,7 +104,7 @@ export function GLSourceTable({ data, onSetActive, onSetBenchmark, onDelete, isL
       </div>
       <div className={`border rounded-lg shadow-sm bg-white max-w-full overflow-x-auto overscroll-x-contain touch-pan-x table-scroll-hint ${showFullTable ? 'block' : 'hidden'} md:block`}>
       <Table>
-        <TableHeader className="bg-slate-50">
+        <TableHeader>
           <TableRow>
             <TableHead className="w-[80px] text-center">Active</TableHead>
             <TableHead>File Name</TableHead>
