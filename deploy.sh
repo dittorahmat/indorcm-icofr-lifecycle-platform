@@ -231,7 +231,7 @@ LIVE_COMMIT="$(python3 -c "import json;print(json.load(open('$LIVE_DEPLOY_INFO')
 [ -f "$LIVE_INDEX" ] || { log "FATAL: live index.html tidak ditemukan di $LIVE_INDEX"; exit 1; }
 PM2_NOW="unknown"
 for _ in 1 2 3 4 5; do
-  PM2_NOW="$("$PM2_BIN" jlist 2>/dev/null | python3 -c "import json,sys;raw=sys.stdin.read();idx=raw.find('[');data=json.loads(raw[idx:]) if idx!=-1 else [];print(next((a['pm2_env']['status'] for a in data if a['name']=='icofr-backend'),'missing'))" 2>/dev/null || echo unknown)"
+  PM2_NOW="$("$PM2_BIN" jlist 2>/dev/null | node -e "const fs=require('fs');const raw=fs.readFileSync(0,'utf8');const m=raw.match(/^\[[\s\S]*\]/m);const d=m?JSON.parse(m[0]):[];const app=d.find(a=>a.name==='icofr-backend');console.log(app?.pm2_env?.status||'missing')" 2>/dev/null || echo unknown)"
   [ "$PM2_NOW" = "online" ] && break
   sleep 1
 done
