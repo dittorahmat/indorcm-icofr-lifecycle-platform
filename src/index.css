@@ -218,6 +218,19 @@
     );
   }
 
+  /* Outlook-inspired soft pastel multi-color gradient for MainHeader */
+  .bg-outlook-pastel {
+    background-color: hsl(223 41% 97%);
+    background-image: linear-gradient(
+      90deg,
+      hsl(226 100% 97%) 0%,
+      hsl(210 40% 98%) 28%,
+      hsl(27 90% 92%) 58%,
+      hsl(23 82% 87%) 74%,
+      hsl(149 44% 89%) 100%
+    );
+  }
+
   /* Remove Gradients and AI Slop */
   .bg-primary-solid {
     @apply bg-primary text-primary-foreground;

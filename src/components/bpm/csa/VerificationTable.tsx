@@ -97,7 +97,7 @@ export function VerificationTable({
 
         <div className="border rounded-lg overflow-x-auto max-w-full touch-pan-x overscroll-x-contain shadow-md">
           <Table className="min-w-[880px]">
-            <TableHeader className="bg-mancity-pattern text-primary-foreground">
+            <TableHeader>
               <TableRow className="divide-x divide-white/10 hover:bg-transparent">
                 <TableHead className="text-xs font-black text-primary-foreground py-4 px-4 min-w-[200px]">
                   {t('csa_hub:form.table.transactionDetail')}
