@@ -36,3 +36,9 @@ Setiap kali melakukan audit lebar kolom atau refactoring antarmuka tabel, pastik
 - **Sampling & Testing:** `RegulatorySamplingTable.tsx`, `TODTable.tsx`, `TOETable.tsx`
 - **Scoping & Materiality:** `GLSourceTable.tsx`, `GLDataGrid.tsx`, `MaterialityMatrixTable.tsx`, `ApprovalPage.tsx`
 - **Regulatory Reports:** `changelog-report.tsx`, `findings-report.tsx`, `lampiran11-report.tsx`, `ManagementAssessment.tsx`
+
+## Standar Visual Header Tabel & Kontras
+
+- Seluruh tabel/grid baru wajib menggunakan komponen standar `Table`, `TableHeader`, `TableHead`, `TableRow`, `TableCell` dari `@/components/ui/table` tanpa override warna latar (`bg-slate-50/*`, `bg-white`, `bg-slate-100`), border ad-hoc, maupun `uppercase tracking-wider` pada `<TableHead>`.
+- Untuk header tabel yang menempel (*sticky*), gunakan prop `<TableHeader sticky>` alih-alih menulis ulang utility `sticky top-0 bg-slate-50` secara manual.
+- Saat menghapus latar belakang gelap (`bg-mancity-pattern`, `bg-slate-900`, dll.) dari `<TableHeader>`, wajib audit dan hapus `text-primary-foreground` / `text-white` pada seluruh `<TableHead>` anaknya agar teks header tetap kontras di atas latar terang (`bg-slate-50 dark:bg-card`).
