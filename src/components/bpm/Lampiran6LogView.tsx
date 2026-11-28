@@ -93,7 +93,7 @@ export function Lampiran6LogView({ entityId, year, subProcessName, bpmProcessId 
 
   const renderTable = () => (
     <Table className="min-w-[1200px]">
-      <TableHeader className="bg-muted/50">
+      <TableHeader>
         <TableRow>
           <TableHead className="w-[50px] text-xs font-bold uppercase py-3 text-center">{t('logView.cols.no')}</TableHead>
           <TableHead className="text-xs font-bold uppercase py-3">{t('logView.cols.company')}</TableHead>

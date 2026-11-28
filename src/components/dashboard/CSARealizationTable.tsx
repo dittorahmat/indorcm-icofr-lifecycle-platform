@@ -111,7 +111,7 @@ export function CSARealizationTable({ controls, isLoading }: CSARealizationTable
         {/* Desktop View: Matrix Table (>= md) */}
         <div className="hidden md:block overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
           <Table className="min-w-[480px]">
-            <TableHeader className="bg-slate-50/20">
+            <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className="text-xs font-bold uppercase tracking-wider text-slate-500 pl-5">
                   {t('realizationTable.columns.frequency')}

@@ -177,7 +177,7 @@ export function DoDTable({ rows, showFullTable }: { rows: FormattedDoDRow[]; sho
     <div className={`rounded-lg border border-border overflow-hidden bg-background max-w-full ${showFullTable ? 'block' : 'hidden'} md:block`}>
       <div className="overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint">
         <Table className="min-w-[2000px] border-collapse print:min-w-0 print:w-full print:text-xs">
-          <TableHeader className="bg-slate-50 border-b border-border">
+          <TableHeader>
             <TableRow className="border-b border-border text-center">
               <TableHead colSpan={6} className="text-center font-bold text-xs uppercase bg-slate-100 text-slate-800 border-r border-border py-2">
                 {t('dodReport.table.groupFinding')} (i - vi)

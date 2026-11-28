@@ -113,7 +113,7 @@ export function CAPTrackingTable({
   return (
     <div className="border border-slate-200 rounded-xl overflow-x-auto max-w-full touch-pan-x overscroll-x-contain bg-white shadow-xs">
       <Table className="min-w-[1040px]">
-        <TableHeader className="bg-slate-50/70 border-b border-slate-200">
+        <TableHeader>
           <TableRow>
             <TableHead className="w-[110px] text-xs uppercase font-bold text-slate-700 py-2 px-3">Kode Temuan</TableHead>
             <TableHead className="text-xs uppercase font-bold text-slate-700 min-w-[340px] py-2 px-3">Uraian Temuan & Kontrol</TableHead>

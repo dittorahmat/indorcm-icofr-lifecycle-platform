@@ -111,7 +111,7 @@ export function CSAList({
       {/* DESKTOP VIEW: Table */}
       <div className="hidden md:block">
       <Table>
-        <TableHeader className="bg-slate-50">
+        <TableHeader>
           <TableRow>
             <TableHead className="text-xs font-black uppercase">Reference & Period</TableHead>
             <TableHead className="text-xs font-black uppercase text-center">Result</TableHead>

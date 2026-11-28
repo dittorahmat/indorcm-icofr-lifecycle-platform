@@ -171,7 +171,7 @@ export function SetBenchmarkModal({ snapshot: initialSnapshot, isOpen, onOpenCha
                 </div>
               ) : (
                 <Table className="min-w-[480px]">
-                  <TableHeader className="sticky top-0 bg-slate-50 z-10 border-b border-slate-200 shadow-sm">
+                  <TableHeader sticky>
                     <TableRow>
                       <TableHead className="w-[60px] text-center font-black uppercase text-xs tracking-widest">{t('benchmarkModal.colSelect')}</TableHead>
                       <TableHead className="font-black uppercase text-xs tracking-widest">{t('benchmarkModal.colFsli')}</TableHead>

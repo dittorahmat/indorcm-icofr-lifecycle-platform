@@ -69,13 +69,13 @@ export function TLCTabContent({
       {/* Desktop Table View */}
       <div className="hidden md:block border border-slate-200 rounded-lg bg-white shadow-sm overflow-x-auto max-w-full touch-pan-x overscroll-x-contain">
         <Table className="min-w-[960px]">
-          <TableHeader className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+          <TableHeader>
             <TableRow>
-              <TableHead className="w-[140px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 px-3 py-2.5">{t('matrix.control_ref')}</TableHead>
-              <TableHead className="min-w-[280px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.control_name')}</TableHead>
-              <TableHead className="w-[130px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.nature')}</TableHead>
-              <TableHead className="w-[130px] font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 text-center py-2.5">{t('matrix.risk_rating')}</TableHead>
-              <TableHead className="w-[160px] text-center font-semibold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 py-2.5">{t('common:icofr.linkedTo')} ELC</TableHead>
+              <TableHead className="w-[140px] font-semibold text-xs text-slate-700 dark:text-slate-300 px-3 py-2.5">{t('matrix.control_ref')}</TableHead>
+              <TableHead className="min-w-[280px] font-semibold text-xs text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.control_name')}</TableHead>
+              <TableHead className="w-[130px] font-semibold text-xs text-slate-700 dark:text-slate-300 py-2.5">{t('matrix.nature')}</TableHead>
+              <TableHead className="w-[130px] font-semibold text-xs text-slate-700 dark:text-slate-300 text-center py-2.5">{t('matrix.risk_rating')}</TableHead>
+              <TableHead className="w-[160px] text-center font-semibold text-xs text-slate-700 dark:text-slate-300 py-2.5">{t('common:icofr.linkedTo')} ELC</TableHead>
               <TableHead className="w-[60px] text-right py-2.5 px-3"></TableHead>
             </TableRow>
           </TableHeader>

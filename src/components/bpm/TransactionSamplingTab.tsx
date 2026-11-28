@@ -156,7 +156,7 @@ export function TransactionSamplingTab({ noGL, bpmProcessId, year: propYear, onS
 
       <div className="flex-1 overflow-auto">
         <Table>
-          <TableHeader className="bg-white sticky top-0 z-10 shadow-sm">
+          <TableHeader sticky>
             <TableRow>
               <TableHead className="w-12 text-center"></TableHead>
               <TableHead className="w-24 text-xs font-black uppercase">BPM Code</TableHead>

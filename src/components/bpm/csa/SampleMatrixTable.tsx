@@ -49,7 +49,7 @@ export function SampleMatrixTable({ form, isReadOnly, activeControls, fields, on
         </div>
         <div className="border rounded-lg overflow-x-auto max-w-full touch-pan-x overscroll-x-contain shadow-sm">
           <Table>
-            <TableHeader className="bg-slate-50">
+            <TableHeader>
               <TableRow className="divide-x">
                 <TableHead className="w-10 text-xs font-bold">#</TableHead>
                 <TableHead className="text-xs font-bold min-w-[200px]">{t('csa_hub:form.sampleReference')}</TableHead>

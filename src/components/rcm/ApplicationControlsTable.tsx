@@ -57,7 +57,7 @@ export function ControlsTable({
     </div>
     <div className="border border-slate-200 rounded-lg overflow-x-auto max-w-full touch-pan-x overscroll-x-contain table-scroll-hint shadow-sm">
       <Table className={matrixType === 'itgc' ? 'min-w-[720px]' : 'min-w-[640px]'}>
-        <TableHeader className="bg-slate-50">
+        <TableHeader>
           <TableRow>
             <TableHead className="w-[120px] text-xs font-bold text-slate-700">Control ID</TableHead>
             <TableHead className="min-w-[280px] text-xs font-bold text-slate-700">Control Name & Description</TableHead>

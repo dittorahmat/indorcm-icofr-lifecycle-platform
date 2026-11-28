@@ -6,11 +6,14 @@ import { useTranslation } from 'react-i18next';
 import type { SidebarNavItem } from './sidebar-nav';
 import { NotificationBadge, PendingApprovalBadge } from './SidebarBadges';
 
+const SIDEBAR_HOVER_CLASS =
+  'hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100 active:scale-[0.98]';
+
 export const SIDEBAR_ITEM_CLASS =
-  'min-h-[44px] h-auto py-2 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] [&_span]:whitespace-normal [&_span]:leading-tight';
+  `min-h-[44px] h-auto py-2 px-3 rounded-md transition-all ${SIDEBAR_HOVER_CLASS} [&_span]:whitespace-normal [&_span]:leading-tight`;
 
 const ACTION_CLASS =
-  'h-11 sm:h-9 min-h-[44px] sm:min-h-0 px-3 rounded-md transition-all hover:bg-slate-100 active:scale-[0.98] font-semibold text-sm';
+  `h-11 sm:h-9 min-h-[44px] sm:min-h-0 px-3 rounded-md transition-all ${SIDEBAR_HOVER_CLASS} font-semibold text-sm`;
 
 interface SidebarNavItemProps {
   item: SidebarNavItem;

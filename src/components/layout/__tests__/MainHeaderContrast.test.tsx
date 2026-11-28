@@ -163,9 +163,9 @@ describe('MainHeader components contrast calibration (#157)', () => {
       render(<MainHeader />, { wrapper: Wrapper });
 
       const header = screen.getByRole('banner');
-      expect(header.className).toContain('bg-mancity-pattern');
-      expect(header.className).toContain('border-b-2');
-      expect(header.className).toContain('border-b-sky-700/30');
+      expect(header.className).toContain('bg-outlook-pastel');
+      expect(header.className).toContain('border-b');
+      expect(header.className).toContain('border-slate-200/80');
       expect(header.className).toContain('text-slate-900');
     });
 
