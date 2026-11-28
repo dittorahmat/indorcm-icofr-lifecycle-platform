@@ -89,12 +89,12 @@ export const Appendix7aSummary = React.forwardRef<HTMLDivElement, Appendix7aSumm
               <Table className="min-w-[560px]">
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="text-xs font-black text-primary-foreground w-10 text-center">NO</TableHead>
-                    <TableHead className="text-xs font-black text-primary-foreground">KODE & NAMA KONTROL</TableHead>
-                    <TableHead className="text-xs font-black text-primary-foreground text-center">TOTAL SAMPEL</TableHead>
-                    <TableHead className="text-xs font-black text-primary-foreground text-center">PASS</TableHead>
-                    <TableHead className="text-xs font-black text-primary-foreground text-center">FAIL</TableHead>
-                    <TableHead className="text-xs font-black text-primary-foreground text-center">STATUS</TableHead>
+                    <TableHead className="text-xs py-2.5 px-3 w-10 text-center">NO</TableHead>
+                    <TableHead className="text-xs py-2.5 px-3">KODE & NAMA KONTROL</TableHead>
+                    <TableHead className="text-xs py-2.5 px-3 text-center">TOTAL SAMPEL</TableHead>
+                    <TableHead className="text-xs py-2.5 px-3 text-center">PASS</TableHead>
+                    <TableHead className="text-xs py-2.5 px-3 text-center">FAIL</TableHead>
+                    <TableHead className="text-xs py-2.5 px-3 text-center">STATUS</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -98,15 +98,15 @@ export function VerificationTable({
         <div className="border rounded-lg overflow-x-auto max-w-full touch-pan-x overscroll-x-contain shadow-md">
           <Table className="min-w-[880px]">
             <TableHeader>
-              <TableRow className="divide-x divide-white/10 hover:bg-transparent">
-                <TableHead className="text-xs font-black text-primary-foreground py-4 px-4 min-w-[200px]">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="text-xs py-2.5 px-3 min-w-[200px]">
                   {t('csa_hub:form.table.transactionDetail')}
                 </TableHead>
-                <TableHead className="text-xs font-black text-primary-foreground">{t('csa_hub:form.table.riskName')}</TableHead>
-                <TableHead className="text-xs font-black text-primary-foreground">{t('csa_hub:form.table.controlName')}</TableHead>
-                <TableHead className="text-xs font-black text-primary-foreground text-center w-32">{t('csa_hub:form.table.evidence')}</TableHead>
-                <TableHead className="text-xs font-black text-primary-foreground min-w-[200px]">{t('csa_hub:form.table.notes')}</TableHead>
-                <TableHead className="text-xs font-black text-primary-foreground text-center w-24">{t('csa_hub:form.table.pass')}</TableHead>
+                <TableHead className="text-xs py-2.5 px-3">{t('csa_hub:form.table.riskName')}</TableHead>
+                <TableHead className="text-xs py-2.5 px-3">{t('csa_hub:form.table.controlName')}</TableHead>
+                <TableHead className="text-xs py-2.5 px-3 text-center w-32">{t('csa_hub:form.table.evidence')}</TableHead>
+                <TableHead className="text-xs py-2.5 px-3 min-w-[200px]">{t('csa_hub:form.table.notes')}</TableHead>
+                <TableHead className="text-xs py-2.5 px-3 text-center w-24">{t('csa_hub:form.table.pass')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

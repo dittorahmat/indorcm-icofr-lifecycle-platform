@@ -82,10 +82,10 @@ export const Appendix7aDetailed = React.forwardRef<HTMLDivElement, Appendix7aDet
               <Table className="min-w-[560px]">
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
-                    <TableHead className="text-xs font-black text-primary-foreground w-10 text-center">NO</TableHead>
-                    <TableHead className="text-xs font-black text-primary-foreground min-w-[150px]">REFERENSI SAMPEL / TRANSAKSI</TableHead>
+                    <TableHead className="text-xs py-2.5 px-3 w-10 text-center">NO</TableHead>
+                    <TableHead className="text-xs py-2.5 px-3 min-w-[150px]">REFERENSI SAMPEL / TRANSAKSI</TableHead>
                     {controlIds.map(id => (
-                      <TableHead key={id} className="text-xs font-black text-primary-foreground text-center border-l border-white/10 uppercase py-2 px-3">
+                      <TableHead key={id} className="text-xs text-center py-2.5 px-3">
                         <div className="flex flex-col gap-1">
                           <span>{controlMap[id]?.code || id}</span>
                           <span className="text-xs opacity-60 font-normal leading-tight line-clamp-2">{controlMap[id]?.name}</span>
